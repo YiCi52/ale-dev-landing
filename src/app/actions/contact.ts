@@ -1,0 +1,73 @@
+"use server";
+
+import { headers } from "next/headers";
+import { contactSchema, type ContactInput } from "@/lib/contact-schema";
+import { supabase } from "@/lib/supabase";
+
+type ActionResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+export async function submitContact(input: ContactInput): Promise<ActionResult> {
+  const parsed = contactSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Datos inválidos." };
+  }
+
+  if (parsed.data.honeypot && parsed.data.honeypot.length > 0) {
+    return { ok: true };
+  }
+
+  const h = await headers();
+  const userAgent = h.get("user-agent") ?? null;
+
+  const { error } = await supabase.from("leads").insert({
+    nombre: parsed.data.nombre,
+    email: parsed.data.email,
+    whatsapp: parsed.data.whatsapp ?? null,
+    tipo_proyecto: parsed.data.tipoProyecto,
+    mensaje: parsed.data.mensaje,
+    source: "landing",
+    user_agent: userAgent,
+  });
+
+  if (error) {
+    console.error("[submitContact] Supabase insert failed:", error.message);
+    return { ok: false, error: "No pudimos guardar tu mensaje. Probá de nuevo." };
+  }
+
+  notifyMakeWebhook({
+    created_at: new Date().toISOString(),
+    nombre: parsed.data.nombre,
+    email: parsed.data.email,
+    whatsapp: parsed.data.whatsapp ?? null,
+    tipo_proyecto: parsed.data.tipoProyecto,
+    mensaje: parsed.data.mensaje,
+    source: "landing",
+  });
+
+  return { ok: true };
+}
+
+type WebhookPayload = {
+  created_at: string;
+  nombre: string;
+  email: string;
+  whatsapp: string | null;
+  tipo_proyecto: string;
+  mensaje: string;
+  source: string;
+};
+
+function notifyMakeWebhook(payload: WebhookPayload): void {
+  const url = process.env.MAKE_WEBHOOK_URL;
+  if (!url) return;
+
+  fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).catch((err) => {
+    console.error("[submitContact] Make webhook failed:", err);
+  });
+}
