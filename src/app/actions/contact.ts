@@ -36,7 +36,7 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
     return { ok: false, error: "No pudimos guardar tu mensaje. Probá de nuevo." };
   }
 
-  notifyMakeWebhook({
+  await notifyMakeWebhook({
     created_at: new Date().toISOString(),
     nombre: parsed.data.nombre,
     email: parsed.data.email,
@@ -59,15 +59,29 @@ type WebhookPayload = {
   source: string;
 };
 
-function notifyMakeWebhook(payload: WebhookPayload): void {
+async function notifyMakeWebhook(payload: WebhookPayload): Promise<void> {
   const url = process.env.MAKE_WEBHOOK_URL;
   if (!url) return;
 
-  fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  }).catch((err) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      console.error(
+        "[submitContact] Make webhook returned non-2xx:",
+        res.status,
+      );
+    }
+  } catch (err) {
     console.error("[submitContact] Make webhook failed:", err);
-  });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
