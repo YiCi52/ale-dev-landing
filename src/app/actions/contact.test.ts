@@ -31,9 +31,10 @@ describe("submitContact", () => {
     whatsapp: "+57 300 000 0000",
     tipoProyecto: "landing" as const,
     mensaje: "Mensaje de prueba con suficientes caracteres.",
+    consentimiento: true as const,
   };
 
-  it("inserta lead válido en Supabase", async () => {
+  it("inserta lead válido en Supabase con consentimiento_at", async () => {
     insertMock.mockResolvedValueOnce({ error: null });
     const { submitContact } = await import("./contact");
     const result = await submitContact(validInput);
@@ -44,6 +45,8 @@ describe("submitContact", () => {
     expect(inserted.nombre).toBe("Test");
     expect(inserted.tipo_proyecto).toBe("landing");
     expect(inserted.source).toBe("landing");
+    expect(typeof inserted.consentimiento_at).toBe("string");
+    expect(new Date(inserted.consentimiento_at).getTime()).not.toBeNaN();
   });
 
   it("rechaza input inválido sin tocar Supabase", async () => {

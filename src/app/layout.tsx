@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { Footer } from "@/components/footer/Footer";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -29,6 +30,9 @@ export const metadata: Metadata = {
     locale: "es_CO",
     siteName: "Alejandro Díaz del Castillo — Dev",
   },
+  twitter: {
+    card: "summary_large_image",
+  },
   robots: {
     index: true,
     follow: true,
@@ -46,7 +50,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
       className={`${fraunces.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen flex flex-col">{children}</body>
+      <body className="min-h-screen flex flex-col">
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }

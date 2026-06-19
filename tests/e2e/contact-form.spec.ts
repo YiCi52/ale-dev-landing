@@ -6,7 +6,7 @@ test.describe("Contact form — validación client-side", () => {
     await page.locator("#contacto").scrollIntoViewIfNeeded();
   });
 
-  test("submit vacío muestra los 4 errores de campos requeridos", async ({
+  test("submit vacío muestra los errores de campos requeridos", async ({
     page,
   }) => {
     await page.getByRole("button", { name: /enviar consulta/i }).click();
@@ -18,6 +18,26 @@ test.describe("Contact form — validación client-side", () => {
     await expect(page.getByText("Elegí una opción.")).toBeVisible();
     await expect(
       page.getByText("Contame al menos 20 caracteres para no improvisar."),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Necesitamos tu consentimiento para procesar tu consulta."),
+    ).toBeVisible();
+  });
+
+  test("sin consentimiento no se envía aunque el resto sea válido", async ({
+    page,
+  }) => {
+    await page.locator("#nombre").fill("Alejandro");
+    await page.locator("#email").fill("test@ejemplo.com");
+    await page
+      .locator("#mensaje")
+      .fill("Mensaje válido con más de veinte caracteres.");
+    await page.locator("#tipoProyecto").selectOption("landing");
+
+    await page.getByRole("button", { name: /enviar consulta/i }).click();
+
+    await expect(
+      page.getByText("Necesitamos tu consentimiento para procesar tu consulta."),
     ).toBeVisible();
   });
 

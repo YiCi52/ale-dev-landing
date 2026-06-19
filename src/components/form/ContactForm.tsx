@@ -145,6 +145,37 @@ export function ContactForm() {
         className="absolute -left-[9999px] h-0 w-0 opacity-0"
       />
 
+      <div className="sm:col-span-2 flex items-start gap-3 pt-2">
+        <input
+          id="consentimiento"
+          type="checkbox"
+          {...register("consentimiento")}
+          className="mt-1.5 size-4 shrink-0 cursor-pointer accent-foreground"
+        />
+        <label
+          htmlFor="consentimiento"
+          className="text-sm text-muted leading-relaxed cursor-pointer"
+        >
+          Acepto el tratamiento de mis datos personales según la{" "}
+          <a
+            href="/privacidad"
+            className="text-foreground underline underline-offset-4 hover:text-muted"
+          >
+            política de privacidad
+          </a>
+          . Tus datos solo se usan para responder tu consulta. No los
+          compartimos con terceros.
+        </label>
+      </div>
+      {errors.consentimiento && (
+        <p
+          className="sm:col-span-2 text-sm text-[color:oklch(72%_0.18_25)]"
+          role="alert"
+        >
+          {errors.consentimiento.message}
+        </p>
+      )}
+
       <div className="sm:col-span-2 flex flex-col sm:flex-row sm:items-center gap-6 pt-2">
         <Button
           type="submit"

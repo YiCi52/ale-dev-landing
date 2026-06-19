@@ -36,6 +36,9 @@ export const contactSchema = z.object({
     .trim()
     .min(20, "Contame al menos 20 caracteres para no improvisar.")
     .max(2000, "Demasiado largo. Resumí en lo esencial."),
+  consentimiento: z.literal(true, {
+    message: "Necesitamos tu consentimiento para procesar tu consulta.",
+  }),
   honeypot: z.string().max(0).optional(),
 });
 

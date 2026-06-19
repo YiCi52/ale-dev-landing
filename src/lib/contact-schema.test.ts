@@ -8,6 +8,7 @@ describe("contactSchema", () => {
     whatsapp: "+57 300 123 4567",
     tipoProyecto: "landing" as const,
     mensaje: "Necesito una landing para mi marca de joyas dentales.",
+    consentimiento: true as const,
   };
 
   describe("nombre", () => {
@@ -65,6 +66,7 @@ describe("contactSchema", () => {
         email: validInput.email,
         tipoProyecto: validInput.tipoProyecto,
         mensaje: validInput.mensaje,
+        consentimiento: true,
       });
       expect(result.success).toBe(true);
     });
@@ -152,6 +154,31 @@ describe("contactSchema", () => {
       const result = contactSchema.safeParse({
         ...validInput,
         mensaje: "a".repeat(2001),
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe("consentimiento (Ley 1581)", () => {
+    it("acepta consentimiento explícito (true)", () => {
+      const result = contactSchema.safeParse(validInput);
+      expect(result.success).toBe(true);
+    });
+
+    it("rechaza false: sin consentimiento, no se procesa el lead", () => {
+      const result = contactSchema.safeParse({
+        ...validInput,
+        consentimiento: false,
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it("rechaza ausencia de consentimiento", () => {
+      const result = contactSchema.safeParse({
+        nombre: validInput.nombre,
+        email: validInput.email,
+        tipoProyecto: validInput.tipoProyecto,
+        mensaje: validInput.mensaje,
       });
       expect(result.success).toBe(false);
     });

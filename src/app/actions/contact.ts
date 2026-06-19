@@ -21,6 +21,8 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
   const h = await headers();
   const userAgent = h.get("user-agent") ?? null;
 
+  const consentimientoAt = new Date().toISOString();
+
   const { error } = await supabase.from("leads").insert({
     nombre: parsed.data.nombre,
     email: parsed.data.email,
@@ -29,6 +31,7 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
     mensaje: parsed.data.mensaje,
     source: "landing",
     user_agent: userAgent,
+    consentimiento_at: consentimientoAt,
   });
 
   if (error) {
