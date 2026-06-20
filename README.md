@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Alejandro Díaz del Castillo — Landing personal
 
-## Getting Started
+Landing personal de mi negocio freelance dev. Doble propósito: portafolio público + máquina de captura de leads cualificados.
 
-First, run the development server:
+**🌐 Producción:** [ale-dev-landing.vercel.app](https://ale-dev-landing.vercel.app)
+
+---
+
+## Stack
+
+- **Framework:** Next.js 16 (App Router) + React 19 + TypeScript
+- **Estilos:** Tailwind v4 (sintaxis `@theme inline`)
+- **Tipografía:** Fraunces (display) + Inter (body) vía `next/font`
+- **Base de datos:** Supabase (tabla `leads` con RLS insert-only)
+- **Automatización:** Make.com webhook → Gmail + Notion + Telegram
+- **Testing:** Vitest (unit) + Playwright (E2E)
+- **CI/CD:** GitHub Actions + Vercel auto-deploy en cada push a `main`
+- **Hosting:** Vercel (Hobby plan)
+
+## Características
+
+- Form de contacto con validación cliente + server (Zod en ambos lados)
+- Compliance Ley 1581 Colombia: política de privacidad + checkbox de consentimiento + audit trail
+- 5 security headers en producción (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, HSTS)
+- Open Graph image dinámica vía edge function
+- `robots.txt` + `sitemap.xml` generados automáticamente
+- Honeypot anti-spam
+- Dark theme editorial (sin pinta de plantilla Tailwind/shadcn por defecto)
+
+## Scripts
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev          # dev server en http://localhost:3000
+npm run build        # build producción
+npm run start        # start producción local
+npm run lint         # ESLint
+npm run test         # Vitest watch mode
+npm run test:run     # Vitest single run (CI)
+npm run test:e2e     # Playwright E2E
+npm run test:e2e:ui  # Playwright UI mode
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Estructura
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/
+├── app/                 # Routes + globals.css con design tokens
+│   ├── actions/         # Server Actions
+│   ├── opengraph-image.tsx
+│   ├── privacidad/
+│   ├── robots.ts
+│   └── sitemap.ts
+├── components/
+│   ├── hero/
+│   ├── servicios/
+│   ├── proceso/
+│   ├── sobre-mi/
+│   ├── casos/
+│   ├── footer/
+│   ├── form/
+│   └── ui/              # Primitives (Button, Section, Container, etc.)
+├── hooks/
+└── lib/                 # Supabase client + utilidades + schemas Zod
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Variables de entorno
 
-## Learn More
+Crear `.env.local` (no commitear, ya está en `.gitignore`):
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx
+MAKE_WEBHOOK_URL=https://hook.us2.make.com/xxx
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Privacidad
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Esta web cumple la [Ley 1581 de 2012 de Colombia](https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=49981) sobre protección de datos personales. Ver [política completa](https://ale-dev-landing.vercel.app/privacidad).
 
-## Deploy on Vercel
+## Licencia
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Código propietario. Todos los derechos reservados © 2026 Alejandro Díaz del Castillo Vargas.
