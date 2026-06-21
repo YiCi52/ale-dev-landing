@@ -1,4 +1,5 @@
 import { Eyebrow, Heading, Section, Text } from "@/components/ui";
+import { RetainerBlock } from "./RetainerBlock";
 
 type BuildItem = {
   title: string;
@@ -32,7 +33,6 @@ type PriceItem = {
 const priceItems: ReadonlyArray<PriceItem> = [
   { service: "Landing 1 página", price: "desde $1.5K USD" },
   { service: "Sitio portafolio 5 páginas", price: "desde $3K USD" },
-  { service: "Cuidado mensual del sitio", price: "$400 USD / mes" },
 ];
 
 export function Servicios() {
@@ -102,6 +102,8 @@ export function Servicios() {
               50%. Cliente fuera de Colombia: USD vía Wise.
             </Text>
           </div>
+
+          <RetainerBlock />
 
           <div className="border-t border-[color:var(--color-border)] pt-10">
             <Eyebrow as="span" className="text-subtle">
