@@ -52,12 +52,18 @@ export function CasoMacroLift() {
       className="border-t border-[color:var(--color-border)]"
     >
       <div className="max-w-3xl">
-        <Eyebrow>Caso #1</Eyebrow>
+        <Eyebrow>Capacidad técnica previa</Eyebrow>
         <Heading level="h2" className="mt-6">
           MacroLift.
         </Heading>
         <Text size="lg" tone="muted" className="mt-6">
-          Proyecto de grado · Oakland Colegio Campestre · 2025
+          Web app de nutrición deportiva · 2025
+        </Text>
+        <Text size="base" tone="subtle" className="mt-6 max-w-2xl">
+          El primer caso del nicho — sitio para un estudio de arquitectura
+          o diseño — está en construcción. Mientras tanto, te muestro cómo
+          trabajo con un proyecto propio que llevé end-to-end: hipótesis,
+          decisiones, build y deploy.
         </Text>
       </div>
 
