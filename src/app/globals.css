@@ -151,7 +151,7 @@ body {
 
 .cat-tail {
   transform-box: view-box;
-  transform-origin: 46px 46px;
+  transform-origin: 45px 50px;
   transform: rotate(0deg);
   transition: transform 240ms var(--ease-out-quart);
 }
