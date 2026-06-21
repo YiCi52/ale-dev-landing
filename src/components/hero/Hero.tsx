@@ -12,17 +12,17 @@ export function Hero() {
     <section className="flex flex-1 items-center py-32 sm:py-40">
       <Container size="wide">
         <div className="flex items-center gap-3 text-muted">
-          <CatMascot className="h-7 w-auto" />
+          <CatMascot className="h-10 w-auto" />
           <Eyebrow as="span">Castillo Studio · Diseño + desarrollo</Eyebrow>
         </div>
-        <Heading level="display" className="mt-8 max-w-5xl">
+        <Heading level="display" className="mt-8 max-w-4xl">
           Sitios que muestran tu trabajo tan bien como es.
-          <br />
-          <span className="text-muted">
-            Para arquitectos, diseñadores de interior y estudios con criterio visual.
-          </span>
         </Heading>
-        <Text size="xl" tone="muted" className="mt-10 max-w-2xl">
+        <Heading level="h3" as="h2" className="mt-6 max-w-2xl text-muted">
+          Para arquitectos, diseñadores de interior y estudios con criterio
+          visual.
+        </Heading>
+        <Text size="lg" tone="muted" className="mt-8 max-w-xl">
           Diseño editorial y desarrollo a medida en Next.js. Desde Bogotá,
           para clientes en cualquier parte.
         </Text>

@@ -5,18 +5,20 @@ type CatMascotProps = {
 export function CatMascot({ className }: CatMascotProps) {
   return (
     <svg
-      viewBox="0 0 60 70"
+      viewBox="0 0 60 60"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       className={className}
     >
-      <path
-        fill="currentColor"
-        d="M 18 65 C 14 65 12 60 14 54 L 14 38 C 14 30 18 26 24 24 L 24 18 L 30 24 L 34 24 L 40 18 L 40 26 C 44 30 44 36 44 42 L 44 58 C 44 64 40 65 36 65 Z"
-      />
+      <g fill="currentColor">
+        <polygon points="18,18 21,6 27,17" />
+        <polygon points="33,17 39,6 42,18" />
+        <circle cx="30" cy="24" r="11" />
+        <path d="M 16 52 C 12 52 11 47 13 42 L 13 38 C 13 33 17 30 22 30 L 38 30 C 43 30 47 33 47 38 L 47 42 C 49 47 48 52 44 52 Z" />
+      </g>
       <path
         className="cat-tail"
-        d="M 16 56 Q 6 50 6 30 Q 6 22 12 22"
+        d="M 46 46 Q 56 42 54 24"
         fill="none"
         stroke="currentColor"
         strokeWidth="4"
