@@ -150,7 +150,7 @@ export function ContactForm() {
           id="consentimiento"
           type="checkbox"
           {...register("consentimiento")}
-          className="mt-1.5 size-4 shrink-0 cursor-pointer accent-foreground"
+          className="mt-1.5 size-4 shrink-0 cursor-pointer accent-[color:var(--color-accent)]"
         />
         <label
           htmlFor="consentimiento"
@@ -241,10 +241,12 @@ function inputClasses(hasError: boolean) {
   return cn(
     "w-full bg-transparent border-b px-0 py-3 text-foreground text-lg",
     "placeholder:text-subtle",
-    "focus:outline-none transition-colors",
+    "transition-[border-color,box-shadow] duration-200 ease-out",
+    "focus:outline-none focus:border-[color:var(--color-accent)]",
+    "focus:shadow-[0_1px_0_0_var(--color-accent)]",
     hasError
       ? "border-[color:oklch(72%_0.18_25)]"
-      : "border-[color:var(--color-border-strong)] focus:border-[color:var(--color-fg-muted)]",
+      : "border-[color:var(--color-border-strong)]",
   );
 }
 

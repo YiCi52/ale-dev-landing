@@ -65,7 +65,7 @@ export function Proceso() {
             >
               <span
                 aria-hidden
-                className="font-serif text-4xl sm:text-5xl text-subtle tabular-nums leading-none"
+                className="font-serif text-5xl sm:text-6xl text-[color:var(--color-accent)]/75 tabular-nums leading-none font-medium"
               >
                 {paso.n}
               </span>

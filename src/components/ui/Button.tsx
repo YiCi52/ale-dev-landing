@@ -27,15 +27,15 @@ type ButtonAsButton = CommonProps & {
 type ButtonProps = ButtonAsLink | ButtonAsButton;
 
 const base =
-  "inline-flex items-center justify-center font-sans font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] focus-visible:ring-foreground disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center font-sans font-medium transition-[background-color,border-color,color,transform,box-shadow] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] focus-visible:ring-[color:var(--color-accent)] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none";
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-foreground text-background hover:bg-[var(--color-fg-muted)]",
+    "bg-foreground text-background shadow-[0_1px_0_rgba(255,255,255,0.08)_inset] hover:bg-[var(--color-fg-muted)] hover:-translate-y-px hover:shadow-[0_10px_28px_-12px_rgba(180,160,220,0.35)]",
   secondary:
-    "border border-[color:var(--color-border-strong)] text-foreground hover:border-foreground hover:bg-[color:var(--color-bg-elevated)]",
+    "border border-[color:var(--color-border-strong)] text-foreground hover:border-[color:var(--color-accent-muted)] hover:bg-[color:var(--color-bg-elevated)] hover:text-[color:var(--color-accent)]",
   ghost:
-    "text-muted hover:text-foreground",
+    "text-muted hover:text-[color:var(--color-accent)]",
 };
 
 const sizeClasses: Record<Size, string> = {

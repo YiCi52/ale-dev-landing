@@ -15,7 +15,9 @@
   --color-fg-subtle: oklch(42% 0.005 70);
   --color-border: oklch(22% 0.005 70);
   --color-border-strong: oklch(32% 0.005 70);
-  --color-accent: oklch(96% 0.006 80);
+  /* Accent lavanda — sutil, baja chroma, lee sobre dark bg sin ser estridente */
+  --color-accent: oklch(78% 0.07 285);
+  --color-accent-muted: oklch(58% 0.05 285);
 
   /* Motion */
   --duration-fast: 150ms;
@@ -43,6 +45,7 @@
   --color-border: var(--color-border);
   --color-border-strong: var(--color-border-strong);
   --color-accent: var(--color-accent);
+  --color-accent-muted: var(--color-accent-muted);
 
   /* Fonts */
   --font-serif: var(--font-fraunces);
@@ -84,11 +87,49 @@ body {
   color: var(--color-bg);
 }
 
-/* Focus visible respetando WCAG AA */
+/* Focus visible respetando WCAG AA — lavanda como accent */
 :focus-visible {
-  outline: 2px solid var(--color-fg);
+  outline: 2px solid var(--color-accent);
   outline-offset: 3px;
   border-radius: 2px;
+  transition: outline-offset 150ms var(--ease-out-quart);
+}
+
+/* Hero entrance — fade-up secuencial al cargar */
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-enter > * {
+  animation: hero-enter 720ms var(--ease-out-expo) backwards;
+}
+.hero-enter > *:nth-child(1) { animation-delay: 0ms; }
+.hero-enter > *:nth-child(2) { animation-delay: 110ms; }
+.hero-enter > *:nth-child(3) { animation-delay: 200ms; }
+.hero-enter > *:nth-child(4) { animation-delay: 290ms; }
+.hero-enter > *:nth-child(5) { animation-delay: 380ms; }
+.hero-enter > *:nth-child(6) { animation-delay: 470ms; }
+
+/* Section reveal — base state (escondido) */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 700ms var(--ease-out-expo),
+    transform 700ms var(--ease-out-expo);
+  will-change: opacity, transform;
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Cat mascot — sello personal, cola animada */
