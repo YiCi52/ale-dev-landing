@@ -31,8 +31,8 @@ type PriceItem = {
 };
 
 const priceItems: ReadonlyArray<PriceItem> = [
-  { service: "Landing 1 página", price: "desde $1.5K USD" },
-  { service: "Sitio portafolio 5 páginas", price: "desde $3K USD" },
+  { service: "Landing 1 página", price: "desde $1.5M COP" },
+  { service: "Sitio portafolio 5 páginas", price: "desde $3M COP" },
 ];
 
 export function Servicios() {
@@ -98,8 +98,8 @@ export function Servicios() {
               ))}
             </dl>
             <Text size="sm" tone="subtle" className="mt-6 max-w-md">
-              Cliente Colombia: cobro equivalente en COP. Anticipo Bre-B del
-              50%. Cliente fuera de Colombia: USD vía Wise.
+              Anticipo del 50% vía Bre-B antes de empezar. Cliente fuera de
+              Colombia: equivalente en USD vía Wise.
             </Text>
           </div>
 

@@ -3,9 +3,8 @@ import { Eyebrow, Heading, Section, Text } from "@/components/ui";
 
 const datos = [
   { label: "Ubicación", value: "Bogotá, Colombia" },
-  { label: "Formación", value: "Ing. de Software · 2026–" },
-  { label: "Bachillerato", value: "Oakland Colegio Campestre · 2025" },
-  { label: "Tiempo dedicado", value: "14h / semana" },
+  { label: "Especialidad", value: "Diseño + desarrollo web" },
+  { label: "Stack", value: "Next.js · Supabase · Tailwind" },
 ];
 
 export function SobreMi() {
@@ -43,9 +42,8 @@ export function SobreMi() {
             no se improvisa.
           </Text>
           <Text size="lg" tone="muted" className="mt-6 max-w-xl">
-            Antes construí MacroLift, una web app de nutrición para deportistas
-            de colegio. Formación en ingeniería de software con foco en web
-            craft.
+            Antes construí MacroLift, una web app de nutrición para deportistas.
+            Trabajo con foco en web craft — tipografía, motion, jerarquía.
           </Text>
 
           <dl className="mt-14 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6 border-t border-[color:var(--color-border)] pt-10 max-w-xl">

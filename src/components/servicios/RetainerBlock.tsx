@@ -16,7 +16,7 @@ export function RetainerBlock() {
       <div className="flex flex-wrap items-baseline justify-between gap-4">
         <Eyebrow as="span">Cuidado mensual del sitio</Eyebrow>
         <Text size="lg" className="font-serif font-medium">
-          $400 USD / mes
+          $400.000 COP / mes
         </Text>
       </div>
 

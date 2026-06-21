@@ -11,10 +11,10 @@ export function CatMascot({ className }: CatMascotProps) {
       className={className}
     >
       <g fill="currentColor">
-        <polygon points="18,18 21,6 27,17" />
-        <polygon points="33,17 39,6 42,18" />
-        <circle cx="30" cy="24" r="11" />
-        <path d="M 16 52 C 12 52 11 47 13 42 L 13 38 C 13 33 17 30 22 30 L 38 30 C 43 30 47 33 47 38 L 47 42 C 49 47 48 52 44 52 Z" />
+        <path d="M 18 16 L 20 7 Q 21 4 22 7 L 26 16 Z" />
+        <path d="M 34 16 L 38 7 Q 39 4 40 7 L 42 16 Z" />
+        <circle cx="30" cy="22" r="10" />
+        <path d="M 22 52 Q 12 52 12 42 L 12 38 Q 12 30 22 30 L 38 30 Q 48 30 48 38 L 48 42 Q 48 52 38 52 Z" />
       </g>
       <path
         className="cat-tail"
