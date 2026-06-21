@@ -4,15 +4,17 @@ export function Hero() {
   return (
     <section className="flex flex-1 items-center py-32 sm:py-40">
       <Container size="wide">
-        <Eyebrow>Alejandro Díaz del Castillo · Dev freelance</Eyebrow>
+        <Eyebrow>Castillo Studio · Diseño + desarrollo</Eyebrow>
         <Heading level="display" className="mt-8 max-w-5xl">
-          Webs con criterio.
+          Sitios que muestran tu trabajo tan bien como es.
           <br />
-          <span className="text-muted">Sin pinta de plantilla.</span>
+          <span className="text-muted">
+            Para arquitectos, diseñadores de interior y estudios con criterio visual.
+          </span>
         </Heading>
         <Text size="xl" tone="muted" className="mt-10 max-w-2xl">
-          Landings, sitios y web apps para emprendedores y PYMEs en Colombia.
-          Diseño editorial y desarrollo a medida con Next.js, Supabase y atención al detalle.
+          Diseño editorial y desarrollo a medida en Next.js. Desde Bogotá,
+          para clientes en cualquier parte.
         </Text>
         <div className="mt-12 flex flex-wrap items-center gap-4">
           <Button as="a" href="#contacto" size="lg" variant="primary">

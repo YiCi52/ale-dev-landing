@@ -36,16 +36,16 @@ export function SobreMi() {
           </Heading>
 
           <Text size="lg" tone="muted" className="mt-10 max-w-xl">
-            Soy Alejandro. Construyo webs y web apps para emprendedores y PYMEs
-            en Colombia. Vendo criterio y ejecución, no velocidad. Cada
-            decisión de diseño, copy y arquitectura se discute contigo, no se
-            improvisa.
+            Soy Alejandro. Diseñador y desarrollador en Bogotá, trabajando para
+            clientes en cualquier parte. Construyo sitios para arquitectos,
+            diseñadores de interior y estudios con criterio visual. Tipografía,
+            motion y arquitectura cuidadas — cada decisión se discute contigo,
+            no se improvisa.
           </Text>
           <Text size="lg" tone="muted" className="mt-6 max-w-xl">
-            Vengo del mundo del análisis y la automatización. Empecé a
-            construir software porque me cansé de ver herramientas que prometen
-            todo y no resuelven nada. Mi primer proyecto serio fue MacroLift —
-            mi trabajo de grado de undécimo, sustentado en 2025.
+            Antes construí MacroLift, una web app de nutrición para deportistas
+            de colegio. Formación en ingeniería de software con foco en web
+            craft.
           </Text>
 
           <dl className="mt-14 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6 border-t border-[color:var(--color-border)] pt-10 max-w-xl">

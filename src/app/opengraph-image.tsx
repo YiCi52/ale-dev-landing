@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Alejandro Díaz del Castillo — Dev freelance";
+export const alt = "Castillo Studio — Sitios para arquitectos y diseñadores";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -29,30 +29,30 @@ export default function OpenGraphImage() {
             color: "#9a8f80",
           }}
         >
-          Alejandro Díaz del Castillo · Dev freelance
+          Castillo Studio · Diseño + desarrollo
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <div
             style={{
-              fontSize: 120,
+              fontSize: 110,
               lineHeight: 1.05,
               fontWeight: 500,
               letterSpacing: "-0.02em",
             }}
           >
-            Webs con criterio.
+            Sitios para arquitectos
           </div>
           <div
             style={{
-              fontSize: 120,
+              fontSize: 110,
               lineHeight: 1.05,
               fontWeight: 500,
               letterSpacing: "-0.02em",
               color: "#9a8f80",
             }}
           >
-            Sin pinta de plantilla.
+            y diseñadores de interior.
           </div>
         </div>
 

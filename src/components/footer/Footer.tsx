@@ -26,10 +26,11 @@ export function Footer() {
       <Container size="wide">
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-12 items-start">
           <div>
-            <Eyebrow>Alejandro Díaz del Castillo</Eyebrow>
+            <Eyebrow>Castillo Studio</Eyebrow>
             <Text size="base" tone="muted" className="mt-4 max-w-md">
-              Dev freelance en Bogotá. Webs y web apps con criterio editorial
-              para emprendedores y PYMEs en Colombia.
+              Dev freelance en Bogotá. Sitios con diseño editorial para
+              arquitectos, diseñadores de interior y estudios con criterio
+              visual.
             </Text>
           </div>
 

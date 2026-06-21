@@ -19,16 +19,16 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Alejandro Díaz del Castillo — Dev freelance",
-    template: "%s · Alejandro Díaz del Castillo",
+    default: "Castillo Studio — Sitios para arquitectos y diseñadores",
+    template: "%s · Castillo Studio",
   },
   description:
-    "Webs con criterio. Sin pinta de plantilla. Desarrollo de landings, sitios y web apps con Next.js, Supabase y diseño editorial para emprendedores y PYMEs en Colombia.",
+    "Sitios web con diseño editorial para arquitectos, diseñadores de interior y estudios con criterio visual. Desarrollo a medida en Next.js. Desde Bogotá, para clientes en cualquier parte.",
   metadataBase: new URL("https://ale-dev-landing.vercel.app"),
   openGraph: {
     type: "website",
     locale: "es_CO",
-    siteName: "Alejandro Díaz del Castillo — Dev",
+    siteName: "Castillo Studio",
   },
   twitter: {
     card: "summary_large_image",

@@ -1,101 +1,39 @@
 import { Eyebrow, Heading, Section, Text } from "@/components/ui";
 
-const siItems = [
-  {
-    title: "Landings de marca o producto",
-    note: "Una página con criterio, pensada para convertir.",
-  },
-  {
-    title: "Sitios corporativos pequeños",
-    note: "5–10 secciones, navegación clara, copy editado.",
-  },
-  {
-    title: "Web apps con auth y base de datos",
-    note: "Login, dashboards, lógica de negocio, Supabase.",
-  },
-  {
-    title: "PWAs y dashboards a medida",
-    note: "Instalables en mobile, rápidas, sin pinta de plantilla.",
-  },
-  {
-    title: "Migraciones desde Wix o WordPress",
-    note: "A un stack moderno que escala y se ve serio.",
-  },
-];
-
-const noItems = [
-  {
-    title: "E-commerce con inventario complejo",
-    note: "Pagos, stock, devoluciones legales — fuera de scope hoy.",
-  },
-  {
-    title: "Apps nativas iOS / Android",
-    note: "Trabajo PWA. Para nativo te recomiendo a alguien.",
-  },
-  {
-    title: "Plataformas con datos sensibles",
-    note: "Salud, financiero, menores — compliance fuera de mi alcance.",
-  },
-  {
-    title: "Mantenimiento de sistemas legacy",
-    note: "No toco código viejo de otros sin reescribirlo.",
-  },
-  {
-    title: "Cambios urgentes sin alcance",
-    note: "Si no podemos describir qué cambia, mejor no empezamos.",
-  },
-];
-
-type ItemListProps = {
-  label: string;
-  tone: "yes" | "no";
-  items: ReadonlyArray<{ title: string; note: string }>;
+type BuildItem = {
+  title: string;
+  note: string;
 };
 
-function ItemList({ label, tone, items }: ItemListProps) {
-  const markerColor =
-    tone === "yes"
-      ? "border-foreground text-foreground"
-      : "border-[color:var(--color-border-strong)] text-subtle";
+const buildItems: ReadonlyArray<BuildItem> = [
+  {
+    title: "Sitios editoriales para arquitectos y diseñadores",
+    note: "Tipografía con carácter, jerarquía clara, cada proyecto presentado como merece.",
+  },
+  {
+    title: "Portafolios que elevan el trabajo, no compiten con él",
+    note: "Layout pensado para que las imágenes manden, sin pinta de plantilla SquareSpace.",
+  },
+  {
+    title: "Interfaces a medida con motion sutil",
+    note: "Transiciones que aclaran, no distraen. Mobile-first, accesible, rápido.",
+  },
+  {
+    title: "SEO técnico real y core web vitals serios",
+    note: "Lighthouse ≥95, schema markup, sitemap, og:image. No plugins genéricos.",
+  },
+];
 
-  return (
-    <div>
-      <div className="flex items-baseline gap-3 border-b border-[color:var(--color-border)] pb-4">
-        <span
-          aria-hidden
-          className={`inline-flex h-6 min-w-6 items-center justify-center rounded-full border px-2 font-sans text-xs ${markerColor}`}
-        >
-          {tone === "yes" ? "SÍ" : "NO"}
-        </span>
-        <Eyebrow as="span">{label}</Eyebrow>
-      </div>
-      <ul className="mt-8 space-y-8">
-        {items.map((item) => (
-          <li key={item.title} className="grid grid-cols-[auto_1fr] gap-4 items-start">
-            <span
-              aria-hidden
-              className={`mt-2 h-px w-6 ${
-                tone === "yes" ? "bg-foreground" : "bg-[color:var(--color-border-strong)]"
-              }`}
-            />
-            <div>
-              <Text
-                size="lg"
-                tone={tone === "yes" ? "default" : "muted"}
-                className="font-medium"
-              >
-                {item.title}
-              </Text>
-              <Text size="sm" tone="subtle" className="mt-2">
-                {item.note}
-              </Text>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+type PriceItem = {
+  service: string;
+  price: string;
+};
+
+const priceItems: ReadonlyArray<PriceItem> = [
+  { service: "Landing 1 página", price: "desde $1.5K USD" },
+  { service: "Sitio portafolio 5 páginas", price: "desde $3K USD" },
+  { service: "Cuidado mensual del sitio", price: "$400 USD / mes" },
+];
 
 export function Servicios() {
   return (
@@ -110,17 +48,71 @@ export function Servicios() {
           <Heading level="h2" className="mt-6">
             Qué construyo
             <br />
-            <span className="text-muted">(y qué no).</span>
+            <span className="text-muted">y cuánto cuesta.</span>
           </Heading>
           <Text size="lg" tone="muted" className="mt-8">
-            Te lo cuento de entrada para que no perdamos tiempo ni vos ni yo.
-            Si tu proyecto está en la columna izquierda, hablemos.
+            Diseño y desarrollo a medida para estudios pequeños y profesionales
+            independientes que necesitan que su web esté a la altura del trabajo
+            que muestran.
           </Text>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
-          <ItemList label="Lo que tomo" tone="yes" items={siItems} />
-          <ItemList label="Lo que no, hoy" tone="no" items={noItems} />
+        <div className="space-y-16">
+          <ul className="space-y-10">
+            {buildItems.map((item) => (
+              <li
+                key={item.title}
+                className="grid grid-cols-[auto_1fr] gap-4 items-start border-b border-[color:var(--color-border)] pb-10 last:border-b-0 last:pb-0"
+              >
+                <span
+                  aria-hidden
+                  className="mt-3 h-px w-6 bg-foreground"
+                />
+                <div>
+                  <Text size="lg" className="font-medium">
+                    {item.title}
+                  </Text>
+                  <Text size="sm" tone="subtle" className="mt-2">
+                    {item.note}
+                  </Text>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div>
+            <Eyebrow as="span">Precios desde</Eyebrow>
+            <dl className="mt-6 grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-x-10">
+              {priceItems.map((item) => (
+                <div
+                  key={item.service}
+                  className="contents"
+                >
+                  <dt className="font-serif text-lg text-foreground border-b border-[color:var(--color-border)] py-4">
+                    {item.service}
+                  </dt>
+                  <dd className="font-sans text-sm text-muted border-b border-[color:var(--color-border)] py-4 sm:text-right">
+                    {item.price}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <Text size="sm" tone="subtle" className="mt-6 max-w-md">
+              Cliente Colombia: cobro equivalente en COP. Anticipo Bre-B del
+              50%. Cliente fuera de Colombia: USD vía Wise.
+            </Text>
+          </div>
+
+          <div className="border-t border-[color:var(--color-border)] pt-10">
+            <Eyebrow as="span" className="text-subtle">
+              Lo que no hago hoy
+            </Eyebrow>
+            <Text size="base" tone="muted" className="mt-4 max-w-xl">
+              E-commerce con inventario complejo, apps nativas, plataformas con
+              datos médicos o financieros. Si tu proyecto va por ahí, te
+              recomiendo a alguien que lo haga mejor que yo.
+            </Text>
+          </div>
         </div>
       </div>
     </Section>

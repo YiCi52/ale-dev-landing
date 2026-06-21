@@ -1,6 +1,8 @@
-# Alejandro Díaz del Castillo — Landing personal
+# Castillo Studio — Landing
 
-Landing personal de mi negocio freelance dev. Doble propósito: portafolio público + máquina de captura de leads cualificados.
+Sitio del estudio. Diseño + desarrollo a medida para arquitectos, diseñadores
+de interior y estudios con criterio visual. Doble propósito: portafolio
+público + máquina de captura de leads cualificados.
 
 **🌐 Producción:** [ale-dev-landing.vercel.app](https://ale-dev-landing.vercel.app)
 
