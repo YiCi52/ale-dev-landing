@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 /*
+  Custom variant: hover gating para dispositivos con puntero fino.
+  Uso: `pointer-fine:hover:-translate-y-px` — solo aplica donde hover es real,
+  no en touch (donde se queda pegado tras tap).
+*/
+@custom-variant pointer-fine (@media (hover: hover) and (pointer: fine));
+
+/*
   Design tokens — editorial dark luxury
   Paleta monocroma cálida (toque ámbar imperceptible que evita el negro puro de tech genérico)
   Spec: rules/ecc/web/coding-style.md, rules/ecc/web/design-quality.md
@@ -117,13 +124,15 @@ body {
 .hero-enter > *:nth-child(5) { animation-delay: 380ms; }
 .hero-enter > *:nth-child(6) { animation-delay: 470ms; }
 
-/* Section reveal — base state (escondido) */
+/* Section reveal — base state (escondido).
+   500ms da snap sin sentirse perezoso (Emil rule 4: sub-300 estricto en UI,
+   tolerable 500 en content reveals one-shot). */
 .reveal {
   opacity: 0;
   transform: translateY(20px);
   transition:
-    opacity 700ms var(--ease-out-expo),
-    transform 700ms var(--ease-out-expo);
+    opacity 500ms var(--ease-out-expo),
+    transform 500ms var(--ease-out-expo);
   will-change: opacity, transform;
 }
 
@@ -132,7 +141,9 @@ body {
   transform: translateY(0);
 }
 
-/* Cat mascot — sello personal, cola animada */
+/* Cat mascot — sello personal.
+   Cola estática por default. Wag SOLO on hover/focus del wrap.
+   Motion necesita intent — sin interacción no se mueve. */
 @keyframes cat-tail-wag {
   0%, 100% { transform: rotate(-6deg); }
   50%      { transform: rotate(10deg); }
@@ -141,7 +152,15 @@ body {
 .cat-tail {
   transform-box: view-box;
   transform-origin: 46px 46px;
-  animation: cat-tail-wag 2.6s ease-in-out infinite;
+  transform: rotate(0deg);
+  transition: transform 240ms var(--ease-out-quart);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cat-mascot-wrap:hover .cat-tail,
+  .cat-mascot-wrap:focus-within .cat-tail {
+    animation: cat-tail-wag 2.6s ease-in-out infinite;
+  }
 }
 
 /* Reduced motion */

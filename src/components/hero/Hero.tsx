@@ -14,7 +14,10 @@ export function Hero() {
     <section className="flex flex-1 items-center py-32 sm:py-40">
       <Container size="wide">
         <div className="hero-enter">
-          <div className="flex items-center gap-3 text-muted">
+          <div
+            tabIndex={0}
+            className="cat-mascot-wrap inline-flex items-center gap-3 text-muted outline-none rounded-sm"
+          >
             <CatMascot className="h-10 w-auto" />
             <Eyebrow as="span">Castillo Studio · Diseño + desarrollo</Eyebrow>
           </div>
