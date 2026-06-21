@@ -5,3 +5,4 @@ export { Heading } from "./Heading";
 export { Text } from "./Text";
 export { Button } from "./Button";
 export { Divider } from "./Divider";
+export { CatMascot } from "./CatMascot";

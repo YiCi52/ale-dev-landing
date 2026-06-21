@@ -1,10 +1,20 @@
-import { Button, Container, Eyebrow, Heading, Text } from "@/components/ui";
+import {
+  Button,
+  CatMascot,
+  Container,
+  Eyebrow,
+  Heading,
+  Text,
+} from "@/components/ui";
 
 export function Hero() {
   return (
     <section className="flex flex-1 items-center py-32 sm:py-40">
       <Container size="wide">
-        <Eyebrow>Castillo Studio · Diseño + desarrollo</Eyebrow>
+        <div className="flex items-center gap-3 text-muted">
+          <CatMascot className="h-7 w-auto" />
+          <Eyebrow as="span">Castillo Studio · Diseño + desarrollo</Eyebrow>
+        </div>
         <Heading level="display" className="mt-8 max-w-5xl">
           Sitios que muestran tu trabajo tan bien como es.
           <br />
