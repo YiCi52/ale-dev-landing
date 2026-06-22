@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { contactSchema, type ContactInput } from "@/lib/contact-schema";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { supabase } from "@/lib/supabase";
 
 type ActionResult =
@@ -20,6 +21,17 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
 
   const h = await headers();
   const userAgent = h.get("user-agent") ?? null;
+  const forwardedFor = h.get("x-forwarded-for");
+  const realIp = h.get("x-real-ip");
+  const ip = forwardedFor?.split(",")[0]?.trim() ?? realIp ?? "unknown";
+
+  const rate = checkRateLimit(`contact:${ip}`);
+  if (!rate.ok) {
+    return {
+      ok: false,
+      error: "Demasiados intentos desde tu red. Probá de nuevo en una hora.",
+    };
+  }
 
   const consentimientoAt = new Date().toISOString();
 
