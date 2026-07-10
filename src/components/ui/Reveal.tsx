@@ -16,9 +16,11 @@ export function Reveal({ children, delay = 0, className }: Props) {
     const el = ref.current;
     if (!el) return;
 
+    // Fallback sin IntersectionObserver: diferido a macrotask para no hacer
+    // setState síncrono dentro del effect (regla react-hooks/set-state-in-effect).
     if (typeof IntersectionObserver === "undefined") {
-      setVisible(true);
-      return;
+      const id = window.setTimeout(() => setVisible(true), 0);
+      return () => window.clearTimeout(id);
     }
 
     const observer = new IntersectionObserver(

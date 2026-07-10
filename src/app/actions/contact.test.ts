@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { __resetRateLimitForTests } from "@/lib/rate-limit";
 
 const insertMock = vi.fn();
 const fromMock = vi.fn(() => ({ insert: insertMock }));
@@ -19,6 +20,9 @@ describe("submitContact", () => {
     fromMock.mockClear();
     fetchMock.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
+    // El rate limiter es un Map in-memory compartido entre tests: sin reset,
+    // el 4º submit del archivo queda bloqueado (límite 3/hora por IP).
+    __resetRateLimitForTests();
   });
 
   afterEach(() => {
