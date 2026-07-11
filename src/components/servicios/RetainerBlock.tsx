@@ -2,7 +2,7 @@ import { Eyebrow, Text } from "@/components/ui";
 
 const includes: ReadonlyArray<string> = [
   "Monitoreo de uptime y errores en producción",
-  "Security updates de dependencias críticas",
+  "Auditoría de seguridad mensual con reporte + updates de dependencias críticas",
   "2 horas mensuales de cambios menores (copy, imágenes, ajustes)",
   "Soporte prioritario por WhatsApp o email",
 ];

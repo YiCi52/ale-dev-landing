@@ -23,6 +23,10 @@ const buildItems: ReadonlyArray<BuildItem> = [
     title: "SEO técnico real y core web vitals serios",
     note: "Lighthouse ≥95, schema markup, sitemap, og:image. No plugins genéricos.",
   },
+  {
+    title: "Seguridad auditada antes de entregar",
+    note: "Headers de seguridad, formularios protegidos contra spam y bots, datos de tus clientes tratados según la ley colombiana. Recibes el reporte de auditoría con tu sitio.",
+  },
 ];
 
 type PriceItem = {
