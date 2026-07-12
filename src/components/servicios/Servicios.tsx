@@ -36,7 +36,7 @@ type PriceItem = {
 
 const priceItems: ReadonlyArray<PriceItem> = [
   { service: "Landing 1 página", price: "desde $1.5M COP" },
-  { service: "Sitio portafolio 5 páginas", price: "desde $3M COP" },
+  { service: "Sitio portafolio 5 páginas", price: "desde $3.6M COP" },
 ];
 
 export function Servicios() {
