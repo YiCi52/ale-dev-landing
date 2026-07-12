@@ -142,6 +142,30 @@ export function CasoMHInterior() {
         </div>
       </div>
 
+      {/* Testimonio de la cliente — texto verbatim de Mari (2026-07-11). */}
+      <div className="mt-24 border-t border-[color:var(--color-border)] pt-16">
+        <Eyebrow>Testimonio</Eyebrow>
+        <blockquote className="mt-8 max-w-3xl">
+          <Text size="xl" className="font-serif italic leading-relaxed">
+            “Trabajar con Alejandro fue una experiencia excelente. Su
+            compromiso fue total, pendiente a cada detalle. Como diseñadora
+            de interiores necesitaba una página web que reflejara mi estilo
+            y él supo entender perfectamente mis necesidades. Supo manejar
+            el proceso con paciencia, profesionalismo y una gran capacidad
+            de adaptación. Gracias a su trabajo, hoy tengo una página
+            funcional, estética y alineada con mi identidad profesional que
+            me ha ayudado a conectar con nuevas oportunidades. Recomiendo su
+            trabajo por su creatividad, compromiso y capacidad de
+            transformar ideas en resultados que superan tus expectativas.”
+          </Text>
+          <footer className="mt-8">
+            <Text size="base" tone="muted">
+              Mari Hernández — MH Interior Design
+            </Text>
+          </footer>
+        </blockquote>
+      </div>
+
       <div className="mt-24 border-t border-[color:var(--color-border)] pt-16 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24">
         <div>
           <Eyebrow>Stack</Eyebrow>
