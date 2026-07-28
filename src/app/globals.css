@@ -57,13 +57,14 @@
   /* Fonts */
   --font-serif: var(--font-fraunces);
   --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
 
   /*
     Typography scale (fluid type con clamp).
     Custom sizes adicionales — extienden la escala default de Tailwind sin sobreescribirla.
     `text-display` para hero, `text-hero-sub` para subhead grande.
   */
-  --text-display: clamp(2.5rem, 1.5rem + 4.5vw, 5.5rem);
+  --text-display: clamp(2.75rem, 1.2rem + 6vw, 7rem);
   --text-hero-sub: clamp(1.5rem, 1.1rem + 2vw, 2.5rem);
 }
 
@@ -92,6 +93,36 @@ body {
 ::selection {
   background: var(--color-fg);
   color: var(--color-bg);
+}
+
+/* Lenis smooth scroll — clases que Lenis agrega a <html>. Si reduced-motion
+   está activo, el JS no se inicializa y esto queda inerte. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* Grano cinematográfico — overlay estático sutil, sin peso de JS */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+}
+.grain-overlay svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* Focus visible respetando WCAG AA — lavanda como accent */
@@ -139,6 +170,44 @@ body {
 .reveal-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Reveal — variante blur: fade + desenfoque (headings/acentos premium). */
+.reveal-blur {
+  filter: blur(12px);
+  transition:
+    opacity 600ms var(--ease-out-expo),
+    transform 600ms var(--ease-out-expo),
+    filter 600ms var(--ease-out-expo);
+}
+.reveal-blur.reveal-visible {
+  filter: blur(0);
+}
+
+/* Reveal — variante máscara (editorial): el contenido sube desde detrás de una
+   línea invisible. El elemento OBSERVADO usa overflow (no clip-path, que da
+   área 0 y evita que IntersectionObserver dispare). El padding-bottom deja
+   respirar los descenders (g, y, j) del serif sin recortarlos. */
+.reveal-mask {
+  overflow: hidden;
+  padding-bottom: 0.12em;
+}
+.reveal-mask-inner {
+  transform: translateY(105%);
+  transition: transform 750ms var(--ease-out-expo);
+  will-change: transform;
+}
+.reveal-mask.reveal-visible .reveal-mask-inner {
+  transform: translateY(0);
+}
+
+/* Hairline que se "dibuja" cuando su bloque .reveal entra (jerarquía sutil). */
+.reveal .reveal-hairline {
+  width: 0;
+  transition: width 600ms var(--ease-out-expo) 140ms;
+}
+.reveal.reveal-visible .reveal-hairline {
+  width: 1.5rem;
 }
 
 /* Cat mascot — sello personal.

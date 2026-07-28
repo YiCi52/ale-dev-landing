@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { Footer } from "@/components/footer/Footer";
+import { SmoothScroll } from "@/components/ui/SmoothScroll";
+import { Grain } from "@/components/ui/Grain";
+import { FluidCursor } from "@/components/ui/FluidCursor";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -15,6 +18,13 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -47,10 +57,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html
       lang="es-CO"
-      className={`${fraunces.variable} ${inter.variable}`}
+      className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col isolate">
+        <SmoothScroll />
+        <Grain />
+        <FluidCursor />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>

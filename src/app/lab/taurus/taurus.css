@@ -1,0 +1,751 @@
+/* Réplica de estudio — Taurus. Scope local: todo cuelga de `.taurus`. */
+
+.taurus {
+  --t-bg: #0a0507;
+  --t-panel: #140a0d;
+  --t-red: #e5364b;
+  --t-red-deep: #8f1626;
+  --t-text: #f4f2f3;
+  --t-muted: #9a8b8f;
+  --t-line: color-mix(in oklab, var(--t-text) 12%, transparent);
+  --t-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  position: relative;
+  min-height: 100dvh;
+  background:
+    radial-gradient(120% 80% at 70% -10%, #2a0910 0%, transparent 55%),
+    var(--t-bg);
+  color: var(--t-text);
+  font-family:
+    "Helvetica Neue", Helvetica, var(--font-grotesk), ui-sans-serif, system-ui,
+    sans-serif;
+  overflow-x: clip;
+}
+
+/* ---------- Botones ---------- */
+
+.taurus-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.5rem;
+  border: none;
+  border-radius: 0.55rem;
+  background: linear-gradient(180deg, var(--t-red), var(--t-red-deep));
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 8px 24px -8px var(--t-red);
+  transition:
+    transform 220ms var(--t-ease),
+    box-shadow 220ms var(--t-ease);
+}
+
+.taurus-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px -8px var(--t-red);
+}
+
+.taurus-btn--sm {
+  padding: 0.6rem 1.1rem;
+  font-size: 0.75rem;
+}
+
+.taurus-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--t-line);
+  box-shadow: none;
+}
+
+.taurus-btn--ghost:hover {
+  border-color: var(--t-red);
+  box-shadow: none;
+}
+
+/* ---------- Nav ---------- */
+
+.taurus-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.1rem clamp(1.25rem, 4vw, 3rem);
+  background: color-mix(in oklab, var(--t-bg) 78%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--t-line);
+}
+
+.taurus-nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  font-size: 1rem;
+}
+
+.taurus-nav__bull {
+  color: var(--t-red);
+  font-size: 1.2rem;
+}
+
+.taurus-nav nav {
+  display: none;
+  gap: 2rem;
+}
+
+.taurus-nav nav a {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--t-muted);
+  text-decoration: none;
+  transition: color 200ms var(--t-ease);
+}
+
+.taurus-nav nav a:hover {
+  color: var(--t-text);
+}
+
+@media (min-width: 52rem) {
+  .taurus-nav nav {
+    display: flex;
+  }
+}
+
+/* ---------- Eyebrow / headings compartidos ---------- */
+
+.taurus-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+}
+
+.taurus-star {
+  color: var(--t-red);
+  letter-spacing: 0.05em;
+}
+
+.taurus-section-head {
+  display: grid;
+  gap: 0.9rem;
+  margin-bottom: clamp(2.5rem, 6vw, 4rem);
+}
+
+.taurus-section-head h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4.5vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Hero ---------- */
+
+.taurus-hero {
+  position: relative;
+  padding: clamp(3rem, 8vh, 6rem) clamp(1.25rem, 4vw, 3rem)
+    clamp(4rem, 10vh, 8rem);
+  overflow: hidden;
+}
+
+.taurus-hero__glow {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  max-width: 720px;
+  max-height: 720px;
+  background: radial-gradient(circle, var(--t-red) 0%, transparent 62%);
+  opacity: 0.16;
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+.taurus-hero__grid {
+  position: relative;
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 5rem);
+  align-items: center;
+  max-width: 78rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 60rem) {
+  .taurus-hero__grid {
+    grid-template-columns: 1fr 1.05fr;
+  }
+}
+
+.taurus-hero__copy {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: start;
+}
+
+.taurus-hero__title {
+  margin: 0;
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+}
+
+.taurus-hero__title-accent {
+  color: transparent;
+  background: linear-gradient(120deg, var(--t-red) 20%, #ff7a86 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.taurus-hero__lede {
+  max-width: 42ch;
+  margin: 0;
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--t-muted);
+}
+
+.taurus-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 30rem;
+}
+
+.taurus-hero__input {
+  flex: 1 1 12rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--t-line);
+  border-radius: 0.55rem;
+  background: var(--t-panel);
+  color: var(--t-text);
+  font-size: 0.9rem;
+}
+
+.taurus-hero__input::placeholder {
+  color: color-mix(in oklab, var(--t-muted) 80%, transparent);
+}
+
+.taurus-hero__input:focus-visible {
+  outline: none;
+  border-color: var(--t-red);
+}
+
+/* Panel derecho: terminal + logo badge */
+
+.taurus-hero__panel {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.taurus-terminal {
+  border: 1px solid var(--t-line);
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, var(--t-panel), #0c0608);
+  padding: 1rem 1rem 0.5rem;
+  box-shadow: 0 30px 80px -40px #000;
+}
+
+.taurus-terminal__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  color: var(--t-muted);
+  margin-bottom: 0.5rem;
+}
+
+.taurus-terminal__price {
+  margin-left: auto;
+  color: var(--t-text);
+  font-weight: 600;
+}
+
+.taurus-terminal__delta {
+  color: #6ee7a8;
+}
+
+.taurus-terminal__chart {
+  display: block;
+  width: 100%;
+  height: clamp(180px, 26vw, 260px);
+}
+
+.taurus-logo-badge {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--t-line);
+  border-radius: 0.9rem;
+  background: color-mix(in oklab, var(--t-panel) 70%, transparent);
+}
+
+.taurus-logo-badge__mark {
+  width: 3.4rem;
+  height: auto;
+  flex: 0 0 auto;
+  /* Glow rojo pulsante — brief literal: el logo "vive" en la página. */
+  filter: drop-shadow(0 0 6px var(--t-red));
+  animation: taurus-pulse 2.4s var(--t-ease) infinite;
+}
+
+.taurus-logo-badge p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.taurus-logo-badge span {
+  color: var(--t-muted);
+  font-weight: 400;
+}
+
+@keyframes taurus-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px color-mix(in oklab, var(--t-red) 60%, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px var(--t-red));
+  }
+}
+
+/* ---------- How It Works ---------- */
+
+.taurus-steps {
+  padding: clamp(4rem, 10vh, 8rem) clamp(1.25rem, 4vw, 3rem);
+  max-width: 78rem;
+  margin: 0 auto;
+}
+
+.taurus-scroll-badge {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  margin-left: 0.5rem;
+}
+
+.taurus-scroll-badge svg {
+  width: 100%;
+  height: 100%;
+  animation: taurus-spin 9s linear infinite;
+  fill: var(--t-muted);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+.taurus-scroll-badge__dot {
+  position: absolute;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--t-red);
+}
+
+@keyframes taurus-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.taurus-track {
+  position: relative;
+}
+
+.taurus-track__line {
+  position: absolute;
+  top: 2.4rem;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  overflow: visible;
+}
+
+.taurus-track__path {
+  fill: none;
+  stroke: var(--t-red);
+  stroke-width: 2;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  transition: stroke-dashoffset 1400ms var(--t-ease);
+}
+
+.taurus-track.is-drawn .taurus-track__path {
+  stroke-dashoffset: 0;
+}
+
+.taurus-track__cards {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 48rem) {
+  .taurus-track__cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.taurus-step-card {
+  padding: 1.75rem;
+  border: 1px solid var(--t-line);
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, var(--t-panel), transparent);
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(6px);
+  transition:
+    opacity 640ms var(--t-ease),
+    transform 640ms var(--t-ease),
+    filter 640ms var(--t-ease);
+}
+
+.taurus-track.is-drawn .taurus-step-card {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.taurus-step-card__n {
+  display: inline-block;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--t-red);
+  padding: 0.3rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--t-red) 40%, transparent);
+  border-radius: 0.4rem;
+}
+
+.taurus-step-card h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.taurus-step-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--t-muted);
+}
+
+/* ---------- Pricing ---------- */
+
+.taurus-pricing {
+  padding: clamp(4rem, 10vh, 8rem) clamp(1.25rem, 4vw, 3rem);
+  max-width: 62rem;
+  margin: 0 auto;
+}
+
+.taurus-config {
+  display: grid;
+  gap: 1.75rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--t-line);
+  border-radius: 1.1rem;
+  background: linear-gradient(180deg, var(--t-panel), #0b0608);
+}
+
+.taurus-config__group {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.taurus-config__group legend {
+  padding: 0;
+  margin-bottom: 0.7rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+}
+
+.taurus-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.taurus-seg__btn {
+  position: relative;
+  flex: 1 1 auto;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--t-line);
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--t-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    border-color 200ms var(--t-ease),
+    color 200ms var(--t-ease),
+    background 200ms var(--t-ease);
+}
+
+.taurus-seg__btn:hover {
+  color: var(--t-text);
+  border-color: color-mix(in oklab, var(--t-red) 50%, var(--t-line));
+}
+
+.taurus-seg__btn.is-active {
+  color: #fff;
+  border-color: var(--t-red);
+  background: color-mix(in oklab, var(--t-red) 16%, transparent);
+}
+
+.taurus-tag {
+  position: absolute;
+  top: -0.6rem;
+  right: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.4rem;
+  background: var(--t-red);
+  color: #fff;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.taurus-config__specs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 0;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--t-line);
+  border-bottom: 1px solid var(--t-line);
+}
+
+.taurus-config__specs dt {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+  margin-bottom: 0.3rem;
+}
+
+.taurus-config__specs dd {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.taurus-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--t-muted);
+}
+
+.taurus-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.taurus-toggle__track {
+  position: relative;
+  width: 2.6rem;
+  height: 1.5rem;
+  border-radius: 1rem;
+  background: var(--t-panel);
+  border: 1px solid var(--t-line);
+  transition: background 220ms var(--t-ease);
+}
+
+.taurus-toggle__track::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0.22rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--t-muted);
+  transform: translateY(-50%);
+  transition:
+    transform 220ms var(--t-ease),
+    background 220ms var(--t-ease);
+}
+
+.taurus-toggle input:checked + .taurus-toggle__track {
+  background: color-mix(in oklab, var(--t-red) 30%, transparent);
+  border-color: var(--t-red);
+}
+
+.taurus-toggle input:checked + .taurus-toggle__track::after {
+  transform: translate(1.1rem, -50%);
+  background: #fff;
+}
+
+.taurus-toggle em {
+  color: var(--t-red);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.taurus-pricebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--t-red);
+  border-radius: 1.1rem;
+  background: color-mix(in oklab, var(--t-red) 10%, var(--t-panel));
+}
+
+.taurus-pricebar__label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+  margin-bottom: 0.2rem;
+}
+
+.taurus-pricebar__price {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.taurus-pricebar__price em {
+  font-size: 0.9rem;
+  font-weight: 400;
+  font-style: normal;
+  color: var(--t-muted);
+}
+
+/* ---------- Glass card ---------- */
+
+.taurus-glass {
+  padding: clamp(4rem, 12vh, 9rem) clamp(1.25rem, 4vw, 3rem);
+}
+
+.taurus-glass__stage {
+  max-width: 44rem;
+  margin: 0 auto;
+  perspective: 1200px;
+}
+
+.taurus-glass__card {
+  --rx: 0deg;
+  --ry: 0deg;
+  position: relative;
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+  padding: clamp(2rem, 5vw, 3.5rem);
+  border: 1px solid color-mix(in oklab, var(--t-text) 16%, transparent);
+  border-radius: 1.4rem;
+  background: color-mix(in oklab, var(--t-panel) 55%, transparent);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 40px 90px -50px #000;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  transition: transform 160ms var(--t-ease);
+}
+
+/* Reflejo superior del vidrio. */
+.taurus-glass__card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.12) 0%,
+    transparent 40%
+  );
+  pointer-events: none;
+}
+
+.taurus-glass__logo {
+  transform: translateZ(40px);
+}
+
+.taurus-glass__mark {
+  width: 3rem;
+  height: auto;
+  filter: drop-shadow(0 0 10px var(--t-red));
+  animation: taurus-pulse 2.4s var(--t-ease) infinite;
+}
+
+.taurus-glass__card h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  transform: translateZ(30px);
+}
+
+.taurus-glass__body {
+  max-width: 44ch;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--t-muted);
+  transform: translateZ(20px);
+}
+
+/* ---------- Footer ---------- */
+
+.taurus-footer {
+  padding: 3rem clamp(1.25rem, 4vw, 3rem);
+  border-top: 1px solid var(--t-line);
+  text-align: center;
+}
+
+.taurus-footer p {
+  margin: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taurus-logo-badge__mark,
+  .taurus-glass__mark,
+  .taurus-scroll-badge svg {
+    animation: none;
+  }
+
+  .taurus-track__path {
+    transition-duration: 1ms;
+  }
+
+  .taurus-step-card {
+    transition-duration: 1ms;
+  }
+}

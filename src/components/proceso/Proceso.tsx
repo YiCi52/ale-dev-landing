@@ -1,4 +1,7 @@
-import { Eyebrow, Heading, Section, Text } from "@/components/ui";
+import { Eyebrow, Heading, Reveal, Section, Text } from "@/components/ui";
+import { cn } from "@/lib/cn";
+import DecryptedText from "@/components/DecryptedText";
+import ScrollFloat from "@/components/ScrollFloat";
 
 const pasos = [
   {
@@ -47,41 +50,55 @@ export function Proceso() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20">
         <div className="lg:sticky lg:top-32 lg:self-start">
-          <Eyebrow>Proceso</Eyebrow>
-          <Heading level="h2" className="mt-6">
+          <Eyebrow pill>
+            <DecryptedText text="Proceso" animateOn="view" sequential speed={45} />
+          </Eyebrow>
+          <ScrollFloat
+            containerClassName="mt-6"
+            textClassName="font-serif text-4xl sm:text-5xl leading-[1.05] tracking-[-0.015em] text-foreground"
+          >
             Cómo trabajamos.
-          </Heading>
-          <Text size="lg" tone="muted" className="mt-8">
-            Sin caja negra. Cada etapa con un entregable claro, un tiempo
-            estimado y una expectativa pactada de antemano.
-          </Text>
+          </ScrollFloat>
+          <Reveal delay={120}>
+            <Text size="lg" tone="muted" className="mt-8">
+              Sin caja negra. Cada etapa con un entregable claro, un tiempo
+              estimado y una expectativa pactada de antemano.
+            </Text>
+          </Reveal>
         </div>
 
         <ol className="space-y-16">
-          {pasos.map((paso) => (
+          {pasos.map((paso, i) => (
             <li
               key={paso.n}
-              className="grid grid-cols-[auto_1fr] gap-6 sm:gap-10 border-b border-[color:var(--color-border)] pb-16 last:border-0 last:pb-0"
+              className={cn(
+                "border-b border-[color:var(--color-border)] pb-16",
+                i === pasos.length - 1 && "border-0 pb-0",
+              )}
             >
-              <span
-                aria-hidden
-                className="font-serif text-5xl sm:text-6xl text-[color:var(--color-accent)]/75 tabular-nums leading-none font-medium"
-              >
-                {paso.n}
-              </span>
-              <div>
-                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-                  <Heading level="h3" as="h3">
-                    {paso.titulo}
-                  </Heading>
-                  <Eyebrow as="span" className="text-subtle">
-                    {paso.duracion}
-                  </Eyebrow>
+              <Reveal delay={i * 80}>
+                <div className="grid grid-cols-[auto_1fr] gap-6 sm:gap-10">
+                  <span
+                    aria-hidden
+                    className="font-serif text-5xl sm:text-6xl text-[color:var(--color-accent)]/75 tabular-nums leading-none font-medium"
+                  >
+                    {paso.n}
+                  </span>
+                  <div>
+                    <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                      <Heading level="h3" as="h3">
+                        {paso.titulo}
+                      </Heading>
+                      <Eyebrow as="span" className="text-subtle">
+                        {paso.duracion}
+                      </Eyebrow>
+                    </div>
+                    <Text size="lg" tone="muted" className="mt-4 max-w-xl">
+                      {paso.body}
+                    </Text>
+                  </div>
                 </div>
-                <Text size="lg" tone="muted" className="mt-4 max-w-xl">
-                  {paso.body}
-                </Text>
-              </div>
+              </Reveal>
             </li>
           ))}
         </ol>

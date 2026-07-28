@@ -1,4 +1,6 @@
-import { Eyebrow, Heading, Section, Text } from "@/components/ui";
+import { Eyebrow, Heading, Reveal, Section, Text } from "@/components/ui";
+import { cn } from "@/lib/cn";
+import DecryptedText from "@/components/DecryptedText";
 import { RetainerBlock } from "./RetainerBlock";
 
 type BuildItem = {
@@ -48,77 +50,93 @@ export function Servicios() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20">
         <div>
-          <Eyebrow>Servicios</Eyebrow>
-          <Heading level="h2" className="mt-6">
-            Qué construyo
-            <br />
-            <span className="text-muted">y cuánto cuesta.</span>
-          </Heading>
-          <Text size="lg" tone="muted" className="mt-8">
-            Diseño y desarrollo a medida para estudios pequeños y profesionales
-            independientes que necesitan que su web esté a la altura del trabajo
-            que muestran.
-          </Text>
+          <Eyebrow pill>
+            <DecryptedText text="Servicios" animateOn="view" sequential speed={45} />
+          </Eyebrow>
+          <Reveal variant="clip" className="mt-6">
+            <Heading level="h2">
+              Qué construyo
+              <br />
+              <span className="text-muted">y cuánto cuesta.</span>
+            </Heading>
+          </Reveal>
+          <Reveal delay={120}>
+            <Text size="lg" tone="muted" className="mt-8">
+              Diseño y desarrollo a medida para estudios pequeños y profesionales
+              independientes que necesitan que su web esté a la altura del trabajo
+              que muestran.
+            </Text>
+          </Reveal>
         </div>
 
         <div className="space-y-16">
           <ul className="space-y-10">
-            {buildItems.map((item) => (
+            {buildItems.map((item, i) => (
               <li
                 key={item.title}
-                className="grid grid-cols-[auto_1fr] gap-4 items-start border-b border-[color:var(--color-border)] pb-10 last:border-b-0 last:pb-0"
+                className={cn(
+                  "border-b border-[color:var(--color-border)] pb-10",
+                  i === buildItems.length - 1 && "border-b-0 pb-0",
+                )}
               >
-                <span
-                  aria-hidden
-                  className="mt-3 h-px w-6 bg-foreground"
-                />
-                <div>
-                  <Text size="lg" className="font-medium">
-                    {item.title}
-                  </Text>
-                  <Text size="sm" tone="subtle" className="mt-2">
-                    {item.note}
-                  </Text>
-                </div>
+                <Reveal delay={i * 90}>
+                  <div className="grid grid-cols-[auto_1fr] gap-4 items-start">
+                    <span
+                      aria-hidden
+                      className="reveal-hairline mt-3 h-px w-6 bg-foreground"
+                    />
+                    <div>
+                      <Text size="lg" className="font-medium">
+                        {item.title}
+                      </Text>
+                      <Text size="sm" tone="subtle" className="mt-2">
+                        {item.note}
+                      </Text>
+                    </div>
+                  </div>
+                </Reveal>
               </li>
             ))}
           </ul>
 
-          <div>
-            <Eyebrow as="span">Precios desde</Eyebrow>
-            <dl className="mt-6 grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-x-10">
-              {priceItems.map((item) => (
-                <div
-                  key={item.service}
-                  className="contents"
-                >
-                  <dt className="font-serif text-lg text-foreground border-b border-[color:var(--color-border)] py-4">
-                    {item.service}
-                  </dt>
-                  <dd className="font-sans text-sm text-muted border-b border-[color:var(--color-border)] py-4 sm:text-right">
-                    {item.price}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <Text size="sm" tone="subtle" className="mt-6 max-w-md">
-              Anticipo del 50% vía Bre-B antes de empezar. Cliente fuera de
-              Colombia: equivalente en USD vía Wise.
-            </Text>
-          </div>
+          <Reveal>
+            <div>
+              <Eyebrow as="span">Precios desde</Eyebrow>
+              <dl className="mt-6 grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-x-10">
+                {priceItems.map((item) => (
+                  <div key={item.service} className="contents">
+                    <dt className="font-serif text-lg text-foreground border-b border-[color:var(--color-border)] py-4">
+                      {item.service}
+                    </dt>
+                    <dd className="font-sans text-sm text-muted border-b border-[color:var(--color-border)] py-4 sm:text-right">
+                      {item.price}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <Text size="sm" tone="subtle" className="mt-6 max-w-md">
+                Anticipo del 50% vía Bre-B antes de empezar. Cliente fuera de
+                Colombia: equivalente en USD vía Wise.
+              </Text>
+            </div>
+          </Reveal>
 
-          <RetainerBlock />
+          <Reveal>
+            <RetainerBlock />
+          </Reveal>
 
-          <div className="border-t border-[color:var(--color-border)] pt-10">
-            <Eyebrow as="span" className="text-subtle">
-              Lo que no hago hoy
-            </Eyebrow>
-            <Text size="base" tone="muted" className="mt-4 max-w-xl">
-              E-commerce con inventario complejo, apps nativas, plataformas con
-              datos médicos o financieros. Si tu proyecto va por ahí, te
-              recomiendo a alguien que lo haga mejor que yo.
-            </Text>
-          </div>
+          <Reveal>
+            <div className="border-t border-[color:var(--color-border)] pt-10">
+              <Eyebrow as="span" className="text-subtle">
+                Lo que no hago hoy
+              </Eyebrow>
+              <Text size="base" tone="muted" className="mt-4 max-w-xl">
+                E-commerce con inventario complejo, apps nativas, plataformas con
+                datos médicos o financieros. Si tu proyecto va por ahí, te
+                recomiendo a alguien que lo haga mejor que yo.
+              </Text>
+            </div>
+          </Reveal>
         </div>
       </div>
     </Section>

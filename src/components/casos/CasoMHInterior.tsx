@@ -1,5 +1,7 @@
 import Image from "next/image";
-import { Button, Eyebrow, Heading, Section, Text } from "@/components/ui";
+import { Button, Eyebrow, Heading, Reveal, Section, Text } from "@/components/ui";
+import DecryptedText from "@/components/DecryptedText";
+import ScrollFloat from "@/components/ScrollFloat";
 
 /*
   Caso #1 del nicho — MH Interior Design (Mari Hernández, Bogotá).
@@ -67,23 +69,37 @@ export function CasoMHInterior() {
       className="border-t border-[color:var(--color-border)]"
     >
       <div className="max-w-3xl">
-        <Eyebrow>Caso · Diseño interior</Eyebrow>
-        <Heading level="h2" className="mt-6">
+        <Eyebrow pill>
+          <DecryptedText
+            text="Caso · Diseño interior"
+            animateOn="view"
+            sequential
+            speed={30}
+          />
+        </Eyebrow>
+        <ScrollFloat
+          containerClassName="mt-6"
+          textClassName="font-serif text-4xl sm:text-5xl leading-[1.05] tracking-[-0.015em] text-foreground"
+        >
           MH Interior Design.
-        </Heading>
-        <Text size="lg" tone="muted" className="mt-6">
-          Portafolio bilingüe para diseñadora de interiores · Bogotá · 2026
-        </Text>
-        <Text size="base" tone="subtle" className="mt-6 max-w-2xl">
-          Mari Hernández tenía el portafolio regado en Instagram y clientes
-          que llegaban solo por voz a voz. Necesitaba una presencia propia
-          que mostrara su trabajo al nivel de su trabajo — y que convirtiera
-          visitas en conversaciones.
-        </Text>
+        </ScrollFloat>
+        <Reveal delay={100}>
+          <Text size="lg" tone="muted" className="mt-6">
+            Portafolio bilingüe para diseñadora de interiores · Bogotá · 2026
+          </Text>
+        </Reveal>
+        <Reveal delay={180}>
+          <Text size="base" tone="subtle" className="mt-6 max-w-2xl">
+            Mari Hernández tenía el portafolio regado en Instagram y clientes
+            que llegaban solo por voz a voz. Necesitaba una presencia propia
+            que mostrara su trabajo al nivel de su trabajo — y que convirtiera
+            visitas en conversaciones.
+          </Text>
+        </Reveal>
       </div>
 
       <div className="mt-16 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24">
-        <div>
+        <Reveal>
           <Eyebrow>El encargo</Eyebrow>
           <Text size="xl" className="mt-6">
             Seis proyectos, dos idiomas, y una regla: que nada se vea a
@@ -95,19 +111,23 @@ export function CasoMHInterior() {
             contenido pedía. Más un canal de contacto que le avisa a Mari en
             el momento en que alguien deja sus datos.
           </Text>
-        </div>
+        </Reveal>
 
         <div>
-          <Eyebrow>Decisiones</Eyebrow>
+          <Reveal>
+            <Eyebrow>Decisiones</Eyebrow>
+          </Reveal>
           <ul className="mt-6 space-y-10">
-            {decisiones.map((d) => (
+            {decisiones.map((d, i) => (
               <li key={d.titulo}>
-                <Heading level="h4" as="h3">
-                  {d.titulo}
-                </Heading>
-                <Text size="base" tone="muted" className="mt-3 max-w-md">
-                  {d.body}
-                </Text>
+                <Reveal delay={i * 90}>
+                  <Heading level="h4" as="h3">
+                    {d.titulo}
+                  </Heading>
+                  <Text size="base" tone="muted" className="mt-3 max-w-md">
+                    {d.body}
+                  </Text>
+                </Reveal>
               </li>
             ))}
           </ul>
@@ -115,59 +135,65 @@ export function CasoMHInterior() {
       </div>
 
       <div className="mt-24 border-t border-[color:var(--color-border)] pt-16">
-        <Eyebrow>El sitio</Eyebrow>
+        <Reveal>
+          <Eyebrow>El sitio</Eyebrow>
+        </Reveal>
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-10">
-          {screenshots.map((s) => (
-            <figure key={s.src} className="group flex flex-col gap-4">
-              <div className="overflow-hidden rounded-md border border-[color:var(--color-border-strong)] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] transition-transform duration-500 ease-out hover:-translate-y-1">
-                <div className="flex items-center gap-1.5 px-4 py-3 bg-[color:var(--color-bg-elevated)] border-b border-[color:var(--color-border)]">
-                  <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
-                  <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
-                  <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
+          {screenshots.map((s, i) => (
+            <Reveal key={s.src} delay={i * 90}>
+              <figure className="group flex flex-col gap-4">
+                <div className="overflow-hidden rounded-md border border-[color:var(--color-border-strong)] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] transition-transform duration-500 ease-out hover:-translate-y-1">
+                  <div className="flex items-center gap-1.5 px-4 py-3 bg-[color:var(--color-bg-elevated)] border-b border-[color:var(--color-border)]">
+                    <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
+                    <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
+                    <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
+                  </div>
+                  <div className="relative aspect-[16/10] w-full bg-[color:var(--color-bg-elevated)]">
+                    <Image
+                      src={s.src}
+                      alt={s.alt}
+                      fill
+                      sizes="(min-width: 1024px) 45vw, 100vw"
+                      className="object-cover object-top"
+                      loading="lazy"
+                    />
+                  </div>
                 </div>
-                <div className="relative aspect-[16/10] w-full bg-[color:var(--color-bg-elevated)]">
-                  <Image
-                    src={s.src}
-                    alt={s.alt}
-                    fill
-                    sizes="(min-width: 1024px) 45vw, 100vw"
-                    className="object-cover object-top"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-              <figcaption className="text-sm text-subtle pl-1">{s.caption}</figcaption>
-            </figure>
+                <figcaption className="text-sm text-subtle pl-1">{s.caption}</figcaption>
+              </figure>
+            </Reveal>
           ))}
         </div>
       </div>
 
       {/* Testimonio de la cliente — texto verbatim de Mari (2026-07-11). */}
       <div className="mt-24 border-t border-[color:var(--color-border)] pt-16">
-        <Eyebrow>Testimonio</Eyebrow>
-        <blockquote className="mt-8 max-w-3xl">
-          <Text size="xl" className="font-serif italic leading-relaxed">
-            “Trabajar con Alejandro fue una experiencia excelente. Su
-            compromiso fue total, pendiente a cada detalle. Como diseñadora
-            de interiores necesitaba una página web que reflejara mi estilo
-            y él supo entender perfectamente mis necesidades. Supo manejar
-            el proceso con paciencia, profesionalismo y una gran capacidad
-            de adaptación. Gracias a su trabajo, hoy tengo una página
-            funcional, estética y alineada con mi identidad profesional que
-            me ha ayudado a conectar con nuevas oportunidades. Recomiendo su
-            trabajo por su creatividad, compromiso y capacidad de
-            transformar ideas en resultados que superan tus expectativas.”
-          </Text>
-          <footer className="mt-8">
-            <Text size="base" tone="muted">
-              Mari Hernández — MH Interior Design
+        <Reveal>
+          <Eyebrow>Testimonio</Eyebrow>
+          <blockquote className="mt-8 max-w-3xl">
+            <Text size="xl" className="font-serif italic leading-relaxed">
+              “Trabajar con Alejandro fue una experiencia excelente. Su
+              compromiso fue total, pendiente a cada detalle. Como diseñadora
+              de interiores necesitaba una página web que reflejara mi estilo
+              y él supo entender perfectamente mis necesidades. Supo manejar
+              el proceso con paciencia, profesionalismo y una gran capacidad
+              de adaptación. Gracias a su trabajo, hoy tengo una página
+              funcional, estética y alineada con mi identidad profesional que
+              me ha ayudado a conectar con nuevas oportunidades. Recomiendo su
+              trabajo por su creatividad, compromiso y capacidad de
+              transformar ideas en resultados que superan tus expectativas.”
             </Text>
-          </footer>
-        </blockquote>
+            <footer className="mt-8">
+              <Text size="base" tone="muted">
+                Mari Hernández — MH Interior Design
+              </Text>
+            </footer>
+          </blockquote>
+        </Reveal>
       </div>
 
       <div className="mt-24 border-t border-[color:var(--color-border)] pt-16 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24">
-        <div>
+        <Reveal>
           <Eyebrow>Stack</Eyebrow>
           <ul className="mt-6 flex flex-wrap gap-2">
             {stack.map((tech) => (
@@ -187,25 +213,27 @@ export function CasoMHInterior() {
             definida y resumen semanal automático. La cliente aprobó cada
             fase sobre el sitio en vivo, no sobre mockups.
           </Text>
-        </div>
+        </Reveal>
 
-        <div className="flex flex-col items-start gap-6 lg:items-end lg:text-right">
-          <Eyebrow>En vivo</Eyebrow>
-          <Text size="lg" tone="muted" className="max-w-sm">
-            Recorrelo como lo haría un cliente de Mari: proyectos, galerías
-            y contacto — en español o inglés.
-          </Text>
-          <Button
-            as="a"
-            href="https://mhinterior.vercel.app"
-            size="md"
-            variant="primary"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Ver MH Interior Design ↗
-          </Button>
-        </div>
+        <Reveal delay={120}>
+          <div className="flex flex-col items-start gap-6 lg:items-end lg:text-right">
+            <Eyebrow>En vivo</Eyebrow>
+            <Text size="lg" tone="muted" className="max-w-sm">
+              Recorrelo como lo haría un cliente de Mari: proyectos, galerías
+              y contacto — en español o inglés.
+            </Text>
+            <Button
+              as="a"
+              href="https://mhinterior.vercel.app"
+              size="md"
+              variant="primary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ver MH Interior Design ↗
+            </Button>
+          </div>
+        </Reveal>
       </div>
     </Section>
   );

@@ -1,0 +1,187 @@
+/* Réplica de estudio — Setby. Scope local: todo cuelga de `.setby`. */
+
+.setby {
+  --s-bg: #0b0c0e;
+  --s-panel: #141518;
+  --s-red: #d32133;
+  --s-text: #f3f4f6;
+  --s-muted: #8b9099;
+  --s-line: color-mix(in oklab, var(--s-text) 12%, transparent);
+  --s-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  position: relative;
+  min-height: 100dvh;
+  background:
+    radial-gradient(90% 60% at 50% 0%, #1a1c22 0%, transparent 60%),
+    var(--s-bg);
+  color: var(--s-text);
+  font-family:
+    "Neue Montreal", var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+/* ---------- Nav ---------- */
+
+.setby-nav {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem clamp(1.25rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--s-line);
+}
+
+.setby-nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.setby-nav__mark {
+  color: var(--s-red);
+}
+
+.setby-nav nav {
+  display: none;
+  gap: 2rem;
+}
+
+.setby-nav nav a {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--s-muted);
+  text-decoration: none;
+  transition: color 200ms var(--s-ease);
+}
+
+.setby-nav nav a:hover {
+  color: var(--s-text);
+}
+
+.setby-nav__tag {
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--s-muted);
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--s-line);
+  border-radius: 0.4rem;
+}
+
+@media (min-width: 52rem) {
+  .setby-nav nav {
+    display: flex;
+  }
+}
+
+/* ---------- Hero: sándwich de tipografía + objeto 3D ---------- */
+
+.setby-hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: calc(100dvh - 66px);
+  padding: 2rem clamp(1.25rem, 4vw, 3rem) 4rem;
+  overflow: hidden;
+}
+
+/* Las dos palabras gigantes ocupan la misma zona central; el objeto va entre
+   ellas por z-index. El tamaño en vw las hace dominar el hero. */
+.setby-word {
+  position: absolute;
+  font-size: clamp(4rem, 20vw, 18rem);
+  font-weight: 700;
+  line-height: 0.82;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.setby-word--back {
+  top: 20%;
+  left: 6%;
+  z-index: 1; /* DETRÁS del contenedor */
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in oklab, var(--s-text) 40%, transparent);
+}
+
+.setby-word--front {
+  bottom: 16%;
+  right: 6%;
+  z-index: 3; /* DELANTE del contenedor */
+  color: var(--s-text);
+  text-shadow: 0 20px 60px rgb(0 0 0 / 0.6);
+}
+
+.setby-object {
+  position: relative;
+  z-index: 2; /* ENTRE las dos palabras */
+  width: min(76vw, 46rem);
+  filter: drop-shadow(0 50px 60px rgb(0 0 0 / 0.55));
+}
+
+/* Pivote del swing: el origen de rotación está ARRIBA (donde el gancho suspende
+   el contenedor), así oscila como péndulo, no gira sobre su centro. */
+.setby-object__swing {
+  transform-origin: 50% -20%;
+  animation: setby-swing 6s var(--s-ease) infinite;
+  will-change: transform;
+}
+
+.setby-object__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@keyframes setby-swing {
+  0%,
+  100% {
+    transform: rotate(-2.4deg);
+  }
+  50% {
+    transform: rotate(2.4deg);
+  }
+}
+
+.setby-hero__lede {
+  position: absolute;
+  bottom: 2.5rem;
+  left: clamp(1.25rem, 4vw, 3rem);
+  z-index: 4;
+  max-width: 32ch;
+  margin: 0;
+  font-size: clamp(0.85rem, 1.3vw, 1rem);
+  line-height: 1.55;
+  color: var(--s-muted);
+}
+
+/* ---------- Footer ---------- */
+
+.setby-footer {
+  position: relative;
+  z-index: 5;
+  padding: 2.5rem clamp(1.25rem, 4vw, 3rem);
+  border-top: 1px solid var(--s-line);
+  text-align: center;
+}
+
+.setby-footer p {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--s-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setby-object__swing {
+    animation: none;
+    transform: rotate(-1deg);
+  }
+}

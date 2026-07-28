@@ -1,0 +1,42 @@
+/* Figura hero (arco cromado pre-renderizado): flote idle + tilt al cursor. */
+
+.hero-arch-stage {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  perspective: 1400px;
+}
+
+.hero-arch-float {
+  --rx: 0deg;
+  --ry: 0deg;
+  width: min(78%, 30rem);
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  animation: hero-arch-float 7s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  will-change: transform;
+}
+
+.hero-arch-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 40px 60px rgb(0 0 0 / 0.5));
+}
+
+/* El flote va en un contenedor separado del tilt para no pisar las vars CSS. */
+@keyframes hero-arch-float {
+  0%,
+  100% {
+    transform: rotateX(var(--rx)) rotateY(var(--ry)) translateY(-1.2%);
+  }
+  50% {
+    transform: rotateX(var(--rx)) rotateY(var(--ry)) translateY(1.2%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-arch-float {
+    animation: none;
+  }
+}

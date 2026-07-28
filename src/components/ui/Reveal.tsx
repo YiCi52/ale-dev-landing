@@ -1,47 +1,51 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useReveal } from "@/hooks/use-reveal";
+
+type Variant = "rise" | "blur" | "clip";
+
+const variantClass: Record<"rise" | "blur", string> = {
+  rise: "reveal",
+  blur: "reveal reveal-blur",
+};
 
 type Props = {
   children: React.ReactNode;
+  /** Retraso en ms — úsalo con un índice para escalonar (stagger) una lista. */
   delay?: number;
   className?: string;
+  /** rise = fade + sube · blur = fade + desenfoca · clip = sube desde detrás de una línea (máscara) */
+  variant?: Variant;
 };
 
-export function Reveal({ children, delay = 0, className }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+export function Reveal({ children, delay = 0, className, variant = "rise" }: Props) {
+  const { ref, visible } = useReveal<HTMLDivElement>();
+  const delayStyle = delay > 0 ? { transitionDelay: `${delay}ms` } : undefined;
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    // Fallback sin IntersectionObserver: diferido a macrotask para no hacer
-    // setState síncrono dentro del effect (regla react-hooks/set-state-in-effect).
-    if (typeof IntersectionObserver === "undefined") {
-      const id = window.setTimeout(() => setVisible(true), 0);
-      return () => window.clearTimeout(id);
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -80px 0px" },
+  // clip: máscara con overflow (el elemento OBSERVADO nunca lleva clip-path,
+  // que rompe IntersectionObserver → area clippeada = ratio 0 = nunca dispara).
+  if (variant === "clip") {
+    return (
+      <div
+        ref={ref}
+        className={`reveal-mask${visible ? " reveal-visible" : ""}${
+          className ? ` ${className}` : ""
+        }`}
+      >
+        <div className="reveal-mask-inner" style={delayStyle}>
+          {children}
+        </div>
+      </div>
     );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  }
 
   return (
     <div
       ref={ref}
-      style={delay > 0 ? { transitionDelay: `${delay}ms` } : undefined}
-      className={`reveal${visible ? " reveal-visible" : ""}${className ? ` ${className}` : ""}`}
+      style={delayStyle}
+      className={`${variantClass[variant]}${visible ? " reveal-visible" : ""}${
+        className ? ` ${className}` : ""
+      }`}
     >
       {children}
     </div>

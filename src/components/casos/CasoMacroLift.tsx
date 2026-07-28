@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { Button, Eyebrow, Heading, Section, Text } from "@/components/ui";
+import { Button, Eyebrow, Heading, Reveal, Section, Text } from "@/components/ui";
+import DecryptedText from "@/components/DecryptedText";
 
 const decisiones = [
   {
@@ -51,22 +52,33 @@ export function CasoMacroLift() {
       className="border-t border-[color:var(--color-border)]"
     >
       <div className="max-w-3xl">
-        <Eyebrow>Capacidad técnica previa</Eyebrow>
-        <Heading level="h2" className="mt-6">
-          MacroLift.
-        </Heading>
-        <Text size="lg" tone="muted" className="mt-6">
-          Web app de nutrición deportiva · 2025
-        </Text>
-        <Text size="base" tone="subtle" className="mt-6 max-w-2xl">
-          Proyecto propio llevado end-to-end — hipótesis, decisiones, build
-          y deploy. Muestra cómo trabajo cuando el problema es de producto,
-          no solo de diseño.
-        </Text>
+        <Eyebrow pill>
+          <DecryptedText
+            text="Capacidad técnica previa"
+            animateOn="view"
+            sequential
+            speed={28}
+          />
+        </Eyebrow>
+        <Reveal variant="clip" className="mt-6">
+          <Heading level="h2">MacroLift.</Heading>
+        </Reveal>
+        <Reveal delay={100}>
+          <Text size="lg" tone="muted" className="mt-6">
+            Web app de nutrición deportiva · 2025
+          </Text>
+        </Reveal>
+        <Reveal delay={180}>
+          <Text size="base" tone="subtle" className="mt-6 max-w-2xl">
+            Proyecto propio llevado end-to-end — hipótesis, decisiones, build
+            y deploy. Muestra cómo trabajo cuando el problema es de producto,
+            no solo de diseño.
+          </Text>
+        </Reveal>
       </div>
 
       <div className="mt-16 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24">
-        <div>
+        <Reveal>
           <Eyebrow>Hipótesis</Eyebrow>
           <Text size="xl" className="mt-6">
             ¿Puede una app web ayudar a estudiantes de undécimo a entender la
@@ -78,19 +90,23 @@ export function CasoMacroLift() {
             escolar. Las apps existentes apuntan a otro público y otra
             métrica. MacroLift cierra esa brecha para una población específica.
           </Text>
-        </div>
+        </Reveal>
 
         <div>
-          <Eyebrow>Decisiones</Eyebrow>
+          <Reveal>
+            <Eyebrow>Decisiones</Eyebrow>
+          </Reveal>
           <ul className="mt-6 space-y-10">
-            {decisiones.map((d) => (
+            {decisiones.map((d, i) => (
               <li key={d.titulo}>
-                <Heading level="h4" as="h3">
-                  {d.titulo}
-                </Heading>
-                <Text size="base" tone="muted" className="mt-3 max-w-md">
-                  {d.body}
-                </Text>
+                <Reveal delay={i * 90}>
+                  <Heading level="h4" as="h3">
+                    {d.titulo}
+                  </Heading>
+                  <Text size="base" tone="muted" className="mt-3 max-w-md">
+                    {d.body}
+                  </Text>
+                </Reveal>
               </li>
             ))}
           </ul>
@@ -98,38 +114,39 @@ export function CasoMacroLift() {
       </div>
 
       <div className="mt-24 border-t border-[color:var(--color-border)] pt-16">
-        <Eyebrow>La app</Eyebrow>
+        <Reveal>
+          <Eyebrow>La app</Eyebrow>
+        </Reveal>
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-10">
-          {screenshots.map((s) => (
-            <figure
-              key={s.src}
-              className="group flex flex-col gap-4"
-            >
-              <div className="overflow-hidden rounded-md border border-[color:var(--color-border-strong)] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] transition-transform duration-500 ease-out hover:-translate-y-1">
-                <div className="flex items-center gap-1.5 px-4 py-3 bg-[color:var(--color-bg-elevated)] border-b border-[color:var(--color-border)]">
-                  <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
-                  <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
-                  <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
+          {screenshots.map((s, i) => (
+            <Reveal key={s.src} delay={i * 90}>
+              <figure className="group flex flex-col gap-4">
+                <div className="overflow-hidden rounded-md border border-[color:var(--color-border-strong)] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] transition-transform duration-500 ease-out hover:-translate-y-1">
+                  <div className="flex items-center gap-1.5 px-4 py-3 bg-[color:var(--color-bg-elevated)] border-b border-[color:var(--color-border)]">
+                    <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
+                    <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
+                    <span className="size-2.5 rounded-full bg-[color:var(--color-border-strong)]" aria-hidden />
+                  </div>
+                  <div className="relative aspect-[16/10] w-full bg-[color:var(--color-bg-elevated)]">
+                    <Image
+                      src={s.src}
+                      alt={s.alt}
+                      fill
+                      sizes="(min-width: 1024px) 45vw, 100vw"
+                      className="object-cover object-top"
+                      loading="lazy"
+                    />
+                  </div>
                 </div>
-                <div className="relative aspect-[16/10] w-full bg-[color:var(--color-bg-elevated)]">
-                  <Image
-                    src={s.src}
-                    alt={s.alt}
-                    fill
-                    sizes="(min-width: 1024px) 45vw, 100vw"
-                    className="object-cover object-top"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-              <figcaption className="text-sm text-subtle pl-1">{s.caption}</figcaption>
-            </figure>
+                <figcaption className="text-sm text-subtle pl-1">{s.caption}</figcaption>
+              </figure>
+            </Reveal>
           ))}
         </div>
       </div>
 
       <div className="mt-24 border-t border-[color:var(--color-border)] pt-16 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24">
-        <div>
+        <Reveal>
           <Eyebrow>Stack</Eyebrow>
           <ul className="mt-6 flex flex-wrap gap-2">
             {stack.map((tech) => (
@@ -149,37 +166,39 @@ export function CasoMacroLift() {
             iteración: completar la base de datos nutricional colombiana y
             refinar el registro de comidas.
           </Text>
-        </div>
+        </Reveal>
 
-        <div className="flex flex-col items-start gap-6 lg:items-end lg:text-right">
-          <Eyebrow>Demo en vivo</Eyebrow>
-          <Text size="lg" tone="muted" className="max-w-sm">
-            Probá la app con tus propios datos. Todo corre en tu navegador,
-            nada se envía a un servidor.
-          </Text>
-          <div className="flex flex-wrap gap-3">
-            <Button
-              as="a"
-              href="https://flourishing-cranachan-4f54c2.netlify.app/"
-              size="md"
-              variant="primary"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Abrir MacroLift ↗
-            </Button>
-            <Button
-              as="a"
-              href="https://github.com/YiCi52/Macrolift"
-              size="md"
-              variant="ghost"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Código en GitHub ↗
-            </Button>
+        <Reveal delay={120}>
+          <div className="flex flex-col items-start gap-6 lg:items-end lg:text-right">
+            <Eyebrow>Demo en vivo</Eyebrow>
+            <Text size="lg" tone="muted" className="max-w-sm">
+              Probá la app con tus propios datos. Todo corre en tu navegador,
+              nada se envía a un servidor.
+            </Text>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                as="a"
+                href="https://flourishing-cranachan-4f54c2.netlify.app/"
+                size="md"
+                variant="primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Abrir MacroLift ↗
+              </Button>
+              <Button
+                as="a"
+                href="https://github.com/YiCi52/Macrolift"
+                size="md"
+                variant="ghost"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Código en GitHub ↗
+              </Button>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </Section>
   );

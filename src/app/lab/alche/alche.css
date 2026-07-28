@@ -1,0 +1,529 @@
+/* Réplica de estudio — ALCHE. Scope local: todo cuelga de `.alche`. */
+
+.alche {
+  --alche-ink: #05060a;
+  --alche-paper: #f2f0ec;
+  --alche-text: #eef0f6;
+  --alche-muted: #8a90a6;
+  --alche-accent: #7c6cff;
+  --alche-line: color-mix(in oklab, var(--alche-text) 14%, transparent);
+  --alche-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  position: relative;
+  min-height: 100dvh;
+  background: var(--alche-ink);
+  color: var(--alche-text);
+  font-family: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+/* Grano fino: rompe el banding de los degradados y quita el look "plano de CSS". */
+.alche::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.alche-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ---------- Nav ---------- */
+
+.alche-nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem clamp(1.25rem, 4vw, 3rem);
+  mix-blend-mode: difference;
+}
+
+.alche-nav__mark {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.alche-nav ul {
+  display: flex;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.alche-nav a {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.72;
+  transition: opacity 260ms var(--alche-ease);
+}
+
+.alche-nav a:hover,
+.alche-nav a:focus-visible {
+  opacity: 1;
+}
+
+/* ---------- Hero ---------- */
+
+.alche-hero {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 6rem clamp(1.25rem, 4vw, 3rem) 4rem;
+  text-align: center;
+}
+
+/* Círculos concéntricos del fondo del sitio original. */
+.alche-rings {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.alche-rings span {
+  position: absolute;
+  border: 1px solid var(--alche-line);
+  border-radius: 50%;
+  aspect-ratio: 1;
+}
+
+.alche-rings span:nth-child(1) {
+  width: min(42vw, 30rem);
+}
+.alche-rings span:nth-child(2) {
+  width: min(62vw, 46rem);
+  opacity: 0.6;
+}
+.alche-rings span:nth-child(3) {
+  width: min(86vw, 64rem);
+  opacity: 0.34;
+}
+
+.alche-hero__inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 1.25rem;
+  justify-items: center;
+  /* Empuja el bloque de texto bajo el objeto: el eyebrow encima del cromo
+     quedaba ilegible por falta de contraste. */
+  margin-top: clamp(6rem, 18vh, 11rem);
+}
+
+.alche-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--alche-muted);
+}
+
+.alche-eyebrow span {
+  color: var(--alche-accent);
+  font-size: 0.55em;
+}
+
+.alche-wordmark {
+  margin: 0;
+  font-size: clamp(4.5rem, 21vw, 20rem);
+  font-weight: 700;
+  line-height: 0.82;
+  letter-spacing: -0.045em;
+  /* Relleno metálico propio: la banda oscura al 58% es la que simula el
+     horizonte del cromo. Sin blend mode — sobre negro puro se anularía. */
+  color: transparent;
+  background: linear-gradient(
+    176deg,
+    #ffffff 0%,
+    #e6e9f5 30%,
+    #767c96 52%,
+    #c9cee0 58%,
+    #ffffff 82%,
+    #9aa0ba 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 2px 30px rgb(124 108 255 / 0.28));
+}
+
+.alche-lede {
+  max-width: 34ch;
+  margin: 0;
+  font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--alche-muted);
+  text-wrap: balance;
+}
+
+/* Burbujas del meme del reel de referencia. */
+.alche-brief {
+  position: absolute;
+  left: clamp(1.25rem, 4vw, 3rem);
+  bottom: clamp(4rem, 12vh, 8rem);
+  display: grid;
+  gap: 0.5rem;
+  max-width: min(24rem, 62vw);
+  text-align: left;
+}
+
+.alche-brief__line {
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: 1.1rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  backdrop-filter: blur(8px);
+}
+
+.alche-brief__line--client {
+  border: 1px solid var(--alche-line);
+  background: color-mix(in oklab, var(--alche-text) 6%, transparent);
+  color: var(--alche-muted);
+  border-bottom-left-radius: 0.3rem;
+}
+
+.alche-brief__line--us {
+  justify-self: start;
+  background: color-mix(in oklab, var(--alche-accent) 82%, black);
+  color: #fff;
+  border-bottom-right-radius: 0.3rem;
+}
+
+.alche-scrollcue {
+  position: absolute;
+  bottom: 1.75rem;
+  margin: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.4em;
+  color: var(--alche-muted);
+  animation: alche-drift 2.6s var(--alche-ease) infinite;
+}
+
+@keyframes alche-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+/* ---------- Works ---------- */
+
+.alche-works {
+  position: relative;
+  z-index: 2;
+  padding: clamp(6rem, 16vh, 12rem) clamp(1.25rem, 4vw, 3rem);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in oklab, var(--alche-ink) 88%, transparent) 22%,
+    color-mix(in oklab, var(--alche-ink) 94%, transparent) 100%
+  );
+}
+
+.alche-section-title {
+  margin: 0 0 clamp(2rem, 6vh, 4rem);
+  font-size: clamp(3rem, 13vw, 11rem);
+  font-weight: 700;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--alche-line);
+}
+
+.alche-works__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--alche-line);
+}
+
+.alche-work {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.35rem 1.5rem;
+  padding: clamp(1.1rem, 3vh, 2rem) 0;
+  border-bottom: 1px solid var(--alche-line);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    padding-left 520ms var(--alche-ease),
+    opacity 320ms var(--alche-ease);
+}
+
+.alche-works:hover .alche-work {
+  opacity: 0.42;
+}
+
+.alche-work.is-active,
+.alche-work:focus-visible {
+  opacity: 1;
+  padding-left: clamp(0.75rem, 2vw, 2rem);
+}
+
+.alche-work__client {
+  grid-column: 1;
+  font-size: clamp(1.5rem, 4.5vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.alche-work__title {
+  grid-column: 1;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--alche-muted);
+}
+
+.alche-work__year {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  color: var(--alche-muted);
+}
+
+/* Preview que sigue al cursor. */
+.alche-preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(13rem, 20vw, 19rem);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 320ms var(--alche-ease);
+  will-change: transform;
+}
+
+.alche-preview.is-visible {
+  opacity: 1;
+}
+
+.alche-preview__media {
+  aspect-ratio: 4 / 3;
+  border-radius: 0.4rem;
+  background-size: cover;
+  box-shadow: 0 30px 80px rgb(0 0 0 / 0.5);
+}
+
+.alche-preview__label {
+  margin: 0.6rem 0 0;
+  font-size: 0.65rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--alche-muted);
+}
+
+/* ---------- Riel horizontal ---------- */
+
+.alche-rail {
+  position: relative;
+  z-index: 2;
+  background: color-mix(in oklab, var(--alche-ink) 96%, transparent);
+}
+
+.alche-rail__viewport {
+  position: relative;
+  display: grid;
+  align-content: center;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Marquesina de fondo: viaja lento y desenfocada — es la "pared lejana" contra
+   la que las tarjetas se leen como suspendidas. */
+.alche-rail__depth {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.alche-rail__depth span {
+  font-size: clamp(4rem, 15vw, 13rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in oklab, var(--alche-text) 9%, transparent);
+  filter: blur(2px);
+  animation: alche-marquee 38s linear infinite;
+}
+
+@keyframes alche-marquee {
+  to {
+    transform: translateX(-33.33%);
+  }
+}
+
+.alche-rail__track {
+  display: flex;
+  align-items: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-inline: clamp(2rem, 12vw, 14rem);
+  width: max-content;
+  will-change: transform;
+}
+
+.alche-slide {
+  flex: 0 0 auto;
+  width: clamp(15rem, 30vw, 27rem);
+  will-change: transform;
+}
+
+.alche-slide__media {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: 0.5rem;
+  background-size: cover;
+  /* La sombra crece con la profundidad: lo que flota más alto proyecta más. */
+  box-shadow:
+    0 calc(24px + 40px * var(--slide-depth))
+      calc(40px + 70px * var(--slide-depth)) rgb(0 0 0 / 0.55),
+    0 0 0 1px color-mix(in oklab, var(--alche-text) 8%, transparent);
+}
+
+.alche-slide__index {
+  position: absolute;
+  top: 1rem;
+  left: 1.1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  color: rgb(255 255 255 / 0.82);
+  mix-blend-mode: difference;
+}
+
+.alche-slide__meta {
+  margin-top: 1.1rem;
+}
+
+.alche-slide__meta h3 {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.alche-slide__meta p {
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--alche-muted);
+}
+
+/* ---------- Outline (inversión a claro) ---------- */
+
+.alche-outline {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(2rem, 6vw, 5rem);
+  grid-template-columns: 1fr;
+  align-items: center;
+  padding: clamp(6rem, 16vh, 12rem) clamp(1.25rem, 4vw, 3rem);
+  background: var(--alche-paper);
+  color: #14161c;
+}
+
+@media (min-width: 48rem) {
+  .alche-outline {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+  }
+}
+
+.alche-outline__svg {
+  width: min(100%, 22rem);
+  justify-self: center;
+  overflow: visible;
+}
+
+.alche-outline__stroke {
+  fill: none;
+  stroke: #14161c;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-dasharray: 480;
+  stroke-dashoffset: 480;
+  transition: stroke-dashoffset 1600ms var(--alche-ease);
+}
+
+.alche-outline.is-drawn .alche-outline__stroke {
+  stroke-dashoffset: 0;
+}
+
+.alche-outline__copy h2 {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.alche-outline__copy p {
+  max-width: 38ch;
+  margin: 0;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.65;
+  color: #4a4f5c;
+}
+
+/* ---------- Footer ---------- */
+
+.alche-footer {
+  position: relative;
+  z-index: 2;
+  padding: 3rem clamp(1.25rem, 4vw, 3rem);
+  background: var(--alche-ink);
+  border-top: 1px solid var(--alche-line);
+}
+
+.alche-footer p {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--alche-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .alche-scrollcue {
+    animation: none;
+  }
+
+  .alche-outline__stroke {
+    transition-duration: 1ms;
+  }
+
+  .alche-work {
+    transition-duration: 1ms;
+  }
+}
