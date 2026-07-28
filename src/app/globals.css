@@ -8,23 +8,26 @@
 @custom-variant pointer-fine (@media (hover: hover) and (pointer: fine));
 
 /*
-  Design tokens — editorial dark luxury
-  Paleta monocroma cálida (toque ámbar imperceptible que evita el negro puro de tech genérico)
+  Design tokens — Castillo v2 "Lila sobre carbón"
+  Contrato: design-system/castillo-v2/MASTER.md (aprobado 2026-07-26).
+  Base fría violeta (#0A0A0C ref) + Hueso CÁLIDO a propósito (tensión
+  cálido-sobre-frío) + Lila Ion como único acento (7.1:1 AA sobre bg).
   Spec: rules/ecc/web/coding-style.md, rules/ecc/web/design-quality.md
 */
 
 :root {
   /* Base palette */
-  --color-bg: oklch(9% 0.006 60);
-  --color-bg-elevated: oklch(13% 0.006 60);
-  --color-fg: oklch(96% 0.006 80);
-  --color-fg-muted: oklch(62% 0.005 70);
-  --color-fg-subtle: oklch(42% 0.005 70);
-  --color-border: oklch(22% 0.005 70);
-  --color-border-strong: oklch(32% 0.005 70);
-  /* Accent lavanda — sutil, baja chroma, lee sobre dark bg sin ser estridente */
-  --color-accent: oklch(78% 0.07 285);
-  --color-accent-muted: oklch(58% 0.05 285);
+  --color-bg: oklch(13.5% 0.005 285);
+  --color-bg-elevated: oklch(18% 0.008 285);
+  --color-fg: oklch(95.5% 0.007 85);
+  --color-fg-muted: oklch(66% 0.01 300);
+  --color-fg-subtle: oklch(46% 0.012 295);
+  --color-border: oklch(100% 0 0 / 0.1);
+  --color-border-strong: oklch(100% 0 0 / 0.16);
+  /* Lila Ion (#A78BFA ref) — texto/chips/hovers OK. El muted (Violeta
+     Profundo #5B4A96) SOLO superficies/gradientes: 3.4:1, falla AA en texto. */
+  --color-accent: oklch(71.5% 0.14 294);
+  --color-accent-muted: oklch(45% 0.11 295);
 
   /* Motion */
   --duration-fast: 150ms;
@@ -54,10 +57,12 @@
   --color-accent: var(--color-accent);
   --color-accent-muted: var(--color-accent-muted);
 
-  /* Fonts */
-  --font-serif: var(--font-fraunces);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-jetbrains-mono);
+  /* Fonts — Geist único (sistema "Modern Dark Cinema": sans + mono).
+     --font-serif queda ALIASADO a Geist: deuda de migración declarada en
+     MASTER.md — los componentes v1 lo usan y se limpian sección a sección. */
+  --font-serif: var(--font-geist);
+  --font-sans: var(--font-geist);
+  --font-mono: var(--font-geist-mono);
 
   /*
     Typography scale (fluid type con clamp).
@@ -79,7 +84,7 @@
 html {
   background: var(--color-bg);
   color: var(--color-fg);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-geist), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
