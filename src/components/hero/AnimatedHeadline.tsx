@@ -1,10 +1,6 @@
-"use client";
-
 import { Fragment } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/cn";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
 
 type Props = {
   text: string;
@@ -12,35 +8,28 @@ type Props = {
 };
 
 /**
- * Titular display con reveal palabra-por-palabra al cargar — el efecto de
- * mayor ROI del norte visual (se ve carísimo, cuesta poco). Reduced-motion:
- * las palabras solo hacen fade, sin desplazamiento.
+ * Titular display con reveal palabra-por-palabra — el efecto de mayor ROI del
+ * norte visual (se ve carísimo, cuesta poco).
+ *
+ * La animación es CSS pura (ver `.headline-reveal` en globals.css), no JS:
+ * este es el mensaje central del sitio y no puede quedar invisible si una
+ * librería de motion no monta o no dispara. Al ser CSS, además, el componente
+ * no necesita "use client" y no envía JS al cliente.
+ * Reduced-motion lo resuelve el bloque global de globals.css.
  */
 export function AnimatedHeadline({ text, className }: Props) {
-  const reduce = useReducedMotion();
   const words = text.split(" ");
 
   return (
     <h1
       className={cn(
-        "font-serif text-display leading-[0.95] tracking-[-0.025em] text-foreground text-balance",
+        "headline-reveal font-serif text-display leading-[0.95] tracking-[-0.025em] text-foreground text-balance",
         className,
       )}
     >
       {words.map((word, i) => (
         <Fragment key={`${word}-${i}`}>
-          <motion.span
-            className="inline-block"
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: reduce ? 0.4 : 0.75,
-              delay: reduce ? 0 : 0.12 + i * 0.07,
-              ease: EASE,
-            }}
-          >
-            {word}
-          </motion.span>
+          <span style={{ "--word-index": i } as CSSProperties}>{word}</span>
           {i < words.length - 1 ? " " : null}
         </Fragment>
       ))}

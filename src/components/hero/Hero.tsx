@@ -11,7 +11,12 @@ import { HeroAtmosphere } from "@/components/hero/HeroAtmosphere";
 import { HeroCrystalMount } from "@/components/hero/HeroCrystalMount";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 
-const badges = ["Bogotá, Colombia", "Disponible 2026", "Anticipo Bre-B"];
+/**
+ * Badges de credibilidad. NO usar jerga local (Bre-B, etc.): el mercado
+ * destino incluye USA y un visitante extranjero no la entiende.
+ * Ver CLAUDE.md → "Rediseño v2 — decisiones vigentes".
+ */
+const badges = ["Bogotá · remoto", "Disponible 2026", "Sistema de captura incluido"];
 
 export function Hero() {
   return (
@@ -25,19 +30,21 @@ export function Hero() {
             className="cat-mascot-wrap inline-flex items-center gap-3 text-muted outline-none rounded-sm"
           >
             <CatMascot className="h-10 w-auto" />
-            <Eyebrow as="span">Castillo Studio · Diseño + desarrollo</Eyebrow>
+            <Eyebrow as="span">
+              Castillo Studio · Alejandro Díaz del Castillo
+            </Eyebrow>
           </div>
           <AnimatedHeadline
-            text="Sitios que muestran tu trabajo tan bien como es."
+            text="No una vitrina. Un sistema que captura."
             className="mt-8 max-w-4xl"
           />
           <Heading level="h3" as="h2" className="mt-6 max-w-2xl text-muted">
-            Para arquitectos, diseñadores de interior y estudios con criterio
-            visual.
+            Tu trabajo ya impresiona. El problema es lo que pasa después.
           </Heading>
           <Text size="lg" tone="muted" className="mt-8 max-w-xl">
-            Diseño editorial y desarrollo a medida en Next.js. Desde Bogotá,
-            para clientes en cualquier parte.
+            El sitio donde tus referidos terminan de decidirse. Diseño
+            editorial y desarrollo a medida para arquitectos, diseñadores de
+            interior y estudios con criterio visual.
           </Text>
           <div className="mt-12 flex flex-wrap items-center gap-4">
             <MagneticButton>

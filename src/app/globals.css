@@ -160,6 +160,22 @@ html.lenis body {
 .hero-enter > *:nth-child(5) { animation-delay: 380ms; }
 .hero-enter > *:nth-child(6) { animation-delay: 470ms; }
 
+/* Titular display: reveal palabra por palabra en CSS puro.
+   Va en CSS y NO en JS a propósito — el titular principal no puede depender
+   de que una librería de motion monte y dispare para ser legible. Con
+   `backwards` la palabra sostiene el estado inicial durante su delay y queda
+   en su estado natural (visible) al terminar; si las animaciones se
+   deshabilitan por completo, el texto simplemente ya está visible.
+   El bloque global de prefers-reduced-motion lo colapsa a 0.01ms. */
+.headline-reveal {
+  animation: none;
+}
+.headline-reveal > span {
+  display: inline-block;
+  animation: hero-enter 720ms var(--ease-out-expo) backwards;
+  animation-delay: calc(120ms + var(--word-index, 0) * 70ms);
+}
+
 /* Section reveal — base state (escondido).
    500ms da snap sin sentirse perezoso (Emil rule 4: sub-300 estricto en UI,
    tolerable 500 en content reveals one-shot). */

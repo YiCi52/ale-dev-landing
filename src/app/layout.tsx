@@ -25,11 +25,17 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Castillo Studio — Sitios para arquitectos y diseñadores",
+    default:
+      "Castillo Studio — Sitios que capturan clientes para arquitectos y diseñadores",
     template: "%s · Castillo Studio",
   },
+  /*
+   * El copy evita la promesa saturada del nicho ("una web que refleje tu
+   * trabajo") y ocupa el territorio libre detectado en la auditoría de
+   * competencia: lo que pasa DESPUÉS de que llega el visitante.
+   */
   description:
-    "Sitios web con diseño editorial para arquitectos, diseñadores de interior y estudios con criterio visual. Desarrollo a medida en Next.js. Desde Bogotá, para clientes en cualquier parte.",
+    "No solo una vitrina: sitios con diseño editorial y captura de clientes integrada para arquitectos, diseñadores de interior y estudios con criterio visual. Desarrollo a medida en Next.js.",
   metadataBase: new URL("https://ale-dev-landing.vercel.app"),
   openGraph: {
     type: "website",
