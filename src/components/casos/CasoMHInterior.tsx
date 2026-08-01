@@ -89,11 +89,21 @@ export function CasoMHInterior() {
           </Text>
         </Reveal>
         <Reveal delay={180}>
+          {/*
+            Estructura de relato "Everest": meta → por qué (nivel
+            transformación) → zona de muerte (lo que costaba) → pivote.
+            La lección de cierre va al final de la sección.
+          */}
           <Text size="base" tone="subtle" className="mt-6 max-w-2xl">
-            Mari Hernández tenía el portafolio regado en Instagram y clientes
-            que llegaban solo por voz a voz. Necesitaba una presencia propia
-            que mostrara su trabajo al nivel de su trabajo — y que convirtiera
-            visitas en conversaciones.
+            Mari Hernández tenía obra de primer nivel y ningún lugar donde
+            aterrizar a quien la buscaba. No quería “una página”: quería que su
+            trabajo se viera como lo que vale.
+          </Text>
+          <Text size="base" tone="subtle" className="mt-4 max-w-2xl">
+            Mientras tanto, cada interesado le llegaba por mensaje directo y se
+            perdía entre conversaciones. Sin registro, sin seguimiento, y sin
+            forma de saber cuántos se habían ido. Por eso no construimos una
+            vitrina: construimos un sistema.
           </Text>
         </Reveal>
       </div>
