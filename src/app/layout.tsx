@@ -63,6 +63,21 @@ export default function RootLayout({ children }: RootLayoutProps) {
       suppressHydrationWarning
     >
       <body className="min-h-screen flex flex-col isolate">
+        {/*
+          Gate del sello del hero. Marca la sesión ANTES del primer pintado
+          para que la coreografía luna→gato→C corra una sola vez y no en cada
+          navegación del cliente. Va inline y no en un efecto de React porque
+          un efecto llega después de la hidratación: el nombre alcanzaría a
+          verse y luego se escondería.
+          El HTML inyectado es una constante del código, sin ninguna entrada
+          de usuario. Si sessionStorage está bloqueado, no pasa nada: sin el
+          atributo el sello se queda en su estado final, que es el legible.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(!sessionStorage.getItem("cs-sello")){sessionStorage.setItem("cs-sello","1");document.documentElement.dataset.sello="play"}}catch(e){}`,
+          }}
+        />
         <SmoothScroll />
         <Grain />
         <FluidCursor />

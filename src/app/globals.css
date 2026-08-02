@@ -35,6 +35,11 @@
   --duration-slow: 500ms;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  /* Las dos de arriba son out puras: gastan casi todo el recorrido en el
+     primer tercio. Sirven para que algo APAREZCA, no para que algo VIAJE —
+     un desplazamiento largo con out-expo se lee como latigazo. Esta es la
+     curva de los trayectos: arranca, cruza a velocidad legible y asienta. */
+  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* Layout */
   --container-max: 78rem;
@@ -250,6 +255,119 @@ html.lenis body {
   .cat-mascot-wrap:hover .cat-tail,
   .cat-mascot-wrap:focus-within .cat-tail {
     animation: cat-tail-wag 2.6s ease-in-out infinite;
+  }
+}
+
+/* ── Sello Castillo: luna → gato → C → nombre ──────────────────────────────
+   Componente: src/components/hero/SelloCastillo.tsx
+   Contrato:   design-system/castillo-v2/logo-animado-gato-luna.md
+
+   REGLA: en reposo el sello YA está en su estado final — gato visible, nombre
+   legible, luna ausente. Las animaciones solo se agregan cuando el script de
+   layout.tsx marca la sesión como "no vista" (data-sello="play" en <html>).
+   Si el script no corre, no hay animación y no se pierde nada.
+
+   Todas las pistas terminan a los 2500ms para que el barrido de la C y la
+   aparición del nombre cierren en el mismo instante. */
+
+.sello__luna {
+  opacity: 0; /* la luna no existe en reposo: su papel es aparecer */
+}
+
+.sello__sombra {
+  transform-box: view-box;
+}
+
+/* Fases: no son cuatro dibujos, es un círculo que enmascara el disco y se
+   desliza. Cada fase sostiene un instante para leerse como fase y no como
+   barrido. El último paso deja una creciente — que es, ya, una C. */
+@keyframes sello-fases {
+  0%, 20%   { transform: translateX(48px); } /* llena */
+  38%, 50%  { transform: translateX(26px); } /* gibosa */
+  66%, 76%  { transform: translateX(15px); } /* cuarto */
+  100%      { transform: translateX(9px); }  /* creciente = C */
+}
+
+/* La luna aparece, se afina hasta proporción de letra y se apaga al salir.
+   El afinado (62% ≈ 1610ms) cierra justo antes de que arranque el barrido:
+   primero termina de ser luna, después se va como letra. */
+@keyframes sello-luna-vida {
+  0%        { opacity: 0; transform: scale(0.7); }
+  10%       { opacity: 1; transform: scale(1); }
+  50%       { transform: scaleX(1) scaleY(1); }
+  62%, 88%  { opacity: 1; transform: scaleX(0.86) scaleY(1.07); }
+  100%      { opacity: 0; transform: scaleX(0.86) scaleY(1.07); }
+}
+
+/* El gato entra caminando por debajo de la luna. El bamboleo es el paso. */
+@keyframes sello-gato-entra {
+  0%   { opacity: 0; transform: translateX(-210%) translateY(0); }
+  15%  { opacity: 1; }
+  35%  { transform: translateX(-120%) translateY(-9%); }
+  55%  { transform: translateX(-70%) translateY(0); }
+  78%  { transform: translateX(-25%) translateY(-6%); }
+  100% { opacity: 1; transform: translateX(0) translateY(0); }
+}
+
+/* El barrido va en la PISTA, no en la luna: como la pista mide lo mismo que
+   el sello, 100% es exactamente "hasta salir de cuadro" — sin medir texto. */
+@keyframes sello-c-barre {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+/* El nombre no se escribe, se DESCUBRE: ya está en el DOM y la C actúa de
+   cortina. Sin `forwards`, al terminar vuelve a no tener clip-path. */
+@keyframes sello-nombre-revela {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+/* Línea de tiempo (todo cierra a los 2600ms):
+   0–1100    la luna corre sus fases
+   400–1300  el gato entra caminando
+   1300–1650 gato Y luna juntos en cuadro — la imagen de la marca, sostenida
+   1650–2600 la C barre hacia afuera
+   1800–2600 el nombre se descubre a su paso                                */
+[data-sello="play"] .sello__sombra {
+  animation: sello-fases 1100ms ease-in-out forwards;
+}
+[data-sello="play"] .sello__luna {
+  animation: sello-luna-vida 2600ms ease-in-out;
+}
+[data-sello="play"] .sello__gato {
+  animation: sello-gato-entra 900ms var(--ease-out-quart) 400ms backwards;
+}
+/* Barrido y revelado comparten curva, delay y duración a propósito. La C
+   avanza sobre el ancho del sello y el borde del revelado sobre el ancho del
+   nombre, que empieza más a la derecha — al ir en fase, ese desfase deja el
+   borde del texto DENTRO del cuerpo de la C: el nombre sale de abajo de ella.
+   Si se desincronizan, aparece un hueco entre el texto y la C y el gesto deja
+   de leerse como causa. */
+[data-sello="play"] .sello__pista,
+[data-sello="play"] .sello__nombre {
+  animation-duration: 950ms;
+  animation-timing-function: var(--ease-in-out-cubic);
+  animation-delay: 1650ms;
+  animation-fill-mode: backwards;
+}
+[data-sello="play"] .sello__pista {
+  animation-name: sello-c-barre;
+}
+[data-sello="play"] .sello__nombre {
+  animation-name: sello-nombre-revela;
+}
+
+/* El bloque global de reduced-motion acorta duraciones pero NO los delays:
+   con 1600ms de espera el nombre quedaría oculto un segundo y medio. Acá se
+   apaga la coreografía entera y cada pieza cae en su estado natural. */
+@media (prefers-reduced-motion: reduce) {
+  [data-sello="play"] .sello__sombra,
+  [data-sello="play"] .sello__luna,
+  [data-sello="play"] .sello__gato,
+  [data-sello="play"] .sello__pista,
+  [data-sello="play"] .sello__nombre {
+    animation: none !important;
   }
 }
 

@@ -1,12 +1,6 @@
-import {
-  Button,
-  CatMascot,
-  Container,
-  Eyebrow,
-  Heading,
-  Text,
-} from "@/components/ui";
+import { Button, Container, Heading, Text } from "@/components/ui";
 import { AnimatedHeadline } from "@/components/hero/AnimatedHeadline";
+import { SelloCastillo } from "@/components/hero/SelloCastillo";
 import { HeroAtmosphere } from "@/components/hero/HeroAtmosphere";
 import { HeroCrystalMount } from "@/components/hero/HeroCrystalMount";
 import { MagneticButton } from "@/components/ui/MagneticButton";
@@ -25,15 +19,7 @@ export function Hero() {
       <HeroCrystalMount />
       <Container size="wide">
         <div className="hero-enter relative z-10">
-          <div
-            tabIndex={0}
-            className="cat-mascot-wrap inline-flex items-center gap-3 text-muted outline-none rounded-sm"
-          >
-            <CatMascot className="h-10 w-auto" />
-            <Eyebrow as="span">
-              Castillo Studio · Alejandro Díaz del Castillo
-            </Eyebrow>
-          </div>
+          <SelloCastillo />
           <AnimatedHeadline
             text="No una vitrina. Un sistema que captura."
             className="mt-8 max-w-4xl"
