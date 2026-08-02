@@ -16,6 +16,22 @@ import { usePathname } from "next/navigation";
 const FORCE = 6000;
 const MAX_VEL = 160;
 
+/*
+  Sin esto el simulador sigue renderizando para siempre: con densityDissipation
+  en 3 el tinte se apaga en ~1s, pero el bucle sigue dibujando lienzos vacíos a
+  cada frame mientras el visitante LEE — que es la mayor parte del tiempo que
+  pasa en la página, y justo cuando compite con el cristal 3D del hero.
+  1400ms deja terminar la disipación antes de dormirlo, así se pausa sobre un
+  lienzo ya vacío y no congela una ola a medio apagar.
+*/
+const INACTIVIDAD_MS = 1400;
+
+type Sim = {
+  stop: () => void;
+  togglePause: (drawWhilePaused?: boolean) => boolean;
+  splatAtLocation: (x: number, y: number, dx: number, dy: number) => void;
+};
+
 const clamp = (v: number, lim: number) => Math.max(-lim, Math.min(lim, v));
 
 export function FluidCursor() {
@@ -33,8 +49,23 @@ export function FluidCursor() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
-    let sim: { stop: () => void; splatAtLocation: (x: number, y: number, dx: number, dy: number) => void } | null = null;
+    let sim: Sim | null = null;
     let cancelled = false;
+    let dormido = false;
+    let temporizador: number | undefined;
+
+    // togglePause devuelve el estado resultante, así que la misma llamada sirve
+    // para dormir y despertar y el booleano nunca se desincroniza del sim.
+    const dormir = () => {
+      if (sim && !dormido) dormido = sim.togglePause(false);
+    };
+    const despertar = () => {
+      if (sim && dormido) dormido = sim.togglePause(false);
+    };
+    const reprogramarSiesta = () => {
+      window.clearTimeout(temporizador);
+      temporizador = window.setTimeout(dormir, INACTIVIDAD_MS);
+    };
 
     // Import dinámico: el módulo no entra al bundle inicial ni corre en SSR.
     import("webgl-fluid-enhanced").then((mod) => {
@@ -57,15 +88,22 @@ export function FluidCursor() {
         splatRadius: 0.2,
         splatForce: FORCE,
         simResolution: 128,
-        dyeResolution: 1024,
+        // 512 en vez de 1024: el tinte se dibuja a la mitad de lado, o sea a un
+        // cuarto de píxeles por frame. En un fluido borroso, tenue y a brillo
+        // 0.34 la diferencia no se ve; el ahorro de relleno sí se siente cuando
+        // comparte GPU con el cristal del hero.
+        dyeResolution: 512,
       });
       instance.start();
       sim = instance;
+      reprogramarSiesta();
     });
 
     const onMove = (e: PointerEvent) => {
       if (!sim) return;
       if (Math.abs(e.movementX) + Math.abs(e.movementY) < 1) return;
+      despertar();
+      reprogramarSiesta();
       const canvas = container.querySelector("canvas");
       if (!canvas || canvas.clientWidth === 0) return;
       const scaleX = canvas.width / canvas.clientWidth;
@@ -78,6 +116,7 @@ export function FluidCursor() {
 
     return () => {
       cancelled = true;
+      window.clearTimeout(temporizador);
       window.removeEventListener("pointermove", onMove);
       sim?.stop();
       // Limpia el canvas que el sim inyecta (evita duplicados con StrictMode).

@@ -40,9 +40,16 @@ function Crystal({ reduce, pointerRef }: CrystalProps) {
       <group ref={group} position={[0.5, -0.55, 0]}>
         <mesh scale={0.98}>
           <icosahedronGeometry args={[1, 0]} />
+          {/*
+            samples y resolution son el costo dominante de todo el hero: este
+            material re-renderiza la escena a un buffer aparte y la desenfoca
+            CADA frame, y ambos números multiplican ese trabajo. 4/192 sostienen
+            la refracción y la aberración cromática en un icosaedro de este
+            tamaño; 6/256 gastaba de más en detalle que no se distingue.
+          */}
           <MeshTransmissionMaterial
-            samples={6}
-            resolution={256}
+            samples={4}
+            resolution={192}
             transmission={1}
             thickness={0.5}
             roughness={0.04}
@@ -119,7 +126,9 @@ export function HeroCrystal() {
         dpr={[1, 1.6]}
         frameloop={reduce ? "demand" : active ? "always" : "never"}
         camera={{ position: [0, 0, 5], fov: 30 }}
-        gl={{ alpha: true, antialias: true }}
+        // Sin MSAA: resolverlo cuesta cada frame y acá no compra nada — el
+        // objeto es un cristal difuso sin bordes duros y el dpr ya llega a 1.6.
+        gl={{ alpha: true, antialias: false }}
       >
         <ambientLight intensity={0.5} />
         <Crystal reduce={reduce} pointerRef={pointerRef} />
