@@ -31,14 +31,35 @@ const buildItems: ReadonlyArray<BuildItem> = [
   },
 ];
 
-type PriceItem = {
-  service: string;
-  price: string;
+/*
+  No hay tabla de precios pública (decisión 2026-08-01). Un número en COP
+  ancla al visitante en el piso más bajo que vio y no traduce a un mercado
+  en USD. En su lugar se publica el MÉTODO: qué pasa entre el primer mensaje
+  y la cifra. Da la transparencia sin regalar el ancla, y de paso vende la
+  conversación de diagnóstico.
+*/
+type CotizaStep = {
+  step: string;
+  title: string;
+  note: string;
 };
 
-const priceItems: ReadonlyArray<PriceItem> = [
-  { service: "Landing 1 página", price: "desde $1.5M COP" },
-  { service: "Sitio portafolio 5 páginas", price: "desde $3.6M COP" },
+const cotizaSteps: ReadonlyArray<CotizaStep> = [
+  {
+    step: "01",
+    title: "Una conversación de 20 minutos",
+    note: "Cuántos interesados te llegan, quién los atiende, cuántos se quedan sin respuesta y cuánto vale uno que sí se convierte en trabajo.",
+  },
+  {
+    step: "02",
+    title: "El alcance por escrito, antes que la cifra",
+    note: "Lista explícita de lo que incluye y de lo que no. Si algo se te ocurre a mitad del proyecto, va al plan de la siguiente versión — no a una factura sorpresa.",
+  },
+  {
+    step: "03",
+    title: "Un número, desglosado",
+    note: "Vas a ver de dónde sale. Si no cuadra con lo que tienes, ajustamos el alcance — no el precio.",
+  },
 ];
 
 export function Servicios() {
@@ -57,7 +78,7 @@ export function Servicios() {
             <Heading level="h2">
               Qué construyo
               <br />
-              <span className="text-muted">y cuánto cuesta.</span>
+              <span className="text-muted">y cómo se cotiza.</span>
             </Heading>
           </Reveal>
           <Reveal delay={120}>
@@ -101,22 +122,33 @@ export function Servicios() {
 
           <Reveal>
             <div>
-              <Eyebrow as="span">Precios desde</Eyebrow>
-              <dl className="mt-6 grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-x-10">
-                {priceItems.map((item) => (
-                  <div key={item.service} className="contents">
-                    <dt className="font-serif text-lg text-foreground border-b border-[color:var(--color-border)] py-4">
-                      {item.service}
-                    </dt>
-                    <dd className="font-sans text-sm text-muted border-b border-[color:var(--color-border)] py-4 sm:text-right">
-                      {item.price}
-                    </dd>
-                  </div>
+              <Eyebrow as="span">Cómo se cotiza</Eyebrow>
+              <ol className="mt-6">
+                {cotizaSteps.map((item) => (
+                  <li
+                    key={item.step}
+                    className="grid grid-cols-[auto_1fr] gap-x-5 border-b border-[color:var(--color-border)] py-6 last:border-b-0"
+                  >
+                    <span
+                      aria-hidden
+                      className="font-mono text-xs tracking-[0.18em] text-[color:var(--color-accent)] pt-1.5"
+                    >
+                      {item.step}
+                    </span>
+                    <div>
+                      <Text size="lg" className="font-medium">
+                        {item.title}
+                      </Text>
+                      <Text size="sm" tone="subtle" className="mt-2 max-w-md">
+                        {item.note}
+                      </Text>
+                    </div>
+                  </li>
                 ))}
-              </dl>
+              </ol>
               <Text size="sm" tone="subtle" className="mt-6 max-w-md">
-                Anticipo del 50% vía Bre-B antes de empezar. Cliente fuera de
-                Colombia: equivalente en USD vía Wise.
+                Anticipo del 50% antes de empezar. Se factura en pesos
+                colombianos o en dólares, según dónde estés.
               </Text>
             </div>
           </Reveal>

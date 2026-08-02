@@ -13,16 +13,17 @@ export function RetainerBlock() {
       aria-label="Cuidado mensual del sitio"
       className="rounded-sm border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] p-8 lg:p-10"
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-4">
-        <Eyebrow as="span">Cuidado mensual del sitio</Eyebrow>
-        <Text size="lg" className="font-serif font-medium">
-          $400.000 COP / mes
-        </Text>
-      </div>
+      <Eyebrow as="span">Cuidado mensual del sitio</Eyebrow>
 
+      {/*
+        Sin cifra publicada: el retainer se cotiza como porcentaje del proyecto
+        y depende de qué tenga que sostener. Un número fijo aquí se convierte
+        en techo, nunca en piso.
+      */}
       <Text size="base" tone="muted" className="mt-6 max-w-xl">
-        Después de los 30 días de soporte incluidos en cada proyecto, podés
-        contratar mantenimiento continuo. No es obligatorio.
+        Después de los 30 días de soporte incluidos en cada proyecto, puedes
+        contratar mantenimiento continuo. No es obligatorio, y se cotiza junto
+        con el proyecto según lo que el sistema tenga que sostener.
       </Text>
 
       <ul className="mt-8 space-y-4">
