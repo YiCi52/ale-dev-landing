@@ -229,7 +229,7 @@ export function CasoMHInterior() {
           <div className="flex flex-col items-start gap-6 lg:items-end lg:text-right">
             <Eyebrow>En vivo</Eyebrow>
             <Text size="lg" tone="muted" className="max-w-sm">
-              Recorrelo como lo haría un cliente de Mari: proyectos, galerías
+              Recorrelo como lo haría un cliente de Maria: proyectos, galerías
               y contacto — en español o inglés.
             </Text>
             <Button
