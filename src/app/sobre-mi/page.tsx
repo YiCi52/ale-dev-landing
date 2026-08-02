@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { SobreMi } from "@/components/sobre-mi/SobreMi";
 import { Proceso } from "@/components/proceso/Proceso";
-import { Container, Reveal } from "@/components/ui";
+import { Reveal } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Sobre mí — Alejandro Díaz del Castillo",
@@ -17,17 +16,8 @@ export const metadata: Metadata = {
 */
 export default function SobreMiPage() {
   return (
+    // Sin migas de pan: el header persistente ya devuelve al inicio.
     <>
-      <Container size="wide">
-        <nav aria-label="Migas de pan" className="pt-32 sm:pt-40">
-          <Link
-            href="/"
-            className="font-mono text-xs uppercase tracking-[0.18em] text-subtle transition-colors hover:text-foreground"
-          >
-            ← Inicio
-          </Link>
-        </nav>
-      </Container>
       <SobreMi />
       <Reveal>
         <Proceso />

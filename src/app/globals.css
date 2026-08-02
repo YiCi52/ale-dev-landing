@@ -258,6 +258,39 @@ html.lenis body {
   }
 }
 
+/* Enlaces de navegación: subrayado que se dibuja desde la izquierda.
+   El estado de foco es el mismo que el de hover a propósito — un teclado
+   debe ver exactamente lo que ve un mouse. */
+.nav-enlace {
+  position: relative;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-muted);
+  transition: color var(--duration-normal) var(--ease-out-quart);
+}
+.nav-enlace::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.35em;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--duration-normal) var(--ease-out-quart);
+}
+.nav-enlace:hover,
+.nav-enlace:focus-visible {
+  color: var(--color-foreground);
+}
+.nav-enlace:hover::after,
+.nav-enlace:focus-visible::after {
+  transform: scaleX(1);
+}
+
 /* ── Sello Castillo: luna → gato → C → nombre ──────────────────────────────
    Componente: src/components/hero/SelloCastillo.tsx
    Contrato:   design-system/castillo-v2/logo-animado-gato-luna.md

@@ -13,7 +13,7 @@ export default function MHInteriorPage() {
   return (
     <>
       <Container size="wide">
-        <nav aria-label="Migas de pan" className="pt-32 sm:pt-40">
+        <nav aria-label="Migas de pan" className="pt-12 sm:pt-16">
           <Link
             href="/#casos"
             className="font-mono text-xs uppercase tracking-[0.18em] text-subtle transition-colors hover:text-foreground"

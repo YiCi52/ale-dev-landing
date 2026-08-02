@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Header } from "@/components/nav/Header";
 import { Footer } from "@/components/footer/Footer";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
 import { Grain } from "@/components/ui/Grain";
@@ -81,6 +82,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <SmoothScroll />
         <Grain />
         <FluidCursor />
+        <Header />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>
