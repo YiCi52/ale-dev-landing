@@ -17,7 +17,14 @@ eyebrow. Ventajas:
 1. **Luna** en fases: llena → menguante → cuarto → creciente (el ciclo, comprimido)
 2. **Gato negro** entra caminando desde un lado
 3. La luna se transforma en la **C** de Castillo Studio
-4. La C **se desplaza fuera de cuadro** y queda solo el gato (estado de reposo actual)
+4. La C **se desplaza hacia un lado y al hacerlo ARRASTRA/REVELA el nombre**
+   "CASTILLO STUDIO" — el deslizamiento deja de ser un movimiento gratuito y pasa
+   a ser el gesto que escribe la marca (refinamiento de Alejandro, 2026-08-01)
+5. La C sale de cuadro; queda el **nombre + el gato** (estado de reposo)
+
+Detalle de implementación del paso 4: el texto del eyebrow ya existe en el DOM —
+la C actúa como máscara/cortina que lo va descubriendo al desplazarse. Así el
+nombre es legible aunque la animación no corra (no se "escribe" con JS, se revela).
 
 ## Decisión técnica: SVG, NO 3D
 Descartado 3D/WebGL por tres razones:

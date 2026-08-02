@@ -4,7 +4,7 @@ import DecryptedText from "@/components/DecryptedText";
 import ScrollFloat from "@/components/ScrollFloat";
 
 /*
-  Caso #1 del nicho — MH Interior Design (Mari Hernández, Bogotá).
+  Caso #1 del nicho — MH Interior Design (Maria Hernández, Bogotá).
   Sitio de portafolio bilingüe para diseñadora de interiores, entregado
   y en producción 2026-07. Reemplaza el placeholder "en construcción"
   que vivía en CasoMacroLift.
@@ -95,7 +95,7 @@ export function CasoMHInterior() {
             La lección de cierre va al final de la sección.
           */}
           <Text size="base" tone="subtle" className="mt-6 max-w-2xl">
-            Mari Hernández tenía obra de primer nivel y ningún lugar donde
+            Maria Hernández tenía obra de primer nivel y ningún lugar donde
             aterrizar a quien la buscaba. No quería “una página”: quería que su
             trabajo se viera como lo que vale.
           </Text>
@@ -118,7 +118,7 @@ export function CasoMHInterior() {
           <Text size="lg" tone="muted" className="mt-8 max-w-xl">
             Renders fotorrealistas, fotos de obra real y conceptos académicos
             conviviendo en un mismo sitio, cada uno con la estructura que su
-            contenido pedía. Más un canal de contacto que le avisa a Mari en
+            contenido pedía. Más un canal de contacto que le avisa a Maria en
             el momento en que alguien deja sus datos.
           </Text>
         </Reveal>
@@ -176,7 +176,7 @@ export function CasoMHInterior() {
         </div>
       </div>
 
-      {/* Testimonio de la cliente — texto verbatim de Mari (2026-07-11). */}
+      {/* Testimonio de la cliente — texto verbatim de Maria (2026-07-11). */}
       <div className="mt-24 border-t border-[color:var(--color-border)] pt-16">
         <Reveal>
           <Eyebrow>Testimonio</Eyebrow>
@@ -195,7 +195,7 @@ export function CasoMHInterior() {
             </Text>
             <footer className="mt-8">
               <Text size="base" tone="muted">
-                Mari Hernández — MH Interior Design
+                Maria Hernández — MH Interior Design
               </Text>
             </footer>
           </blockquote>
