@@ -1,5 +1,6 @@
 import { Hero } from "@/components/hero/Hero";
 import { BarajaCasos } from "@/components/casos/BarajaCasos";
+import { Testimonio } from "@/components/casos/Testimonio";
 import { Servicios } from "@/components/servicios/Servicios";
 import { Contacto } from "@/components/form/Contacto";
 import { Reveal } from "@/components/ui";
@@ -17,6 +18,15 @@ export default function Home() {
       <Hero />
       <Reveal>
         <BarajaCasos />
+      </Reveal>
+      {/*
+        El testimonio va DESPUÉS del trabajo y ANTES de la oferta: primero se
+        ve lo que hizo, después alguien más lo respalda, y recién ahí se habla
+        de servicios. Al revés, el elogio llega antes de que haya algo que
+        elogiar.
+      */}
+      <Reveal>
+        <Testimonio />
       </Reveal>
       <Reveal>
         <Servicios />
