@@ -1,5 +1,20 @@
 # Sello animado: luna → gato (idea de Alejandro, 2026-08-01)
 
+> **IMPLEMENTADO** 2026-08-01 — `src/components/hero/SelloCastillo.tsx` +
+> bloque "Sello Castillo" en `src/app/globals.css` + gate inline en
+> `layout.tsx`. Línea de tiempo final (cierra a 2600ms):
+> `0–1100` fases · `400–1300` entra el gato · `1300–1650` gato y luna juntos
+> en cuadro (sostenido a propósito: es la imagen de la marca) ·
+> `1650–2600` la C barre y descubre el nombre.
+> Ajustes que salieron de la implementación y NO estaban en el plan:
+> (a) la luna va en el acento lila — con el gris del gato se fundían justo en
+> el frame que más importa; (b) barrido y revelado comparten curva, delay y
+> duración o aparece un hueco y el gesto deja de leerse como causa;
+> (c) curva `--ease-in-out-cubic` nueva: las `out` puras leen como latigazo en
+> recorridos largos; (d) bajo 640px el nombre queda solo en "Castillo Studio"
+> (el completo partía en dos líneas y la cortina vertical las descubría a la
+> vez); (e) las clases animadas viven en spans, no en los `<svg>`.
+
 ## Por qué existe
 La marca personal de Alejandro siempre lleva **un gato y una luna** — su animal y
 su astro favoritos. Es el detalle que la competencia del nicho (Luciano Marchisio,
