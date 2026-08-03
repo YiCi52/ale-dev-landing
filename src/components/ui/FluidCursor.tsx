@@ -33,7 +33,10 @@ const INACTIVIDAD_MS = 1400;
   exponga un "clear", y como a esa altura casi no queda tinte, el apagado es
   imperceptible. La espera cubre la transición para no pausar a mitad del fade.
 */
-const APAGADO_MS = 420;
+/* Debe coincidir con la transición de [data-fluido] > canvas en globals.css:
+   se pausa DESPUÉS de que termine el fundido, o se congela a mitad de camino
+   y vuelve el corte seco que esto vino a resolver. */
+const APAGADO_MS = 900;
 
 type Sim = {
   stop: () => void;

@@ -267,7 +267,12 @@ html.lenis body {
    atributo `style` del contenedor y se llevaba la opacidad por delante; el
    <canvas> hijo no lo toca. Ver src/components/ui/FluidCursor.tsx */
 [data-fluido] > canvas {
-  transition: opacity 420ms var(--ease-out-quart);
+  /* `linear` y no una curva out: el contenedor usa mix-blend-mode screen, y
+     con blend el brillo NO cae proporcional a la opacidad — la última porción
+     de luz se apaga de golpe justo al final (lo notó Alejandro). Una curva
+     out empeora eso porque comprime el tramo final. Lineal y más largo reparte
+     la caída pareja. */
+  transition: opacity 900ms linear;
 }
 [data-fluido="dormido"] > canvas {
   opacity: 0;
@@ -300,42 +305,89 @@ html.lenis body {
   /* Acota el recálculo de layout y pintado a esta caja: sin esto, cambiar el
      alto de una carta obliga al navegador a revisar el resto de la página. */
   contain: layout paint;
-  transition: height 620ms var(--ease-out-expo);
 }
 
-.baraja__carta[data-activa="true"] {
-  height: var(--carta-abierta);
-}
-
-/* El detalle y el llamado solo existen en la carta abierta. Van por opacidad
-   —no por display— para que la transición acompañe al alto en vez de aparecer
-   de golpe al final. `visibility` los saca del foco y del lector de pantalla
-   cuando están cerrados. */
 .baraja__detalle,
 .baraja__cta {
   opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 380ms var(--ease-out-quart),
-    visibility 0s linear 380ms;
 }
 
-.baraja__carta[data-activa="true"] .baraja__detalle,
-.baraja__carta[data-activa="true"] .baraja__cta {
-  opacity: 1;
-  visibility: visible;
-  transition:
-    opacity 420ms var(--ease-out-quart) 160ms,
-    visibility 0s;
-}
+/*
+  CAMINO A — el bueno. Animación GUIADA POR SCROLL: el alto de la carta y la
+  aparición del detalle van pegados a la posición de scroll, no saltan al
+  cruzar un umbral. Es el matiz que marcó Alejandro mirando vanity.llc: "la
+  expansión va CON el scroll". Si el visitante se detiene a mitad de camino,
+  la carta se queda a mitad de camino — eso es lo que da la sensación de estar
+  manipulando el contenido en vez de mirar una animación dispararse.
 
-/* Menos movimiento: el cambio de alto ocurre igual (es lo que hace legible la
-   carta) pero sin recorrido animado. */
-@media (prefers-reduced-motion: reduce) {
-  .baraja__carta,
+  `view()` mide el paso del elemento por el viewport; el rango `cover 12% ..
+  88%` recorta los extremos para que la carta llegue abierta del todo al
+  centro y no gaste recorrido en los bordes.
+*/
+@supports (animation-timeline: view()) {
+  .baraja__carta {
+    animation: baraja-foco linear both;
+    animation-timeline: view();
+    animation-range: cover 12% cover 88%;
+  }
   .baraja__detalle,
   .baraja__cta {
+    animation: baraja-detalle linear both;
+    animation-timeline: view();
+    animation-range: cover 22% cover 78%;
+  }
+}
+
+@keyframes baraja-foco {
+  0%, 100% { height: var(--carta-cerrada); }
+  42%, 58% { height: var(--carta-abierta); }
+}
+
+@keyframes baraja-detalle {
+  0%, 100% { opacity: 0; }
+  40%, 60% { opacity: 1; }
+}
+
+/*
+  CAMINO B — respaldo para navegadores sin animaciones guiadas por scroll.
+  Vuelve al salto por umbral: el IntersectionObserver del componente marca
+  data-activa y acá se transiciona. Peor que el scrub, pero legible y estable.
+*/
+@supports not (animation-timeline: view()) {
+  .baraja__carta {
+    transition: height 620ms var(--ease-out-expo);
+  }
+  .baraja__carta[data-activa="true"] {
+    height: var(--carta-abierta);
+  }
+  .baraja__detalle,
+  .baraja__cta {
+    transition: opacity 380ms var(--ease-out-quart);
+  }
+  .baraja__carta[data-activa="true"] .baraja__detalle,
+  .baraja__carta[data-activa="true"] .baraja__cta {
+    opacity: 1;
+  }
+}
+
+/*
+  Menos movimiento: acá NO alcanza con apagar la animación. El alto y la
+  opacidad SON la animación, así que quitarla dejaría todas las cartas
+  cerradas y el detalle invisible — la sección quedaría ilegible para quien
+  pidió menos movimiento, que es exactamente al revés de lo que se busca.
+  Se abren todas, sin recorrido: se ve el catálogo entero de una, quieto.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .baraja__carta {
+    animation: none;
     transition: none;
+    height: var(--carta-abierta);
+  }
+  .baraja__detalle,
+  .baraja__cta {
+    animation: none;
+    transition: none;
+    opacity: 1;
   }
 }
 
