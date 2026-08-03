@@ -258,6 +258,49 @@ html.lenis body {
   }
 }
 
+/* ── Baraja de casos: pila vertical apilable ───────────────────────────────
+   Componente: src/components/casos/BarajaCasos.tsx
+
+   Cada carta se pega con un tope ESCALONADO, así la que entra se detiene un
+   poco más abajo que la anterior y deja ver su franja superior. Eso es lo que
+   produce la lectura de "pila" sin animar una sola propiedad de layout.
+
+   El tope arranca debajo del header pegajoso (4rem) más aire. El paso es lo
+   que asoma de cada carta de atrás — pequeño a propósito: si es grande, deja
+   de verse una baraja y pasa a verse una lista mal alineada. */
+.baraja {
+  --baraja-tope: 6rem;
+  --baraja-paso: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  /* El espacio entre cartas ES el recorrido de scroll que cada una tiene
+     para protagonizar. Muy poco y se atropellan; mucho y la sección se
+     vuelve un desierto. */
+  gap: clamp(3rem, 6vw, 7rem);
+}
+
+.baraja__carta {
+  position: sticky;
+  top: calc(var(--baraja-tope) + var(--i, 0) * var(--baraja-paso));
+}
+
+/* La última no necesita quedarse pegada: si lo hace, retiene el scroll al
+   salir de la sección y se siente trabado. */
+.baraja__carta:last-child {
+  position: relative;
+  top: auto;
+}
+
+/* En pantallas bajas una carta puede medir más que el viewport disponible;
+   ahí el sticky "pelea" con el scroll y el final de la carta queda inalcanzable.
+   Por debajo de esa altura se apaga la pila y quedan cartas en flujo normal. */
+@media (max-height: 700px) {
+  .baraja__carta {
+    position: relative;
+    top: auto;
+  }
+}
+
 /* Enlaces de navegación: subrayado que se dibuja desde la izquierda.
    El estado de foco es el mismo que el de hover a propósito — un teclado
    debe ver exactamente lo que ve un mouse. */

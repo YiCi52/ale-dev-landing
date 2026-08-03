@@ -16,9 +16,14 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <Reveal>
-        <BarajaCasos />
-      </Reveal>
+      {/*
+        La baraja NO va envuelta en <Reveal>: ese wrapper aplica `transform` y
+        `will-change: transform`, y eso lo convierte en el marco de referencia
+        de sus descendientes — las cartas `position: sticky` de adentro dejan
+        de pegarse y pasan de largo. Es el mismo mecanismo que rompía el header
+        `fixed` del sitio de la clienta. La sección trae su propia entrada.
+      */}
+      <BarajaCasos />
       {/*
         El testimonio va DESPUÉS del trabajo y ANTES de la oferta: primero se
         ve lo que hizo, después alguien más lo respalda, y recién ahí se habla
