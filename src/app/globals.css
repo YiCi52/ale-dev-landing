@@ -291,20 +291,39 @@ html.lenis body {
    recálculo a la caja, e imagen en absolute que no reflowea por dentro— y
    porque la alternativa con `transform: scaleY` deforma la foto. Ver el
    comentario del componente. */
+/*
+  ALTO TOTAL FIJO — esto es lo que hace que la sección no sacuda la página.
+  Primera versión: cada carta animaba su propio `height`. Medido: el alto del
+  documento variaba 521px mientras se scrolleaba y se acumulaban 0.316 de
+  layout shift (la sección de control daba 0). Todo lo que estaba debajo se
+  movía bajo el scroll, y eso es el tirón que reportó Alejandro.
+  `contain: layout paint` NO alcanzaba: contiene el layout INTERNO de la carta,
+  no el efecto de su alto sobre el flujo de abajo.
+
+  Ahora el contenedor mide fijo y las cartas se REPARTEN ese espacio con
+  `flex-grow`. Si una crece, las otras encogen solas: la suma es constante por
+  construcción y el documento nunca cambia de alto. El recálculo queda acotado
+  a esta línea flex y no hay realimentación con el scroll.
+*/
 .baraja {
   --carta-cerrada: 6rem;
   --carta-abierta: clamp(22rem, 52vh, 34rem);
+  --hueco: 1rem;
+  height: calc(
+    var(--carta-abierta) + (var(--cartas, 2) - 1) *
+      (var(--carta-cerrada) + var(--hueco))
+  );
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--hueco);
 }
 
 .baraja__carta {
-  height: var(--carta-cerrada);
+  /* Base cerrada; el crecimiento lo pone la animación repartiendo el sobrante. */
+  flex: 0 1 var(--carta-cerrada);
+  min-height: var(--carta-cerrada);
   overflow: hidden;
-  /* Acota el recálculo de layout y pintado a esta caja: sin esto, cambiar el
-     alto de una carta obliga al navegador a revisar el resto de la página. */
-  contain: layout paint;
+  contain: paint;
 }
 
 .baraja__detalle,
@@ -338,9 +357,12 @@ html.lenis body {
   }
 }
 
+/* Se anima `flex-grow`, NO `height`: el sobrante se reparte dentro de un
+   contenedor de alto fijo, así el documento no cambia de alto y nada de lo que
+   está debajo se mueve mientras scrolleás. */
 @keyframes baraja-foco {
-  0%, 100% { height: var(--carta-cerrada); }
-  42%, 58% { height: var(--carta-abierta); }
+  0%, 100% { flex-grow: 0; }
+  42%, 58% { flex-grow: 1; }
 }
 
 @keyframes baraja-detalle {
@@ -355,10 +377,10 @@ html.lenis body {
 */
 @supports not (animation-timeline: view()) {
   .baraja__carta {
-    transition: height 620ms var(--ease-out-expo);
+    transition: flex-grow 620ms var(--ease-out-expo);
   }
   .baraja__carta[data-activa="true"] {
-    height: var(--carta-abierta);
+    flex-grow: 1;
   }
   .baraja__detalle,
   .baraja__cta {
@@ -378,10 +400,15 @@ html.lenis body {
   Se abren todas, sin recorrido: se ve el catálogo entero de una, quieto.
 */
 @media (prefers-reduced-motion: reduce) {
+  /* El alto fijo se suelta: sin animación, cada carta ocupa lo suyo y la
+     sección crece a lo que necesite. */
+  .baraja {
+    height: auto;
+  }
   .baraja__carta {
     animation: none;
     transition: none;
-    height: var(--carta-abierta);
+    flex: 0 0 var(--carta-abierta);
   }
   .baraja__detalle,
   .baraja__cta {

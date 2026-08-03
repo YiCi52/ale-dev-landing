@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { Eyebrow, Heading, Section, Text } from "@/components/ui";
 
 /*
@@ -118,7 +119,14 @@ export function BarajaCasos() {
         quedó funcionando después de la entrega.
       </Text>
 
-      <ol ref={listaRef} className="baraja mt-16">
+      {/* --cartas alimenta el cálculo del alto fijo del contenedor en el CSS:
+          una abierta + el resto en franja. Si mañana hay cinco casos, el alto
+          se ajusta solo y la sección sigue sin sacudir la página. */}
+      <ol
+        ref={listaRef}
+        className="baraja mt-16"
+        style={{ "--cartas": casos.length } as CSSProperties}
+      >
         {casos.map((c, i) => (
           <li
             key={c.slug}
