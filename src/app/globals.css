@@ -258,6 +258,21 @@ html.lenis body {
   }
 }
 
+/* Fluido del cursor: apagado antes de dormirlo.
+   La disipación del tinte es asintótica —se acerca a cero y nunca llega—, así
+   que pausar el simulador sin más congelaba ese resto tenue en pantalla hasta
+   el siguiente movimiento del mouse. Se apaga por opacidad y recién después se
+   congela.
+   Va acá y no como estilo inline porque webgl-fluid-enhanced REESCRIBE el
+   atributo `style` del contenedor y se llevaba la opacidad por delante; el
+   <canvas> hijo no lo toca. Ver src/components/ui/FluidCursor.tsx */
+[data-fluido] > canvas {
+  transition: opacity 420ms var(--ease-out-quart);
+}
+[data-fluido="dormido"] > canvas {
+  opacity: 0;
+}
+
 /* ── Baraja de casos: pila vertical apilable ───────────────────────────────
    Componente: src/components/casos/BarajaCasos.tsx
 

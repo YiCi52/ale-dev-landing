@@ -17,14 +17,23 @@ const FORCE = 6000;
 const MAX_VEL = 160;
 
 /*
-  Sin esto el simulador sigue renderizando para siempre: con densityDissipation
-  en 3 el tinte se apaga en ~1s, pero el bucle sigue dibujando lienzos vacíos a
-  cada frame mientras el visitante LEE — que es la mayor parte del tiempo que
-  pasa en la página, y justo cuando compite con el cristal 3D del hero.
-  1400ms deja terminar la disipación antes de dormirlo, así se pausa sobre un
-  lienzo ya vacío y no congela una ola a medio apagar.
+  Sin esto el simulador sigue renderizando para siempre: el tinte se apaga en
+  ~1s pero el bucle sigue dibujando lienzos vacíos a cada frame mientras el
+  visitante LEE — que es la mayor parte del tiempo que pasa en la página, y
+  justo cuando compite con el cristal 3D del hero.
 */
 const INACTIVIDAD_MS = 1400;
+
+/*
+  La disipación es ASINTÓTICA: se acerca a cero y nunca llega. Pausar sin más
+  congelaba ese resto tenue en pantalla hasta el siguiente movimiento del
+  mouse — poco visible pero permanente, y se notaba (lo detectó Alejandro).
+  Por eso el lienzo se apaga por OPACIDAD antes de dormirlo y se reenciende al
+  despertar: opacity es compositor-friendly, no depende de que la librería
+  exponga un "clear", y como a esa altura casi no queda tinte, el apagado es
+  imperceptible. La espera cubre la transición para no pausar a mitad del fade.
+*/
+const APAGADO_MS = 420;
 
 type Sim = {
   stop: () => void;
@@ -53,13 +62,29 @@ export function FluidCursor() {
     let cancelled = false;
     let dormido = false;
     let temporizador: number | undefined;
+    let apagador: number | undefined;
 
+    /*
+      El apagado va por un data-attribute y una regla CSS sobre el <canvas>
+      (ver globals.css), NO por estilo inline en el contenedor: la librería
+      REESCRIBE el atributo `style` del contenedor por su cuenta y se lleva
+      por delante cualquier opacidad que le pongamos ahí. Verificado: el
+      inline quedaba puesto y el valor computado seguía en 1.
+    */
     // togglePause devuelve el estado resultante, así que la misma llamada sirve
     // para dormir y despertar y el booleano nunca se desincroniza del sim.
     const dormir = () => {
-      if (sim && !dormido) dormido = sim.togglePause(false);
+      if (!sim || dormido) return;
+      // Primero se apaga a la vista, DESPUÉS se congela: al revés queda el
+      // resto de tinte pegado en pantalla hasta el siguiente movimiento.
+      container.dataset.fluido = "dormido";
+      apagador = window.setTimeout(() => {
+        if (sim && !dormido) dormido = sim.togglePause(false);
+      }, APAGADO_MS);
     };
     const despertar = () => {
+      window.clearTimeout(apagador);
+      container.dataset.fluido = "activo";
       if (sim && dormido) dormido = sim.togglePause(false);
     };
     const reprogramarSiesta = () => {
@@ -117,6 +142,7 @@ export function FluidCursor() {
     return () => {
       cancelled = true;
       window.clearTimeout(temporizador);
+      window.clearTimeout(apagador);
       window.removeEventListener("pointermove", onMove);
       sim?.stop();
       // Limpia el canvas que el sim inyecta (evita duplicados con StrictMode).
