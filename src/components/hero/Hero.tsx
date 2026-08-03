@@ -20,12 +20,23 @@ export function Hero() {
       <Container size="wide">
         <div className="hero-enter relative z-10">
           <SelloCastillo />
+          {/*
+            El titular carga el DOLOR, no el mecanismo (inversión 2026-08-02).
+            Antes decía "No una vitrina. Un sistema que captura." — una
+            distinción de categoría que solo entiende quien YA sabe que las
+            vitrinas fallan, y quien crea esa conciencia era la segunda línea.
+            O sea que el hero respondía una pregunta que todavía no había
+            hecho hacer. Referencia que lo confirma: vanity.llc abre con
+            "Design that sells" y deja "custom websites built for…" abajo.
+            El giro seco del final ("…no.") viene de la disciplina impasible
+            de oryzo.ai: el remate no se guiña el ojo.
+          */}
           <AnimatedHeadline
-            text="No una vitrina. Un sistema que captura."
+            text="Tu trabajo ya impresiona. Lo que pasa después, no."
             className="mt-8 max-w-4xl"
           />
           <Heading level="h3" as="h2" className="mt-6 max-w-2xl text-muted">
-            Tu trabajo ya impresiona. El problema es lo que pasa después.
+            No una vitrina: un sistema que captura.
           </Heading>
           <Text size="lg" tone="muted" className="mt-8 max-w-xl">
             El sitio donde tus referidos terminan de decidirse. Diseño
