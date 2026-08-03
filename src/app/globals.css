@@ -273,48 +273,72 @@ html.lenis body {
   opacity: 0;
 }
 
-/* ── Baraja de casos: pila vertical apilable ───────────────────────────────
+/* ── Baraja de casos: acordeón guiado por scroll ───────────────────────────
    Componente: src/components/casos/BarajaCasos.tsx
+   Referencia: vanity.llc/work (grabación de Alejandro, 2026-08-03).
 
-   Cada carta se pega con un tope ESCALONADO, así la que entra se detiene un
-   poco más abajo que la anterior y deja ver su franja superior. Eso es lo que
-   produce la lectura de "pila" sin animar una sola propiedad de layout.
+   Las cartas NO se apilan ni se superponen: están todas en lista y la que
+   queda en el centro del viewport se expande mientras el resto se comprime
+   en franjas. Se ve el catálogo completo y una sola pieza protagoniza.
 
-   El tope arranca debajo del header pegajoso (4rem) más aire. El paso es lo
-   que asoma de cada carta de atrás — pequeño a propósito: si es grande, deja
-   de verse una baraja y pasa a verse una lista mal alineada. */
+   Sobre animar `height`: sí, es una propiedad de layout y ECC pide evitarlas.
+   Se acepta acá con tres mitigaciones —pocas cartas, `contain` que acota el
+   recálculo a la caja, e imagen en absolute que no reflowea por dentro— y
+   porque la alternativa con `transform: scaleY` deforma la foto. Ver el
+   comentario del componente. */
 .baraja {
-  --baraja-tope: 6rem;
-  --baraja-paso: 1.75rem;
+  --carta-cerrada: 6rem;
+  --carta-abierta: clamp(22rem, 52vh, 34rem);
   display: flex;
   flex-direction: column;
-  /* El espacio entre cartas ES el recorrido de scroll que cada una tiene
-     para protagonizar. Muy poco y se atropellan; mucho y la sección se
-     vuelve un desierto. */
-  gap: clamp(3rem, 6vw, 7rem);
+  gap: 1rem;
 }
 
 .baraja__carta {
-  position: sticky;
-  top: calc(var(--baraja-tope) + var(--i, 0) * var(--baraja-paso));
+  height: var(--carta-cerrada);
+  overflow: hidden;
+  /* Acota el recálculo de layout y pintado a esta caja: sin esto, cambiar el
+     alto de una carta obliga al navegador a revisar el resto de la página. */
+  contain: layout paint;
+  transition: height 620ms var(--ease-out-expo);
 }
 
-/* La última no necesita quedarse pegada: si lo hace, retiene el scroll al
-   salir de la sección y se siente trabado. */
-.baraja__carta:last-child {
-  position: relative;
-  top: auto;
+.baraja__carta[data-activa="true"] {
+  height: var(--carta-abierta);
 }
 
-/* En pantallas bajas una carta puede medir más que el viewport disponible;
-   ahí el sticky "pelea" con el scroll y el final de la carta queda inalcanzable.
-   Por debajo de esa altura se apaga la pila y quedan cartas en flujo normal. */
-@media (max-height: 700px) {
-  .baraja__carta {
-    position: relative;
-    top: auto;
+/* El detalle y el llamado solo existen en la carta abierta. Van por opacidad
+   —no por display— para que la transición acompañe al alto en vez de aparecer
+   de golpe al final. `visibility` los saca del foco y del lector de pantalla
+   cuando están cerrados. */
+.baraja__detalle,
+.baraja__cta {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 380ms var(--ease-out-quart),
+    visibility 0s linear 380ms;
+}
+
+.baraja__carta[data-activa="true"] .baraja__detalle,
+.baraja__carta[data-activa="true"] .baraja__cta {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 420ms var(--ease-out-quart) 160ms,
+    visibility 0s;
+}
+
+/* Menos movimiento: el cambio de alto ocurre igual (es lo que hace legible la
+   carta) pero sin recorrido animado. */
+@media (prefers-reduced-motion: reduce) {
+  .baraja__carta,
+  .baraja__detalle,
+  .baraja__cta {
+    transition: none;
   }
 }
+
 
 /* Enlaces de navegación: subrayado que se dibuja desde la izquierda.
    El estado de foco es el mismo que el de hover a propósito — un teclado
