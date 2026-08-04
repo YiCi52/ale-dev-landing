@@ -42,8 +42,8 @@ export default function PrivacidadPage() {
               .
             </p>
             <p>
-              Esta política aplica a esta web (ale-dev-landing.vercel.app y
-              dominios asociados) y a cualquier interacción comercial derivada.
+              Esta política aplica a este sitio y sus dominios asociados, y a
+              cualquier interacción comercial derivada.
             </p>
           </Block>
 

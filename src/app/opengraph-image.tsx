@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SITE_URL } from "@/lib/site";
 
 export const runtime = "edge";
 export const alt = "Castillo Studio — Sitios para arquitectos y diseñadores";
@@ -67,7 +68,7 @@ export default function OpenGraphImage() {
           }}
         >
           <div>Bogotá, Colombia</div>
-          <div>ale-dev-landing.vercel.app</div>
+          <div>{new URL(SITE_URL).host}</div>
         </div>
       </div>
     ),

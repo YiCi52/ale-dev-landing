@@ -1,0 +1,26 @@
+# Castillo Studio
+
+> Estudio de desarrollo web para arquitectos, diseñadores de interior y estudios con criterio visual. Construye sitios donde el trabajo visual tiene que vender solo: diseño editorial más captura de clientes integrada — formulario, base de datos, notificación al dueño, resumen semanal y respaldo automático. Fundado por Alejandro Díaz del Castillo. Trabaja desde Colombia, con clientes en Colombia y Estados Unidos. Stack: Next.js, TypeScript, Supabase, Vercel.
+
+## Qué lo diferencia
+
+La mayoría de sitios del nicho terminan donde llega el visitante. Acá el sitio sigue funcionando
+después: cada interesado queda registrado, el dueño recibe la notificación, y los datos tienen
+respaldo. Eso se entrega de serie, no como extra.
+
+## Páginas
+
+- [Inicio](/): qué hace el estudio y para quién
+- [Sobre mí](/sobre-mi): una persona, no una agencia — proceso, criterios y forma de acompañar
+- [MH Interior Design](/trabajo/mh-interior): caso de cliente entregado y en producción
+- [MacroLift](/trabajo/macrolift): pieza propia
+- [Privacidad](/privacidad): tratamiento de datos (Ley 1581 de Colombia)
+
+## Trabajo verificable
+
+- MH Interior Design — https://www.mhinterior.net — estudio de diseño de interiores en Bogotá.
+  Sitio en producción con captura de leads, notificación automática y respaldo semanal.
+
+## Contacto
+
+Formulario en el sitio. Un proyecto activo a la vez.

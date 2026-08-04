@@ -5,6 +5,8 @@ import { Footer } from "@/components/footer/Footer";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
 import { Grain } from "@/components/ui/Grain";
 import { FluidCursor } from "@/components/ui/FluidCursor";
+import { StructuredData } from "@/components/seo/StructuredData";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 /*
@@ -37,7 +39,7 @@ export const metadata: Metadata = {
    */
   description:
     "No solo una vitrina: sitios con diseño editorial y captura de clientes integrada para arquitectos, diseñadores de interior y estudios con criterio visual. Desarrollo a medida en Next.js.",
-  metadataBase: new URL("https://ale-dev-landing.vercel.app"),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
     type: "website",
     locale: "es_CO",
@@ -64,6 +66,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       suppressHydrationWarning
     >
       <body className="min-h-screen flex flex-col isolate">
+        <StructuredData />
         {/*
           Gate del sello del hero. Marca la sesión ANTES del primer pintado
           para que la coreografía luna→gato→C corra una sola vez y no en cada
