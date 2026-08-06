@@ -81,31 +81,33 @@ export function GkGallery() {
     ghostRef.current = ghost;
     el.style.opacity = "0";
 
-    gsap.to(overlay, { autoAlpha: 1, duration: 0.35 });
+    // FLIP con transforms puros: top/left quedan FIJOS en el punto de partida y
+    // el viaje al centro es x/y (compositor). Animar top/left era lo que cortaba
+    // la animación y la dejaba descentrada.
+    const targetW = Math.min(560, window.innerWidth * 0.82);
+    const targetH = targetW * (10 / 16);
+    const dx = (window.innerWidth - targetW) / 2 - rect.left;
+    const dy = (window.innerHeight - targetH) / 2 - rect.top;
+
+    gsap.to(overlay, { autoAlpha: 1, duration: 0.4 });
     gsap.to(ghost, {
-      top: "50%",
-      left: "50%",
-      xPercent: -50,
-      yPercent: -50,
-      width: "min(560px, 82vw)",
-      height: "auto",
-      aspectRatio: "16/10",
-      duration: 0.65,
-      ease: "power3.inOut",
+      x: dx,
+      y: dy,
+      width: targetW,
+      height: targetH,
+      duration: 0.8,
+      ease: "expo.inOut",
     });
 
     const release = () => {
-      gsap.to(overlay, { autoAlpha: 0, duration: 0.3 });
-      const back = el.getBoundingClientRect();
+      gsap.to(overlay, { autoAlpha: 0, duration: 0.35 });
       gsap.to(ghost, {
-        top: back.top,
-        left: back.left,
-        xPercent: 0,
-        yPercent: 0,
-        width: back.width,
-        height: back.height,
-        duration: 0.55,
-        ease: "power3.inOut",
+        x: 0,
+        y: 0,
+        width: rect.width,
+        height: rect.height,
+        duration: 0.65,
+        ease: "expo.inOut",
         onComplete: () => {
           el.style.opacity = "1";
           ghost.remove();
