@@ -1,0 +1,746 @@
+/*
+  Lab "Gatekeep" — réplica de estudio de efectos.
+  Género: @avi_vashishta29 "Cool Devs Don't Gatekeep Pt.08" + @seanaiux "30k website".
+  Ejemplo vacío: nada es funcional a propósito. Paleta propia (tinta + cian + ámbar),
+  nada de púrpura/azul default. Tipos: --font-grotesk (layout del lab) + mono del sistema.
+*/
+
+.gk {
+  --gk-bg: #07080a;
+  --gk-bg-2: #0b0d10;
+  --gk-ink: #e9ece6;
+  --gk-dim: #8b9088;
+  --gk-cyan: #79e0d2;
+  --gk-amber: #e8b64c;
+  --gk-red: #d8544a;
+  --gk-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  background: var(--gk-bg);
+  color: var(--gk-ink);
+  font-family: var(--font-grotesk), system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+.gk ::selection {
+  background: var(--gk-cyan);
+  color: #06231e;
+}
+
+.gk-eyebrow {
+  font-family: var(--gk-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gk-dim);
+}
+
+.gk-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 clamp(1.25rem, 4vw, 4rem);
+  margin-bottom: clamp(2rem, 5vh, 4rem);
+}
+
+.gk-section-head h2 {
+  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ============ S1 — Hero: nebulosa + reveal en hover + 4ta pared ============ */
+
+.gk-space {
+  position: relative;
+  height: 240vh;
+}
+
+.gk-space__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: visible; /* la 4ta pared depende de NO recortar */
+  display: grid;
+  place-items: center;
+}
+
+.gk-nebula,
+.gk-fourth {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.gk-fourth {
+  inset: -18%;
+  width: 136%;
+  height: 136%;
+}
+
+.gk-hero-core {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  will-change: transform, opacity;
+}
+
+.gk-hero-core h1 {
+  position: relative;
+  z-index: 2; /* el titular respira por encima del tronco */
+  font-size: clamp(3rem, 11vw, 9rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+  cursor: crosshair;
+  mix-blend-mode: screen;
+}
+
+.gk-hero-core h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--gk-cyan);
+}
+
+.gk-hero-core p {
+  margin-top: 1.2rem;
+  font-family: var(--gk-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gk-dim);
+}
+
+/* Tronco del "object reveal on hover": render REAL de Blender en dos capas.
+   La capa con musgo se enmascara con un circulo que sigue al cursor. */
+.gk-log {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 46%;
+  width: min(640px, 74vw);
+  translate: -50% -50%;
+  opacity: 0;
+  scale: 0.88;
+  pointer-events: none;
+  filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.65));
+}
+
+.gk-log img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.gk-log__moss {
+  position: absolute;
+  inset: 0;
+  mask-image: radial-gradient(circle 160px at var(--mx, -999px) var(--my, -999px), #000 0 52%, transparent 76%);
+  -webkit-mask-image: radial-gradient(circle 160px at var(--mx, -999px) var(--my, -999px), #000 0 52%, transparent 76%);
+}
+
+.gk-space__hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 2;
+}
+
+/* ============ S2 — Carrusel curvo (anillo 3D con hover) ============ */
+
+.gk-ring-section {
+  position: relative;
+  padding: 16vh 0 10vh;
+  background: linear-gradient(#f4f2ec, #eceadf);
+  color: #17190f;
+  overflow: clip;
+}
+
+.gk-ring-section .gk-eyebrow { color: #6e7263; }
+
+.gk-ring-section .gk-giant {
+  position: absolute;
+  top: 6vh;
+  left: 50%;
+  translate: -50% 0;
+  font-size: clamp(4rem, 16vw, 13rem);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  color: rgba(23, 25, 15, 0.08);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.gk-ring-scene {
+  position: relative;
+  height: 62vh;
+  display: grid;
+  place-items: center;
+  perspective: 1500px;
+}
+
+.gk-ring {
+  position: relative;
+  width: 240px;
+  height: 320px;
+  transform-style: preserve-3d;
+}
+
+.gk-ring__card {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.8rem;
+  backface-visibility: hidden;
+  transition: filter 0.35s ease;
+  box-shadow: 0 18px 50px rgba(20, 20, 10, 0.25);
+}
+
+.gk-ring__card span {
+  font-family: var(--gk-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gk-ring__card:hover { filter: brightness(1.12); }
+
+/* ============ S3 — Carrusel "loco" disperso con sonido ============ */
+
+.gk-cloud-section {
+  position: relative;
+  padding: 18vh 0;
+  background: var(--gk-bg-2);
+  overflow: clip;
+}
+
+.gk-cloud {
+  position: relative;
+  height: 68vh;
+  perspective: 1300px;
+  cursor: grab;
+}
+
+.gk-cloud:active { cursor: grabbing; }
+
+.gk-cloud__inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.gk-cloud__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 180px;
+  height: 122px;
+  margin: -61px 0 0 -90px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.55rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  transition: filter 0.3s ease;
+}
+
+.gk-cloud__card:hover { filter: brightness(1.25); }
+
+.gk-cloud__card span {
+  font-family: var(--gk-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.gk-sound-chip {
+  position: absolute;
+  top: 0;
+  right: clamp(1.25rem, 4vw, 4rem);
+  font-family: var(--gk-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gk-dim);
+  border: 1px solid rgba(139, 144, 136, 0.35);
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.gk-sound-chip[data-on="true"] {
+  color: var(--gk-cyan);
+  border-color: rgba(121, 224, 210, 0.5);
+}
+
+/* ============ S4 — Grid editorial con scroll ============ */
+
+.gk-grid-section {
+  position: relative;
+  padding: 16vh 0 0;
+  background: #0a0908;
+  overflow: clip;
+}
+
+.gk-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem;
+  padding: 0 clamp(1.25rem, 4vw, 4rem);
+  height: 120vh;
+}
+
+.gk-col { will-change: transform; }
+
+.gk-tile {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.8rem;
+  aspect-ratio: 3 / 4;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.7rem;
+  will-change: transform, clip-path, opacity;
+}
+
+.gk-tile--wide { aspect-ratio: 16 / 10; }
+
+/* Skeleton loader: shimmer encima del tile hasta que "carga" (data-loaded) */
+.gk-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, #14161a 40%, #23272d 50%, #14161a 60%);
+  background-size: 220% 100%;
+  animation: gk-shimmer 1.15s linear infinite;
+  transition: opacity 0.55s ease;
+  transition-delay: var(--skd, 0ms);
+}
+
+.gk-tile[data-loaded="true"]::after {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gk-tile figcaption {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  transition-delay: calc(var(--skd, 0ms) + 180ms);
+}
+
+.gk-tile[data-loaded="true"] figcaption { opacity: 1; }
+
+@keyframes gk-shimmer {
+  to { background-position: -220% 0; }
+}
+
+.gk-tile figcaption {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  font-family: var(--gk-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gk-grid-fade {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 26vh;
+  background: linear-gradient(transparent, #0a0908 70%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ============ S5 — Producto 3D con scrub ============ */
+
+.gk-product {
+  position: relative;
+  height: 380vh;
+  background: linear-gradient(#101418, #0b1013);
+}
+
+.gk-product__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: clip;
+  perspective: 1600px;
+}
+
+.gk-product__label {
+  position: absolute;
+  top: 14vh;
+  left: 50%;
+  translate: -50% 0;
+  text-align: center;
+  z-index: 3;
+}
+
+.gk-product__label h2 {
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.gk-product__step {
+  position: absolute;
+  bottom: 12vh;
+  left: 50%;
+  translate: -50% 0;
+  font-family: var(--gk-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gk-cyan);
+  opacity: 0;
+  z-index: 3;
+}
+
+.gk-kbd {
+  position: relative;
+  width: min(560px, 78vw);
+  aspect-ratio: 16 / 7;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.gk-kbd__base {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #23282e, #14171b 60%);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.06) inset,
+    0 -14px 0 -6px #0a0c0e,
+    0 40px 90px rgba(0, 0, 0, 0.6);
+  transform: translateZ(-26px);
+}
+
+.gk-kbd__plate {
+  position: absolute;
+  inset: 3.5% 2.5%;
+  border-radius: 14px;
+  background: linear-gradient(150deg, #171b20, #0d1013 65%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  transform: translateZ(-10px);
+  will-change: transform;
+}
+
+.gk-kbd__deck {
+  position: absolute;
+  inset: 5% 4%;
+  transform-style: preserve-3d;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr) 1.35fr;
+  gap: 4.5%;
+}
+
+.gk-key {
+  border-radius: 10px;
+  background: linear-gradient(180deg, #3a4149, #22262c 70%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 10px 18px rgba(0, 0, 0, 0.45);
+  will-change: transform;
+}
+
+.gk-key--accent { background: linear-gradient(180deg, #ffd882, #cf9a2e 70%); }
+.gk-key--cyan { background: linear-gradient(180deg, #9ef0e4, #3f9a8d 70%); }
+
+.gk-knob {
+  border-radius: 50%;
+  aspect-ratio: 1;
+  align-self: center;
+  justify-self: center;
+  width: 86%;
+  background:
+    radial-gradient(circle at 34% 30%, #4d565f, #191d21 68%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 12px 22px rgba(0, 0, 0, 0.5);
+  will-change: transform;
+}
+
+/* ============ S6 — Portal ============ */
+
+.gk-portal {
+  position: relative;
+  height: 260vh;
+  background: #0b1013;
+}
+
+.gk-portal__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: clip;
+  perspective: 1200px;
+}
+
+.gk-portal__title {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 clamp(1.5rem, 6vw, 7rem);
+  font-size: clamp(1.6rem, 4.4vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.gk-portal__title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--gk-amber);
+}
+
+.gk-portal__frame {
+  position: relative;
+  z-index: 2;
+  width: min(380px, 62vw);
+  aspect-ratio: 3 / 4.1;
+  border-radius: 26px;
+  border: 1px solid rgba(233, 236, 230, 0.28);
+  background: linear-gradient(180deg, rgba(244, 242, 236, 0.05), rgba(244, 242, 236, 0.01));
+  box-shadow: 0 0 120px rgba(232, 182, 76, 0.12);
+  will-change: transform;
+}
+
+.gk-portal__card {
+  position: absolute;
+  z-index: 3;
+  width: min(300px, 50vw);
+  aspect-ratio: 8 / 5;
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, #1c2126 30%, #10233f 85%),
+    #1c2126;
+  border: 1px solid rgba(233, 236, 230, 0.16);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  font-family: var(--gk-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(233, 236, 230, 0.75);
+  will-change: transform, opacity;
+}
+
+.gk-portal__card i {
+  display: block;
+  width: 46px;
+  height: 30px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--gk-amber), #9c6f16);
+  font-style: normal;
+}
+
+/* ============ S7 — Poste de señales 3D (CTAs no funcionales) ============ */
+
+.gk-signs {
+  position: relative;
+  padding: 20vh 0 16vh;
+  background: linear-gradient(#dfe4e8, #cfd6da);
+  color: #14181c;
+  overflow: clip;
+}
+
+.gk-signs .gk-eyebrow { color: #5d666c; }
+
+.gk-signs__scene {
+  position: relative;
+  height: 74vh;
+  display: grid;
+  place-items: center;
+  perspective: 1200px;
+}
+
+.gk-signs__group {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.gk-pole {
+  width: 22px;
+  height: 62vh;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7d858c, #e8edf0 35%, #9aa3aa 65%, #5f676d);
+  box-shadow: 0 30px 60px rgba(20, 24, 28, 0.35);
+}
+
+.gk-pole__cap {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  translate: -50% 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff8577, var(--gk-red) 70%);
+  box-shadow: 0 10px 24px rgba(216, 84, 74, 0.45);
+}
+
+.gk-sign {
+  position: absolute;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.8rem 1.15rem;
+  font-family: var(--gk-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 6px;
+  box-shadow: 0 16px 36px rgba(20, 24, 28, 0.3);
+  transform-style: preserve-3d;
+  will-change: transform;
+  cursor: not-allowed;
+  user-select: none;
+}
+
+.gk-sign::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.5) 47%, transparent 60%);
+  translate: -120% 0;
+  transition: translate 0.6s ease;
+}
+
+.gk-sign:hover::after { translate: 120% 0; }
+
+.gk-sign--blue { background: #2456c4; color: #f2f6ff; }
+.gk-sign--white { background: #f4f6f2; color: #1c2126; }
+.gk-sign--yellow { background: var(--gk-amber); color: #221806; }
+
+.gk-sign i {
+  font-style: normal;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* ============ S8 — Collage glitch + cierre ============ */
+
+.gk-collage {
+  position: relative;
+  min-height: 120vh;
+  background: #060505;
+  overflow: clip;
+  display: grid;
+  place-items: center;
+}
+
+.gk-ascii {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 1rem;
+  font-family: var(--gk-mono);
+  font-size: 11px;
+  line-height: 1.35;
+  color: #7de3d3;
+  opacity: 0.1;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.gk-mini {
+  position: absolute;
+  border-radius: 5px;
+  overflow: hidden;
+  padding: 0.45rem;
+  display: flex;
+  align-items: flex-end;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.6);
+  will-change: transform, clip-path, filter;
+}
+
+.gk-mini span {
+  font-family: var(--gk-mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gk-mini:hover { animation: gk-glitch 0.45s steps(2, jump-none) infinite; }
+
+@keyframes gk-glitch {
+  0% { clip-path: inset(0 0 0 0); translate: 0 0; filter: hue-rotate(0deg); }
+  25% { clip-path: inset(12% 0 64% 0); translate: -5px 2px; filter: hue-rotate(38deg); }
+  50% { clip-path: inset(58% 0 8% 0); translate: 4px -2px; filter: hue-rotate(-30deg); }
+  75% { clip-path: inset(30% 0 32% 0); translate: -3px 1px; filter: hue-rotate(52deg); }
+  100% { clip-path: inset(0 0 0 0); translate: 0 0; filter: hue-rotate(0deg); }
+}
+
+.gk-fin {
+  position: relative;
+  z-index: 2;
+  max-width: 560px;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(6, 5, 5, 0.82);
+  border: 1px solid rgba(233, 236, 230, 0.14);
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+}
+
+.gk-fin h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+.gk-fin p {
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--gk-dim);
+}
+
+.gk-fin p + p { margin-top: 0.6rem; }
+
+/* ============ Reduced motion: todo estático, todo visible ============ */
+
+@media (prefers-reduced-motion: reduce) {
+  .gk-orb,
+  .gk-sign::after { animation: none; transition: none; }
+  .gk-space { height: auto; }
+  .gk-space__sticky { position: relative; }
+  .gk-product { height: auto; }
+  .gk-product__sticky { position: relative; }
+  .gk-portal { height: auto; }
+  .gk-portal__sticky { position: relative; }
+  .gk-mini:hover { animation: none; }
+}
+
+@media (max-width: 720px) {
+  .gk-grid { grid-template-columns: repeat(2, 1fr); }
+  .gk-ring { width: 170px; height: 230px; }
+}
