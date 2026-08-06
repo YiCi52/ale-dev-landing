@@ -195,7 +195,7 @@ export function CasoMHInterior() {
             </Text>
             <footer className="mt-8">
               <Text size="base" tone="muted">
-                Maria Hernández — MH Interior Design
+                Maria Hernández · MH Interior Design
               </Text>
             </footer>
           </blockquote>

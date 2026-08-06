@@ -37,7 +37,7 @@ export function Testimonio() {
         </blockquote>
         <figcaption className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">
           <Text size="base" tone="muted">
-            Maria Hernández — MH Interior Design
+            Maria Hernández · MH Interior Design
           </Text>
           <Link
             href="/trabajo/mh-interior"

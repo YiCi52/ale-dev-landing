@@ -53,12 +53,12 @@ const cotizaSteps: ReadonlyArray<CotizaStep> = [
   {
     step: "02",
     title: "El alcance por escrito, antes que la cifra",
-    note: "Lista explícita de lo que incluye y de lo que no. Si algo se te ocurre a mitad del proyecto, va al plan de la siguiente versión — no a una factura sorpresa.",
+    note: "Lista explícita de lo que incluye y de lo que no. Si algo se te ocurre a mitad del proyecto, va al plan de la siguiente versión, no a una factura sorpresa.",
   },
   {
     step: "03",
     title: "Un número, desglosado",
-    note: "Vas a ver de dónde sale. Si no cuadra con lo que tienes, ajustamos el alcance — no el precio.",
+    note: "Vas a ver de dónde sale. Si no cuadra con lo que tienes, ajustamos el alcance, no el precio.",
   },
 ];
 
