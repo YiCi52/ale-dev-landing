@@ -26,21 +26,23 @@ const RING_CARDS = [
   ["#2b2b3b", "#9a9ae0", "noche"],
 ] as const;
 
+// Hues restringidos a las familias de la casa (cian 165-190 · ámbar 30-48 ·
+// brasa 4-14): un solo "fotógrafo" para toda la nube.
 const CLOUD_CARDS = [
   { x: -320, y: -140, z: -220, r: -9, hue: 168 },
   { x: 40, y: -190, z: -60, r: 6, hue: 42 },
   { x: 330, y: -120, z: -300, r: 12, hue: 6 },
-  { x: -140, y: -40, z: 80, r: -4, hue: 200 },
-  { x: 220, y: -10, z: 160, r: 8, hue: 84 },
-  { x: -380, y: 60, z: -40, r: -14, hue: 280 },
+  { x: -140, y: -40, z: 80, r: -4, hue: 182 },
+  { x: 220, y: -10, z: 160, r: 8, hue: 34 },
+  { x: -380, y: 60, z: -40, r: -14, hue: 10 },
   { x: 90, y: 90, z: -180, r: 3, hue: 24 },
-  { x: 360, y: 120, z: 40, r: 10, hue: 152 },
-  { x: -220, y: 170, z: 200, r: -7, hue: 60 },
-  { x: -20, y: 220, z: -320, r: 5, hue: 210 },
-  { x: 250, y: 230, z: -120, r: -11, hue: 330 },
-  { x: -420, y: -220, z: -380, r: 15, hue: 96 },
+  { x: 360, y: 120, z: 40, r: 10, hue: 174 },
+  { x: -220, y: 170, z: 200, r: -7, hue: 46 },
+  { x: -20, y: 220, z: -320, r: 5, hue: 188 },
+  { x: 250, y: 230, z: -120, r: -11, hue: 8 },
+  { x: -420, y: -220, z: -380, r: 15, hue: 38 },
   { x: 430, y: -240, z: -200, r: -6, hue: 186 },
-  { x: 10, y: -60, z: 260, r: 2, hue: 258 },
+  { x: 10, y: -60, z: 260, r: 2, hue: 30 },
 ] as const;
 
 export function GkCarousels() {
@@ -66,12 +68,16 @@ export function GkCarousels() {
       paused: reduced,
     });
 
+    // Hover solo con puntero fino: en touch un tap dejaría el anillo congelado.
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (!fine) return () => spin.kill();
+
     const cards = Array.from(ring.children) as HTMLElement[];
     const enter = (card: HTMLElement, i: number) => () => {
-      gsap.to(spin, { timeScale: 0, duration: 0.5 });
+      gsap.to(spin, { timeScale: 0, duration: 0.35 });
       gsap.to(card, {
         transform: `rotateY(${i * 36}deg) translateZ(500px) scale(1.07)`,
-        duration: 0.45,
+        duration: 0.3,
         ease: "power3.out",
       });
     };
@@ -79,7 +85,7 @@ export function GkCarousels() {
       gsap.to(spin, { timeScale: 1, duration: 0.8 });
       gsap.to(card, {
         transform: `rotateY(${i * 36}deg) translateZ(420px) scale(1)`,
-        duration: 0.5,
+        duration: 0.35,
         ease: "power3.inOut",
       });
     };
@@ -113,15 +119,27 @@ export function GkCarousels() {
     let rot = 0;
     let dragging = false;
     let lastX = 0;
+    let vel = 0;
 
     const down = (e: PointerEvent) => {
+      if (dragging) return; // segundo dedo: se ignora (evita el salto de lastX)
       dragging = true;
       lastX = e.clientX;
+      vel = 0;
+      // captura: el arrastre sobrevive aunque el puntero salga del contenedor
+      cloud.setPointerCapture(e.pointerId);
     };
-    const up = () => (dragging = false);
+    const up = () => {
+      if (!dragging) return;
+      dragging = false;
+      // fling: la última velocidad se descarga como inercia (quickTo la suaviza)
+      rot += vel * 9;
+      rotTo(rot);
+    };
     const move = (e: PointerEvent) => {
       if (dragging) {
-        rot += (e.clientX - lastX) * 0.25;
+        vel = e.clientX - lastX;
+        rot += vel * 0.25;
         lastX = e.clientX;
         rotTo(rot);
       }
@@ -177,7 +195,7 @@ export function GkCarousels() {
     <>
       <section className="gk-ring-section" aria-label="Carrusel curvo (demo)">
         <span className="gk-giant" aria-hidden>
-          PORTFOLIO
+          ARCHIVO
         </span>
         <div className="gk-section-head">
           <h2>Carrusel curvo</h2>

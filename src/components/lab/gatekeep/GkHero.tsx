@@ -156,11 +156,34 @@ export function GkHero() {
         fctx.fill();
       }
 
-      raf = requestAnimationFrame(draw);
+      // El agendado depende de `running`: en reduced esto dibuja UN frame y
+      // para; fuera de viewport la compuerta lo detiene (cero rAF de fondo).
+      if (running) raf = requestAnimationFrame(draw);
     };
 
-    if (!reduced) raf = requestAnimationFrame(draw);
-    else draw();
+    let running = false;
+    const start = () => {
+      if (running) return;
+      running = true;
+      raf = requestAnimationFrame(draw);
+    };
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+    };
+
+    let gate: ScrollTrigger | null = null;
+    if (reduced) {
+      draw(); // frame único estático
+    } else {
+      gate = ScrollTrigger.create({
+        trigger: section,
+        start: "top bottom",
+        end: "bottom top",
+        onToggle: (self) => (self.isActive ? start() : stop()),
+      });
+      if (gate.isActive) start();
+    }
 
     // Zoom A TRAVÉS del ojo (scrub sobre la sección pineada por sticky).
     const ctx = gsap.context(() => {
@@ -181,7 +204,8 @@ export function GkHero() {
     }, section);
 
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
+      gate?.kill();
       window.removeEventListener("resize", fit);
       ctx.revert();
     };
@@ -202,6 +226,8 @@ export function GkHero() {
       moss.style.setProperty("--my", "35%");
       return;
     }
+    // En touch el hover no existe: un tap dejaría el tronco pegado en pantalla
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
     const xTo = gsap.quickTo(logEl, "x", { duration: 0.7, ease: "power3.out" });
     const rTo = gsap.quickTo(logEl, "rotation", { duration: 0.9, ease: "power3.out" });
@@ -217,7 +243,8 @@ export function GkHero() {
     const enter = () =>
       gsap.to(logEl, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.4)" });
     const leave = () => {
-      gsap.to(logEl, { opacity: 0, scale: 0.88, duration: 0.45, ease: "power2.in" });
+      // exits siempre ease-out y rápidos: ease-in retrasa justo lo que se mira
+      gsap.to(logEl, { opacity: 0, scale: 0.88, duration: 0.3, ease: "power2.out" });
       moss.style.setProperty("--mx", "-999px");
       moss.style.setProperty("--my", "-999px");
     };

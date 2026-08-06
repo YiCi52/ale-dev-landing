@@ -71,6 +71,29 @@ export function GkWarp() {
 
     const f = 300; // focal
     let raf = 0;
+    let running = false;
+
+    // Reduced: un solo cuadro de puntos quietos — cero deriva, cero loop.
+    const drawStatic = () => {
+      const cx = W / 2;
+      const cy = H / 2;
+      ctx.fillStyle = "#050608";
+      ctx.fillRect(0, 0, W, H);
+      for (const s of stars) {
+        const x = cx + (s.sx / (s.z * f)) * 60;
+        const y = cy + (s.sy / (s.z * f)) * 60;
+        const bright = Math.min(1, (1 - s.z) * 1.4);
+        ctx.fillStyle =
+          s.tint > 0.9
+            ? `rgba(232, 182, 76, ${bright})`
+            : s.tint > 0.72
+              ? `rgba(121, 224, 210, ${bright})`
+              : `rgba(236, 240, 244, ${bright})`;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(0.6, (1 - s.z) * 1.4), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
 
     const draw = () => {
       const cx = W / 2;
@@ -79,7 +102,7 @@ export function GkWarp() {
       ctx.fillStyle = `rgba(5, 6, 8, ${0.55 - speed.v * 0.35})`;
       ctx.fillRect(0, 0, W, H);
 
-      const v = reduced ? 0.002 : 0.002 + speed.v * 0.06;
+      const v = 0.002 + speed.v * 0.06;
 
       for (const s of stars) {
         const zPrev = s.z;
@@ -106,9 +129,32 @@ export function GkWarp() {
         ctx.lineTo(x1, y1);
         ctx.stroke();
       }
+      if (running) raf = requestAnimationFrame(draw);
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
       raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+    };
+
+    // Compuerta de visibilidad: el starfield solo repinta cuando está en pantalla.
+    let gate: ScrollTrigger | null = null;
+    if (reduced) {
+      drawStatic();
+    } else {
+      gate = ScrollTrigger.create({
+        trigger: section,
+        start: "top bottom",
+        end: "bottom top",
+        onToggle: (self) => (self.isActive ? start() : stop()),
+      });
+      if (gate.isActive) start();
+    }
 
     // etiqueta y entrega: el canvas se funde al final hacia la siguiente sección
     const ctxg = gsap.context(() => {
@@ -123,7 +169,8 @@ export function GkWarp() {
     }, section);
 
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
+      gate?.kill();
       window.removeEventListener("resize", fit);
       st.kill();
       ctxg.revert();

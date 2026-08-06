@@ -10,41 +10,43 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
   Nombres inventados (ejemplo vacío).
 */
 
+// Hues restringidos a las familias de la casa (cian 165-190 · ámbar 30-48 ·
+// brasa 4-14): el catálogo se ve dirigido, no salido de un generador.
 const COLUMNS: { speed: number; tiles: { hue: number; name: string; dur: string; wide?: boolean }[] }[] = [
   {
     speed: 0.6,
     tiles: [
-      { hue: 30, name: "ochenta inviernos", dur: "03:41" },
-      { hue: 180, name: "sala vacía", dur: "02:58", wide: true },
-      { hue: 84, name: "kiosko", dur: "04:12" },
-      { hue: 320, name: "vidrio", dur: "01:47" },
+      { hue: 34, name: "ochenta inviernos", dur: "03:41" },
+      { hue: 172, name: "sala vacía", dur: "02:58", wide: true },
+      { hue: 8, name: "kiosko", dur: "04:12" },
+      { hue: 44, name: "vidrio", dur: "01:47" },
     ],
   },
   {
     speed: 1.15,
     tiles: [
-      { hue: 200, name: "noches de junio", dur: "05:03", wide: true },
+      { hue: 178, name: "noches de junio", dur: "05:03", wide: true },
       { hue: 12, name: "temporal", dur: "03:26" },
-      { hue: 250, name: "casi ida", dur: "02:31" },
-      { hue: 140, name: "estático", dur: "03:59", wide: true },
+      { hue: 30, name: "casi ida", dur: "02:31" },
+      { hue: 168, name: "estático", dur: "03:59", wide: true },
     ],
   },
   {
     speed: 0.85,
     tiles: [
-      { hue: 48, name: "milimétrico", dur: "02:14" },
-      { hue: 275, name: "vaho", dur: "04:47", wide: true },
-      { hue: 160, name: "puerto seco", dur: "03:05" },
-      { hue: 8, name: "señal", dur: "02:52" },
+      { hue: 40, name: "milimétrico", dur: "02:14" },
+      { hue: 186, name: "vaho", dur: "04:47", wide: true },
+      { hue: 170, name: "puerto seco", dur: "03:05" },
+      { hue: 6, name: "señal", dur: "02:52" },
     ],
   },
   {
     speed: 1.4,
     tiles: [
-      { hue: 100, name: "monte", dur: "03:33" },
-      { hue: 220, name: "planetario", dur: "02:20" },
-      { hue: 340, name: "no tan lejos", dur: "04:01", wide: true },
-      { hue: 60, name: "civil", dur: "03:18" },
+      { hue: 10, name: "monte", dur: "03:33" },
+      { hue: 176, name: "planetario", dur: "02:20" },
+      { hue: 32, name: "no tan lejos", dur: "04:01", wide: true },
+      { hue: 46, name: "civil", dur: "03:18" },
     ],
   },
 ];
@@ -53,6 +55,9 @@ export function GkGrid() {
   const sectionRef = useRef<HTMLElement>(null);
   // Skeleton loaders (regla @haydenschmitty): shimmer al montar, contenido
   // resolviendo escalonado — nunca pop-in en bloque ni spinner genérico.
+  // FRONTERA: el timer simula la carga porque este demo no carga nada real.
+  // En un sitio de producción, data-loaded se amarra a la carga REAL (onLoad
+  // de la imagen / resolución del fetch) — nunca a un setTimeout.
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     const id = window.setTimeout(() => setLoaded(true), 1250);
@@ -82,21 +87,25 @@ export function GkGrid() {
         );
       });
 
-      // Reveal de cada pieza al entrar en viewport.
-      section.querySelectorAll<HTMLElement>(".gk-tile").forEach((tile, i) => {
-        gsap.fromTo(
-          tile,
-          { clipPath: "inset(14% 10% 14% 10% round 6px)", opacity: 0.2, y: 44 },
-          {
-            clipPath: "inset(0% 0% 0% 0% round 6px)",
-            opacity: 1,
-            y: 0,
-            duration: 0.9,
-            ease: "power3.out",
-            delay: (i % 4) * 0.06,
-            scrollTrigger: { trigger: tile, start: "top 92%" },
-          }
-        );
+      // Reveal de cada pieza al entrar en viewport. El stagger va por COLUMNA:
+      // las piezas que entran simultáneas son las de la misma fila entre
+      // columnas, así que el escalonado se siente de izquierda a derecha.
+      section.querySelectorAll<HTMLElement>(".gk-col").forEach((col, ci) => {
+        col.querySelectorAll<HTMLElement>(".gk-tile").forEach((tile) => {
+          gsap.fromTo(
+            tile,
+            { clipPath: "inset(14% 10% 14% 10% round 6px)", opacity: 0.2, y: 44 },
+            {
+              clipPath: "inset(0% 0% 0% 0% round 6px)",
+              opacity: 1,
+              y: 0,
+              duration: 0.9,
+              ease: "power3.out",
+              delay: ci * 0.06,
+              scrollTrigger: { trigger: tile, start: "top 92%" },
+            }
+          );
+        });
       });
     }, section);
 
@@ -118,7 +127,7 @@ export function GkGrid() {
                 className={tile.wide ? "gk-tile gk-tile--wide" : "gk-tile"}
                 data-loaded={loaded}
                 style={{
-                  background: `linear-gradient(165deg, hsl(${tile.hue} 30% 14%), hsl(${tile.hue} 45% 34%) 70%, hsl(${(tile.hue + 40) % 360} 50% 52%))`,
+                  background: `linear-gradient(165deg, hsl(${tile.hue} 30% 14%), hsl(${tile.hue} 45% 34%) 70%, hsl(${(tile.hue + 14) % 360} 50% 52%))`,
                   ["--skd" as string]: `${(ci * 4 + ti) * 70}ms`,
                 }}
               >

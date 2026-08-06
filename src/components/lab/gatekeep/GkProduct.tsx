@@ -37,7 +37,10 @@ export function GkProduct() {
 
       gsap.set(kbd, { rotateX: 62, rotateY: 0, rotateZ: 0, scale: 0.92 });
 
-      const showStep = (i: number) =>
+      let lastStep = -1;
+      const showStep = (i: number) => {
+        if (i === lastStep) return;
+        lastStep = i;
         steps.forEach((s, si) =>
           gsap.to(s, {
             opacity: si === i ? 1 : 0,
@@ -46,9 +49,12 @@ export function GkProduct() {
             overwrite: "auto",
           })
         );
+      };
 
       // Desarme tipo dron: cada pieza toma su propio vector (z + deriva x/y +
       // giro), la cámara ORBITA durante la explosión y todo vuelve a su sitio.
+      // El paso activo se deriva del PROGRESO del scrub (no de .call(), que al
+      // escrubear en reversa dispara el label equivocado o no re-dispara).
       gsap
         .timeline({
           scrollTrigger: {
@@ -56,13 +62,15 @@ export function GkProduct() {
             start: "top top",
             end: "bottom bottom",
             scrub: 0.7,
+            onUpdate: (self) => {
+              const p = self.progress;
+              showStep(p < 0.33 ? 0 : p < 0.72 ? 1 : 2);
+            },
           },
         })
         // 01 — de cenital a isométrico
-        .call(() => showStep(0))
         .to(kbd, { rotateX: 24, rotateY: -26, rotateZ: 6, scale: 1, ease: "power2.inOut", duration: 2 })
         // 02 — explosión con órbita de cámara
-        .call(() => showStep(1))
         .to(kbd, { rotateY: 26, rotateX: 32, rotateZ: -4, scale: 1.08, ease: "power2.inOut", duration: 2.2 }, "explode")
         .to(base, { z: -140, rotateX: 9, ease: "power2.inOut", duration: 1.8 }, "explode")
         .to(plate, { z: -52, rotateX: 4, ease: "power2.inOut", duration: 1.8 }, "explode")
@@ -84,10 +92,11 @@ export function GkProduct() {
         // pausa flotando: deriva sutil de las piezas separadas
         .to(keys, { y: "+=6", ease: "sine.inOut", duration: 0.5 }, "explode+=1.9")
         // 03 — re-armado + presentación
-        .call(() => showStep(2))
         .to([base, plate, knob], { z: 0, x: 0, y: 0, rotateX: 0, rotateZ: 0, ease: "power3.inOut", duration: 1.7 }, "join")
         .to(keys, { z: 0, x: 0, y: 0, rotateX: 0, rotateZ: 0, ease: "power3.inOut", duration: 1.7 }, "join")
         .to(kbd, { rotateX: 14, rotateY: 14, rotateZ: 0, scale: 1.06, ease: "power2.inOut", duration: 1.7 }, "join");
+
+      showStep(0); // el primer label visible antes del primer tick de scroll
 
       // Portal
       const frame = portal.querySelector(".gk-portal__frame");

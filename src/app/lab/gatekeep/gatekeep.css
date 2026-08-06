@@ -25,6 +25,26 @@
   color: #06231e;
 }
 
+/* Atmósfera: film grain global (~4%) que cose las secciones entre sí */
+.gk::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
+/* Focus visible propio: anillo cian, nunca el outline default sobre pieza premium */
+.gk :focus-visible {
+  outline: 2px solid var(--gk-cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 .gk-eyebrow {
   font-family: var(--gk-mono);
   font-size: 0.7rem;
@@ -255,8 +275,8 @@
 
 .gk-cloud__card span {
   font-family: var(--gk-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.16em;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -326,8 +346,8 @@
 
 .gk-gal__card span {
   font-family: var(--gk-mono);
-  font-size: 0.52rem;
-  letter-spacing: 0.14em;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -427,8 +447,8 @@
   width: 100%;
   justify-content: space-between;
   font-family: var(--gk-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.14em;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.85);
 }
@@ -752,10 +772,15 @@
   pointer-events: none;
 }
 
-/* Viñetas de profundidad en secciones oscuras */
+/* Viñetas de profundidad en secciones oscuras (todas — atmósfera pareja) */
 .gk-cloud-section::before,
 .gk-grid-section::before,
-.gk-collage::before {
+.gk-collage::before,
+.gk-space__sticky::after,
+.gk-warp__sticky::after,
+.gk-product__sticky::after,
+.gk-portal__sticky::after,
+.gk-cube__sticky::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -769,12 +794,13 @@
 .gk-signs {
   position: relative;
   padding: 20vh 0 16vh;
-  background: linear-gradient(#dfe4e8, #cfd6da);
-  color: #14181c;
+  /* misma familia crema cálida que la otra sección clara: un solo mundo claro */
+  background: linear-gradient(#f4f2ec, #e9e5da);
+  color: #1c1a16;
   overflow: clip;
 }
 
-.gk-signs .gk-eyebrow { color: #5d666c; }
+.gk-signs .gk-eyebrow { color: #6f695c; }
 
 .gk-signs__scene {
   position: relative;
@@ -843,7 +869,7 @@
 
 .gk-sign:hover::after { translate: 120% 0; }
 
-.gk-sign--blue { background: #2456c4; color: #f2f6ff; }
+.gk-sign--blue { background: #1c5a52; color: #eafff9; }
 .gk-sign--white { background: #f4f6f2; color: #1c2126; }
 .gk-sign--yellow { background: var(--gk-amber); color: #221806; }
 
@@ -893,8 +919,8 @@
 
 .gk-mini span {
   font-family: var(--gk-mono);
-  font-size: 0.54rem;
-  letter-spacing: 0.14em;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.85);
 }
@@ -1010,8 +1036,10 @@
 /* ============ Reduced motion: todo estático, todo visible ============ */
 
 @media (prefers-reduced-motion: reduce) {
-  .gk-orb,
-  .gk-sign::after { animation: none; transition: none; }
+  .gk-sign::after,
+  .gk-tile::after,
+  .gk-portal__frame::before,
+  .gk-portal__card::after { animation: none; transition: none; }
   .gk-space { height: auto; }
   .gk-space__sticky { position: relative; }
   .gk-product { height: auto; }
@@ -1021,6 +1049,13 @@
   .gk-cube { height: auto; background: none; }
   .gk-cube__sticky { position: relative; }
   .gk-cube__skeleton { animation: none; }
+  .gk-mini:hover { animation: none; }
+}
+
+/* Touch: sin hovers pegajosos (un tap no debe congelar estados de hover) */
+@media (hover: none), (pointer: coarse) {
+  .gk-cloud__card:hover,
+  .gk-gal__card:hover { filter: none; }
   .gk-mini:hover { animation: none; }
 }
 

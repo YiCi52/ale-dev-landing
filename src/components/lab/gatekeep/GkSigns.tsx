@@ -16,17 +16,19 @@ const SIGNS = [
   { text: "laboratorio", cls: "gk-sign--yellow", top: "56%", rotY: -8, flip: false },
 ] as const;
 
+// Arte restringido a las familias de la casa (cian 165-190 · ámbar 30-48 ·
+// brasa 4-14): variedad por luminosidad, no por rueda de color completa.
 const MINIS = [
   { top: "8%", left: "6%", w: 150, hue: 174 },
   { top: "14%", left: "70%", w: 180, hue: 40 },
   { top: "26%", left: "30%", w: 130, hue: 8 },
-  { top: "34%", left: "82%", w: 120, hue: 210 },
-  { top: "44%", left: "12%", w: 200, hue: 96 },
-  { top: "58%", left: "64%", w: 150, hue: 320 },
-  { top: "66%", left: "34%", w: 120, hue: 54 },
-  { top: "72%", left: "8%", w: 160, hue: 260 },
-  { top: "80%", left: "76%", w: 190, hue: 150 },
-  { top: "86%", left: "44%", w: 130, hue: 20 },
+  { top: "34%", left: "82%", w: 120, hue: 186 },
+  { top: "44%", left: "12%", w: 200, hue: 32 },
+  { top: "58%", left: "64%", w: 150, hue: 12 },
+  { top: "66%", left: "34%", w: 120, hue: 46 },
+  { top: "72%", left: "8%", w: 160, hue: 168 },
+  { top: "80%", left: "76%", w: 190, hue: 6 },
+  { top: "86%", left: "44%", w: 130, hue: 38 },
 ] as const;
 
 const ASCII_CHARS = "░▒▓█▚▞·:+xo";
@@ -43,6 +45,7 @@ export function GkSigns() {
     if (!scene || !group) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
     const rotY = gsap.quickTo(group, "rotationY", { duration: 0.9, ease: "power3.out" });
     const rotX = gsap.quickTo(group, "rotationX", { duration: 0.9, ease: "power3.out" });
@@ -72,11 +75,24 @@ export function GkSigns() {
     pre.textContent = lines.join("\n");
     if (reduced) return;
 
-    const id = window.setInterval(() => {
-      lines[Math.floor(Math.random() * rows)] = line();
-      pre.textContent = lines.join("\n");
-    }, 140);
-    return () => window.clearInterval(id);
+    // El interval solo corre con la sección en pantalla (cero trabajo de fondo).
+    let id = 0;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !id) {
+        id = window.setInterval(() => {
+          lines[Math.floor(Math.random() * rows)] = line();
+          pre.textContent = lines.join("\n");
+        }, 140);
+      } else if (!entry.isIntersecting && id) {
+        window.clearInterval(id);
+        id = 0;
+      }
+    });
+    io.observe(pre);
+    return () => {
+      io.disconnect();
+      if (id) window.clearInterval(id);
+    };
   }, []);
 
   return (

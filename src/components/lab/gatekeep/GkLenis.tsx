@@ -20,8 +20,10 @@ export function GkLenis() {
     gsap.registerPlugin(ScrollTrigger);
     const lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
     lenis.on("scroll", ScrollTrigger.update);
-    // Handle para debugging/QA: saltos programáticos van por lenis.scrollTo
-    (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
+    // Handle para debugging/QA (solo dev): saltos programáticos van por lenis.scrollTo
+    if (process.env.NODE_ENV !== "production") {
+      (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
+    }
 
     const raf = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);

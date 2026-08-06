@@ -16,6 +16,9 @@ const RADIUS = 290;
 // el SSR serializa floats completos y el cliente los recorta — sin redondeo
 // hay hydration mismatch en cada button).
 const r2 = (n: number) => Math.round(n * 100) / 100;
+// Hues restringidos a las familias de la casa (cian · ámbar · brasa) en vez de
+// recorrer toda la rueda: el arte se ve dirigido, no generado.
+const HUES = [168, 36, 8, 178, 44, 12, 186, 30, 172, 46, 6, 40] as const;
 const POINTS = Array.from({ length: COUNT }, (_, i) => {
   const phi = Math.acos(1 - (2 * (i + 0.5)) / COUNT);
   const theta = Math.PI * (1 + Math.sqrt(5)) * i;
@@ -23,7 +26,7 @@ const POINTS = Array.from({ length: COUNT }, (_, i) => {
     x: r2(Math.cos(theta) * Math.sin(phi) * RADIUS),
     y: r2(Math.cos(phi) * RADIUS * 0.72),
     z: r2(Math.sin(theta) * Math.sin(phi) * RADIUS),
-    hue: Math.round(((i * 137.5) % 360 + 360) % 360),
+    hue: HUES[i % HUES.length],
   };
 });
 
@@ -87,21 +90,30 @@ export function GkGallery() {
     ghostRef.current = ghost;
     el.style.opacity = "0";
 
-    // FLIP con transforms puros: top/left quedan FIJOS en el punto de partida y
-    // el viaje al centro es x/y (compositor). Animar top/left era lo que cortaba
-    // la animación y la dejaba descentrada.
+    // FLIP con transforms puros: top/left/width/height quedan FIJOS en el punto
+    // de partida y el viaje al centro es x/y + scaleX/scaleY (100% compositor —
+    // tuitear width/height era layout por frame y se sentía tosco).
     const targetW = Math.min(560, window.innerWidth * 0.82);
     const targetH = targetW * (10 / 16);
     const dx = (window.innerWidth - targetW) / 2 - rect.left;
     const dy = (window.innerHeight - targetH) / 2 - rect.top;
+    const flipReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    gsap.to(overlay, { autoAlpha: 1, duration: 0.4 });
+    const sx = targetW / rect.width;
+    const sy = targetH / rect.height;
+    // El scale infla el radio pintado (esquinas "de pastilla" a 5x): se
+    // contrarresta tuiteando border-radius (paint, no layout) a la par.
+    const endRadius = 16 / ((sx + sy) / 2);
+
+    gsap.set(ghost, { transformOrigin: "top left" });
+    gsap.to(overlay, { autoAlpha: 1, duration: flipReduced ? 0 : 0.4 });
     gsap.to(ghost, {
       x: dx,
       y: dy,
-      width: targetW,
-      height: targetH,
-      duration: 0.8,
+      scaleX: sx,
+      scaleY: sy,
+      borderRadius: `${endRadius}px`,
+      duration: flipReduced ? 0 : 0.8,
       ease: "expo.inOut",
     });
 
@@ -110,14 +122,16 @@ export function GkGallery() {
       if (released) return; // los dos listeners comparten un solo disparo
       released = true;
       if (spinRef.current) gsap.to(spinRef.current, { timeScale: 1, duration: 0.8 });
-      gsap.to(overlay, { autoAlpha: 0, duration: 0.35 });
+      gsap.to(overlay, { autoAlpha: 0, duration: flipReduced ? 0 : 0.35 });
       gsap.to(ghost, {
         x: 0,
         y: 0,
-        width: rect.width,
-        height: rect.height,
-        duration: 0.65,
+        scaleX: 1,
+        scaleY: 1,
+        borderRadius: "10px",
+        duration: flipReduced ? 0 : 0.65,
         ease: "expo.inOut",
+        overwrite: "auto",
         onComplete: () => {
           el.style.opacity = "1";
           ghost.remove();
