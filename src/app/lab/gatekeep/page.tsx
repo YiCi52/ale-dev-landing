@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { GkHero } from "@/components/lab/gatekeep/GkHero";
 import { GkCarousels } from "@/components/lab/gatekeep/GkCarousels";
 import { GkGrid } from "@/components/lab/gatekeep/GkGrid";
+import { GkWarp } from "@/components/lab/gatekeep/GkWarp";
 import { GkProduct } from "@/components/lab/gatekeep/GkProduct";
 import { GkSigns } from "@/components/lab/gatekeep/GkSigns";
 
@@ -35,6 +36,7 @@ export default function GatekeepLabPage() {
       <GkHero />
       <GkCarousels />
       <GkGrid />
+      <GkWarp />
       <GkProduct />
       <GkSigns />
     </main>

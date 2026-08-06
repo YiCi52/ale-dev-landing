@@ -94,7 +94,7 @@ export function GkProduct() {
       const card = portal.querySelector(".gk-portal__card");
       const halves = portal.querySelectorAll(".gk-portal__title span");
 
-      gsap.set(card, { z: -650, scale: 0.35, opacity: 0.4 });
+      gsap.set(card, { z: -650, scale: 0.35, opacity: 0.4, rotateX: 22, rotateY: -10 });
 
       gsap
         .timeline({
@@ -107,7 +107,7 @@ export function GkProduct() {
         })
         .to(halves[0], { xPercent: -16, ease: "none" }, 0)
         .to(halves[1], { xPercent: 16, ease: "none" }, 0)
-        .to(card, { z: 240, scale: 1.6, opacity: 1, ease: "power2.in", duration: 3 }, 0)
+        .to(card, { z: 240, scale: 1.6, opacity: 1, rotateX: 0, rotateY: 6, ease: "power2.in", duration: 3 }, 0)
         .to(frame, { scale: 4.4, opacity: 0, ease: "power2.in", duration: 2 }, 1.4)
         .to(card, { z: 620, scale: 4, opacity: 0, ease: "power2.in", duration: 1.6 }, 2.4);
     });
