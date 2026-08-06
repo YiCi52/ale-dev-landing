@@ -7,6 +7,7 @@ import { GkGallery } from "@/components/lab/gatekeep/GkGallery";
 import { GkGrid } from "@/components/lab/gatekeep/GkGrid";
 import { GkWarp } from "@/components/lab/gatekeep/GkWarp";
 import { GkProduct } from "@/components/lab/gatekeep/GkProduct";
+import { GkCube } from "@/components/lab/gatekeep/GkCube";
 import { GkSigns } from "@/components/lab/gatekeep/GkSigns";
 
 import "./gatekeep.css";
@@ -42,6 +43,7 @@ export default function GatekeepLabPage() {
       <GkGrid />
       <GkWarp />
       <GkProduct />
+      <GkCube />
       <GkSigns />
     </main>
   );

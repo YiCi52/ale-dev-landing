@@ -935,6 +935,78 @@
 
 .gk-fin p + p { margin-top: 0.6rem; }
 
+/* ============ S8 — Cubo: secuencia Blender escrubeada por scroll ============ */
+
+.gk-cube {
+  position: relative;
+  height: 320vh;
+  background: radial-gradient(ellipse 60% 45% at 50% 55%, rgba(167, 139, 250, 0.07), transparent 70%);
+}
+
+.gk-cube__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding-bottom: 1.4rem;
+}
+
+.gk-cube__head {
+  /* aire para el navbar fijo del sitio */
+  padding-top: clamp(4.6rem, 10vh, 6.5rem);
+  margin-bottom: 0;
+}
+
+.gk-cube__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.gk-cube__canvas {
+  width: min(88vw, 1040px);
+  height: 100%;
+  max-height: 78vh;
+  /* vóxeles que salen del encuadre del render se cortan en línea recta:
+     la máscara desvanece los bordes y el corte desaparece */
+  -webkit-mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 58%, transparent 97%);
+  mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 58%, transparent 97%);
+}
+
+/* Skeleton mientras baja el primer frame: shimmer tenue, se apaga con data-ready */
+.gk-cube__skeleton {
+  position: absolute;
+  width: min(52vw, 420px);
+  aspect-ratio: 1;
+  border-radius: 14px;
+  background: linear-gradient(110deg, #0b0d10 40%, #12151a 50%, #0b0d10 60%);
+  background-size: 220% 100%;
+  animation: gk-cube-shimmer 1.4s linear infinite;
+  opacity: 1;
+  transition: opacity 400ms ease-out;
+}
+
+.gk-cube[data-ready] .gk-cube__skeleton {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes gk-cube-shimmer {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
+}
+
+.gk-cube__hud {
+  justify-self: center;
+  font-family: var(--gk-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gk-dim);
+}
+
 /* ============ Reduced motion: todo estático, todo visible ============ */
 
 @media (prefers-reduced-motion: reduce) {
@@ -946,6 +1018,9 @@
   .gk-product__sticky { position: relative; }
   .gk-portal { height: auto; }
   .gk-portal__sticky { position: relative; }
+  .gk-cube { height: auto; background: none; }
+  .gk-cube__sticky { position: relative; }
+  .gk-cube__skeleton { animation: none; }
   .gk-mini:hover { animation: none; }
 }
 
