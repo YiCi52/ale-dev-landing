@@ -68,7 +68,9 @@ export function GkGallery() {
     const overlay = overlayRef.current;
     if (!overlay) return;
     setFocused(i);
-    spinRef.current?.pause();
+    // La esfera NO se congela: baja a cámara lenta detrás del overlay (más
+    // orgánico, y elimina la clase de bugs "quedó pausada para siempre").
+    if (spinRef.current) gsap.to(spinRef.current, { timeScale: 0.12, duration: 0.6 });
 
     const rect = el.getBoundingClientRect();
     const ghost = el.cloneNode(true) as HTMLElement;
@@ -77,6 +79,10 @@ export function GkGallery() {
     ghost.style.left = `${rect.left}px`;
     ghost.style.width = `${rect.width}px`;
     ghost.style.height = `${rect.height}px`;
+    // El clon hereda el translate3d de la esfera y GSAP lo leería como punto de
+    // partida (por eso "salía de la derecha"): el rect ya incluye ese offset,
+    // así que el transform del clon se anula.
+    ghost.style.transform = "none";
     document.body.appendChild(ghost);
     ghostRef.current = ghost;
     el.style.opacity = "0";
@@ -99,7 +105,11 @@ export function GkGallery() {
       ease: "expo.inOut",
     });
 
+    let released = false;
     const release = () => {
+      if (released) return; // los dos listeners comparten un solo disparo
+      released = true;
+      if (spinRef.current) gsap.to(spinRef.current, { timeScale: 1, duration: 0.8 });
       gsap.to(overlay, { autoAlpha: 0, duration: 0.35 });
       gsap.to(ghost, {
         x: 0,
@@ -113,7 +123,6 @@ export function GkGallery() {
           ghost.remove();
           ghostRef.current = null;
           setFocused(null);
-          spinRef.current?.play();
         },
       });
     };
