@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
+import { GkLenis } from "@/components/lab/gatekeep/GkLenis";
 import { GkHero } from "@/components/lab/gatekeep/GkHero";
 import { GkCarousels } from "@/components/lab/gatekeep/GkCarousels";
+import { GkGallery } from "@/components/lab/gatekeep/GkGallery";
 import { GkGrid } from "@/components/lab/gatekeep/GkGrid";
 import { GkWarp } from "@/components/lab/gatekeep/GkWarp";
 import { GkProduct } from "@/components/lab/gatekeep/GkProduct";
@@ -33,8 +35,10 @@ export const metadata: Metadata = {
 export default function GatekeepLabPage() {
   return (
     <main className="gk">
+      <GkLenis />
       <GkHero />
       <GkCarousels />
+      <GkGallery />
       <GkGrid />
       <GkWarp />
       <GkProduct />
