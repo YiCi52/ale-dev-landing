@@ -58,6 +58,36 @@ function mesh(
 
 const up = (dy: number): THREE.Vector3 => new THREE.Vector3(0, dy, 0);
 
+/** moteado de pradera: ruido suave verde-salvia dibujado en un canvas 256² */
+function makeLawnTexture(): THREE.CanvasTexture | null {
+  if (typeof document === "undefined") return null;
+  const c = document.createElement("canvas");
+  c.width = c.height = 256;
+  const ctx = c.getContext("2d");
+  if (!ctx) return null;
+  ctx.fillStyle = "#dcddcc";
+  ctx.fillRect(0, 0, 256, 256);
+  // parches pseudo-aleatorios deterministas (sin Math.random: seed fija)
+  let s = 42;
+  const rnd = () => {
+    s = (s * 16807) % 2147483647;
+    return s / 2147483647;
+  };
+  for (let i = 0; i < 900; i++) {
+    const g = 200 + Math.floor(rnd() * 28);
+    ctx.fillStyle = `rgba(${g - 22},${g - 8},${g - 40},0.35)`;
+    const r = 1 + rnd() * 3.5;
+    ctx.beginPath();
+    ctx.arc(rnd() * 256, rnd() * 256, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(6, 6);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 export function buildVilla(): VillaBuild {
   const root = new THREE.Group();
   const geos: THREE.BufferGeometry[] = [];
@@ -75,14 +105,29 @@ export function buildVilla(): VillaBuild {
 
   const matBlanco = std(HUESO);
   const matPiloti = std(HUESO, 0.7);
-  const matVidrio = std(VIDRIO, 0.35, 0.15);
+  // vidrio translúcido a dos caras: la cinta se lee desde afuera Y desde adentro
+  const matVidrio = std(VIDRIO, 0.25, 0.35);
+  matVidrio.transparent = true;
+  matVidrio.opacity = 0.42;
+  matVidrio.side = THREE.DoubleSide;
   const matVerde = std(VERDE_RDC, 0.8);
+  matVerde.side = THREE.DoubleSide;
   const matSuelo = std(SUELO, 1);
+  // moteado sutil de pradera (textura procedural en canvas — cero assets)
+  const lawnTex = makeLawnTexture();
+  if (lawnTex) {
+    matSuelo.map = lawnTex;
+    mats.push(matSuelo);
+  }
   const matLosa = std(0xefede6, 0.9);
+  matLosa.side = THREE.DoubleSide;
 
   const animated: THREE.Mesh[] = [];
   const highlights: Record<CapaStep, THREE.Mesh[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
   const add = (m: THREE.Mesh, hl?: CapaStep) => {
+    // sombras en todo (el vidrio translúcido no proyecta: solo recibe)
+    m.castShadow = (m.material as THREE.Material) !== matVidrio;
+    m.receiveShadow = true;
     root.add(m);
     animated.push(m);
     if (hl) highlights[hl].push(m);
@@ -107,14 +152,21 @@ export function buildVilla(): VillaBuild {
   // Sube con la casa en el paso 1 (pertenece al cuerpo, no a los pilotis).
   const LIFT = 2.6; // cuánto se levanta el cuerpo sobre los pilotis en el paso 1
   const rdc = mesh(
-    g(new THREE.CylinderGeometry(5.6, 5.6, H_PILOTIS - 0.2, 40, 1, false, Math.PI * 0.15, Math.PI * 1.7)),
+    g(new THREE.CylinderGeometry(5.6, 5.6, H_PILOTIS - 0.2, 40, 1, true, Math.PI * 0.15, Math.PI * 1.7)),
     matVerde,
     0,
     (H_PILOTIS - 0.2) / 2,
     -0.6,
     [{ step: 1, delta: up(LIFT) }],
   );
+  // el hueco del arco (~54°) queda mirando a +z: es la entrada de la promenade
+  rdc.rotation.y = Math.PI * 0.58;
   add(rdc, 1);
+  // tapa del vestíbulo: sin ella, la cámara del tour ve el interior del tubo
+  const rdcTapa = mesh(g(new THREE.CylinderGeometry(5.6, 5.6, 0.12, 40)), matLosa, 0, H_PILOTIS - 0.2, -0.6, [
+    { step: 1, delta: up(LIFT) },
+  ]);
+  add(rdcTapa, 1);
 
   // ── Cuerpo del piano nobile ───────────────────────────────────────────────
   const yBase = H_PILOTIS; // cara inferior del volumen
@@ -123,11 +175,18 @@ export function buildVilla(): VillaBuild {
   // Capa 3 · PLANTA LIBRE: losa + columnas interiores + tabique curvo — se
   // extrae en +X como un plano que se saca de la carpeta.
   const DRAWER = new THREE.Vector3(16, 0, 0);
-  const losaPiso = mesh(g(new THREE.BoxGeometry(W - 0.7, 0.3, D - 0.7)), matLosa, 0, yLosaPiso, 0, [
+  // La losa se compone en paneles alrededor del VACÍO de la rampa
+  // (corredor x∈[1.0, 3.4], z∈[-7.2, 7.2]) — así la promenade la atraviesa.
+  const losaOffsets: ExplodeOffset[] = [
     { step: 1, delta: up(LIFT) },
     { step: 3, delta: DRAWER },
-  ]);
-  add(losaPiso, 3);
+  ];
+  const losaPanel = (w: number, d: number, x: number, z: number) =>
+    add(mesh(g(new THREE.BoxGeometry(w, 0.3, d)), matLosa, x, yLosaPiso, z, losaOffsets), 3);
+  losaPanel(10.65, D - 0.7, -4.325, 0); // panel oeste (x −9.65 … 1.0)
+  losaPanel(6.25, D - 0.7, 6.525, 0); // panel este (x 3.4 … 9.65)
+  losaPanel(2.4, 2.45, 2.2, -8.425); // tapa norte del corredor
+  losaPanel(2.4, 2.45, 2.2, 8.425); // tapa sur del corredor
   const colGeo = g(new THREE.CylinderGeometry(0.13, 0.13, H_VOLUMEN - 0.4, 12));
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
@@ -138,13 +197,44 @@ export function buildVilla(): VillaBuild {
       add(c, 3);
     }
   }
-  // la rampa interior, protagonista real de la promenade — un plano inclinado
-  const rampa = mesh(g(new THREE.BoxGeometry(1.8, 0.12, 9)), matLosa, 2.2, yLosaPiso + 1.1, 0, [
-    { step: 1, delta: up(LIFT) },
-    { step: 3, delta: DRAWER },
-  ]);
-  rampa.rotation.x = -0.24;
-  add(rampa, 3);
+  // ── LA PROMENADE: rampa de 4 tramos (2 al nobile, 2 al solárium) ─────────
+  // Tramos en zig-zag paralelo dentro del corredor: A/C en x=1.6, B/D en x=2.8.
+  // Suben con el cuerpo en el paso 1 pero NO van en el cajón: en la axonometría
+  // final la promenade queda flotando como capa propia — es la protagonista.
+  const soloLift: ExplodeOffset[] = [{ step: 1, delta: up(LIFT) }];
+  const RAMP_RUN = 6.6; // recorrido z de cada tramo
+  const yNobile = yLosaPiso + 0.15;
+  const RISE_1 = yNobile - 0.05; // planta baja → nobile (repartido en A+B)
+  const tramo = (x: number, zC: number, yBase: number, rise: number, dir: 1 | -1) => {
+    const largo = Math.hypot(RAMP_RUN, rise);
+    const m = mesh(g(new THREE.BoxGeometry(1.15, 0.1, largo)), matLosa, x, yBase + rise / 2, zC, soloLift);
+    m.rotation.x = dir * Math.atan2(rise, RAMP_RUN);
+    add(m);
+    // baranda-tabique (h 0.85) al borde exterior del tramo, mismo ángulo
+    const b = mesh(
+      g(new THREE.BoxGeometry(0.08, 0.85, largo)),
+      matBlanco,
+      x + (x < 2.2 ? -0.62 : 0.62),
+      yBase + rise / 2 + 0.45,
+      zC,
+      soloLift,
+    );
+    b.rotation.x = m.rotation.x;
+    add(b);
+  };
+  // A: sube de la planta baja (z+) hacia el fondo (z−)
+  tramo(1.6, 3.2, 0.2, RISE_1 / 2, 1);
+  // descanso de giro al fondo
+  add(mesh(g(new THREE.BoxGeometry(2.6, 0.1, 1.3)), matLosa, 2.2, 0.2 + RISE_1 / 2, -0.9, soloLift));
+  // B: regresa subiendo hacia z+
+  tramo(2.8, 3.2, 0.2 + RISE_1 / 2, RISE_1 / 2, -1);
+  // descanso nobile (z+): conecta con la losa
+  add(mesh(g(new THREE.BoxGeometry(2.6, 0.1, 1.3)), matLosa, 2.2, yNobile, 7.15, soloLift));
+  // C y D: del nobile al solárium (misma huella, un nivel arriba)
+  const RISE_2 = H_VOLUMEN + 0.25;
+  tramo(1.6, 3.2, yNobile, RISE_2 / 2, 1);
+  add(mesh(g(new THREE.BoxGeometry(2.6, 0.1, 1.3)), matLosa, 2.2, yNobile + RISE_2 / 2, -0.9, soloLift));
+  tramo(2.8, 3.2, yNobile + RISE_2 / 2, RISE_2 / 2, -1);
   const tabique = mesh(
     g(new THREE.CylinderGeometry(3.4, 3.4, H_VOLUMEN - 0.5, 32, 1, true, 0, Math.PI)),
     matBlanco,
@@ -198,8 +288,13 @@ export function buildVilla(): VillaBuild {
     { step: 1, delta: up(LIFT) },
     { step: 2, delta: ROOF },
   ];
-  const losaTecho = mesh(g(new THREE.BoxGeometry(W, 0.35, D)), matBlanco, 0, yTecho + 0.175, 0, liftRoof);
-  add(losaTecho, 2);
+  // losa de techo en paneles: mismo vacío del corredor para que la rampa D
+  // desemboque en el solárium (tapa solo al norte; al sur queda la llegada)
+  const techoPanel = (w: number, d: number, x: number, z: number) =>
+    add(mesh(g(new THREE.BoxGeometry(w, 0.35, d)), matBlanco, x, yTecho + 0.175, z, liftRoof), 2);
+  techoPanel(11, D, -4.5, 0); // oeste
+  techoPanel(6.6, D, 6.7, 0); // este
+  techoPanel(2.4, 6, 2.2, -7); // tapa norte del corredor
   const antepechoLargoGeo = g(new THREE.BoxGeometry(W, 0.9, 0.22));
   const antepechoCortoGeo = g(new THREE.BoxGeometry(0.22, 0.9, D));
   const a1 = mesh(antepechoLargoGeo, matBlanco, 0, yTecho + 0.8, D / 2 - 0.11, liftRoof);

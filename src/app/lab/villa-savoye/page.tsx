@@ -4,6 +4,7 @@ import { Archivo, IBM_Plex_Mono, Inter } from "next/font/google";
 import { VsLenis } from "@/components/lab/villa-savoye/VsLenis";
 import { VsHero } from "@/components/lab/villa-savoye/VsHero";
 import { VsDesarme } from "@/components/lab/villa-savoye/VsDesarme";
+import { VsPromenade } from "@/components/lab/villa-savoye/VsPromenade";
 import { VsFicha } from "@/components/lab/villa-savoye/VsFicha";
 import { VsHomenaje } from "@/components/lab/villa-savoye/VsHomenaje";
 
@@ -54,6 +55,7 @@ export default function VillaSavoyePage() {
       <VsLenis />
       <VsHero />
       <VsDesarme />
+      <VsPromenade />
       <VsFicha />
       <VsHomenaje />
     </main>

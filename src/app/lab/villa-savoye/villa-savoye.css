@@ -35,6 +35,27 @@
   border-radius: 2px;
 }
 
+/* Fondo racionalista (pedido de Alejandro): «tracés régulateurs» — las líneas
+   reguladoras con las que Corbusier proporcionaba fachadas. Retícula + dos
+   diagonales + arco + UNA regulada en verde, tinta al ~5% sobre el hueso:
+   papel de dibujo del Movimiento Moderno detrás de toda la pieza. */
+.vs::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cg stroke='%231a1a18' stroke-width='1' opacity='0.05'%3E%3Cpath d='M150 0V800M300 0V800M450 0V800M600 0V800M750 0V800M900 0V800M1050 0V800'/%3E%3Cpath d='M0 160H1200M0 320H1200M0 480H1200M0 640H1200'/%3E%3C/g%3E%3Cg stroke='%231a1a18' fill='none' opacity='0.065'%3E%3Cpath d='M0 800L1200 58'/%3E%3Cpath d='M0 0L1200 742'/%3E%3Ccircle cx='900' cy='320' r='260'/%3E%3Ccircle cx='300' cy='560' r='140'/%3E%3C/g%3E%3Cpath d='M0 494L1200 306' stroke='%233f5c48' opacity='0.12' fill='none'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+}
+
+.vs > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* grano de papel sutilísimo — museo, no pantalla */
 .vs::after {
   content: "";
@@ -231,6 +252,12 @@
   line-height: 1.55;
   color: var(--vs-ink);
   margin: 0;
+}
+
+/* la promenade comparte esqueleto con el desarme; fondo apenas más cálido
+   (interior) para que el capítulo se sienta distinto sin romper el sistema */
+.vs-promenade {
+  background: linear-gradient(var(--vs-bg-2) 0%, #efeee7 100%);
 }
 
 /* variante estática (reduced motion): todo apilado y legible */
