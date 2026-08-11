@@ -1,0 +1,301 @@
+/*
+  Sección "La Constelación de las 14 capas" — brief 2a aprobado 2026-08-06
+  (design-system/castillo-v2/brief-constelacion-14-capas.md).
+  Mapa radial: núcleo de partículas + 4 zonas radiando + 3 planos de
+  profundidad (nítido / lejano desenfocado / bokeh en primer plano).
+*/
+
+.cn-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1100 / 620;
+  margin-top: clamp(2rem, 5vh, 4rem);
+}
+
+.cn-plane {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cn-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Estrellas de campo (plano lejano) */
+.cn-fieldstar {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: oklch(95% 0.007 85 / 0.26);
+}
+
+/* Núcleo: glow que respira + cúmulo de partículas */
+.cn-coreglow {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    oklch(71.5% 0.14 294 / 0.16) 0%,
+    oklch(95% 0.007 85 / 0.05) 38%,
+    transparent 70%
+  );
+  animation: cn-breathe 7s ease-in-out infinite;
+}
+
+@keyframes cn-breathe {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.06);
+    opacity: 0.85;
+  }
+}
+
+.cn-cluster {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.cn-cluster span {
+  position: absolute;
+  border-radius: 50%;
+  background: oklch(95% 0.007 85 / 0.8);
+}
+
+.cn-cluster span[data-lila] {
+  background: oklch(71.5% 0.14 294 / 0.9);
+}
+
+.cn-corelabel {
+  position: absolute;
+  transform: translate(-50%, 0);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+}
+
+/* Nodos: anillo (borde hueso + punto interior) o punto lleno */
+.cn-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 6px;
+  margin: -6px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.cn-node i {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1.5px solid oklch(95% 0.007 85 / 0.72);
+  background: oklch(13.5% 0.005 285 / 0.6);
+  transition:
+    border-color 200ms ease-out,
+    box-shadow 200ms ease-out,
+    transform 200ms ease-out;
+}
+
+.cn-node i b {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-fg);
+  transition: background-color 200ms ease-out;
+}
+
+.cn-node span {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+  white-space: nowrap;
+  transition: color 200ms ease-out;
+}
+
+.cn-node--dot i {
+  width: 10px;
+  height: 10px;
+  border: 0;
+  background: var(--color-fg);
+  box-shadow: 0 0 12px oklch(95% 0.007 85 / 0.55);
+}
+
+.cn-node--dot i b {
+  display: none;
+}
+
+.cn-node--far {
+  filter: blur(0.8px);
+  opacity: 0.55;
+}
+
+.cn-node--ancla {
+  pointer-events: none;
+}
+
+/* Estado activo (hover/focus/click): el lila manda */
+.cn-node[data-active="true"] i,
+.cn-node:hover i {
+  border-color: var(--color-accent);
+  box-shadow:
+    0 0 16px oklch(71.5% 0.14 294 / 0.8),
+    0 0 40px oklch(71.5% 0.14 294 / 0.3);
+}
+
+.cn-node[data-active="true"] i b {
+  background: var(--color-accent);
+}
+
+.cn-node[data-active="true"] span {
+  color: var(--color-accent);
+}
+
+/* Labels de zona: mono, tracking ancho, tick corto */
+.cn-zona {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: oklch(95% 0.007 85 / 0.6);
+}
+
+.cn-zona u {
+  display: block;
+  margin: 5px auto 0;
+  width: 34px;
+  border: 0;
+  border-top: 1px solid oklch(95% 0.007 85 / 0.25);
+}
+
+/* Bokeh: primer plano desenfocado (el plano más cercano del parallax) */
+.cn-bokeh {
+  position: absolute;
+  border-radius: 50%;
+}
+
+/* Ficha de la capa activa */
+.cn-ficha {
+  position: absolute;
+  right: 2%;
+  top: 4%;
+  width: min(240px, 34%);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px 16px 13px;
+  pointer-events: none;
+}
+
+.cn-ficha h4 {
+  margin: 0 0 7px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.cn-ficha p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--color-fg);
+}
+
+.cn-ficha footer {
+  margin-top: 9px;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-fg-subtle, oklch(46% 0.012 295));
+}
+
+.cn-ficha-inner {
+  animation: cn-ficha-in 180ms ease-out;
+}
+
+@keyframes cn-ficha-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 760px) {
+  .cn-stage {
+    aspect-ratio: auto;
+    height: 480px;
+    overflow: hidden;
+  }
+
+  .cn-node span {
+    font-size: 0.53rem;
+    letter-spacing: 0.06em;
+  }
+
+  .cn-node--far span {
+    display: none;
+  }
+
+  .cn-zona {
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+  }
+
+  .cn-ficha {
+    position: static;
+    width: 100%;
+    margin-top: 1rem;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cn-coreglow {
+    animation: none;
+  }
+
+  .cn-ficha-inner {
+    animation: none;
+  }
+
+  .cn-node i,
+  .cn-node i b,
+  .cn-node span {
+    transition: none;
+  }
+}

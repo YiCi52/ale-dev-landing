@@ -2,6 +2,7 @@ import { Hero } from "@/components/hero/Hero";
 import { BarajaCasos } from "@/components/casos/BarajaCasos";
 import { Testimonio } from "@/components/casos/Testimonio";
 import { Servicios } from "@/components/servicios/Servicios";
+import { Constelacion } from "@/components/constelacion/Constelacion";
 import { Contacto } from "@/components/form/Contacto";
 import { Reveal } from "@/components/ui";
 
@@ -35,6 +36,14 @@ export default function Home() {
       </Reveal>
       <Reveal>
         <Servicios />
+      </Reveal>
+      {/*
+        La constelación va después de la oferta: Servicios dice QUÉ construyo,
+        la constelación muestra TODO lo que viene incluido debajo — el
+        territorio de Castillo (lo que pasa después de que llega el visitante).
+      */}
+      <Reveal>
+        <Constelacion />
       </Reveal>
       <Reveal>
         <Contacto />

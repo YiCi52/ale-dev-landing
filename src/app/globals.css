@@ -227,13 +227,16 @@ html.lenis body {
   transform: translateY(0);
 }
 
-/* Hairline que se "dibuja" cuando su bloque .reveal entra (jerarquía sutil). */
+/* Hairline que se "dibuja" cuando su bloque .reveal entra (jerarquía sutil).
+   Se escala en X en vez de animar `width`: mismo dibujo, pero en el compositor
+   y sin reflow. El ancho real lo pone la utilidad w-6 del marcado. */
 .reveal .reveal-hairline {
-  width: 0;
-  transition: width 600ms var(--ease-out-expo) 140ms;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 600ms var(--ease-out-expo) 140ms;
 }
 .reveal.reveal-visible .reveal-hairline {
-  width: 1.5rem;
+  transform: scaleX(1);
 }
 
 /* Cat mascot — sello personal.
