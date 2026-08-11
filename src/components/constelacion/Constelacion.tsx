@@ -18,98 +18,110 @@ import "./constelacion.css";
   Brief: design-system/castillo-v2/brief-constelacion-14-capas.md
 */
 
+/* `dir` = hacia dónde sale el label desde el punto. Es lo que evita que dos
+   nodos vecinos se pisen: cada uno escribe hacia AFUERA del núcleo. */
+type Dir = "n" | "s" | "e" | "o";
+
 type Capa = {
   n: string;
   name: string;
   x: number;
   y: number;
+  dir: Dir;
   dot?: boolean;
   far?: boolean;
   copy: string;
   tag: string;
 };
 
-// Coordenadas en el espacio de diseño 1100×620 (mismo del mockup aprobado).
+// Coordenadas en el espacio de diseño 1100×620. Núcleo en (550, 310).
 const CAPAS: ReadonlyArray<Capa> = [
-  { n: "01", name: "Front", x: 472, y: 100, dot: true, copy: "Lo que se ve: rápido, editorial y tuyo. Nada de pinta de plantilla.", tag: "Next.js · Lighthouse ≥95" },
-  { n: "14", name: "Descubribilidad", x: 628, y: 92, far: true, copy: "Google te encuentra y tú mides qué funciona: schema, sitemap, métricas.", tag: "Schema · Sitemap · Analytics" },
-  { n: "02", name: "API", x: 778, y: 224, dot: true, copy: "Cada dato que entra se valida antes de tocarse. Nada pasa sin revisión.", tag: "Zod · Server Actions" },
-  { n: "04", name: "Auth · RLS", x: 862, y: 180, far: true, copy: "Permisos a nivel de fila: la base de datos niega por defecto.", tag: "Políticas por fila" },
-  { n: "08", name: "Seguridad", x: 812, y: 296, dot: true, copy: "Headers, CSP y formularios blindados contra bots y spam.", tag: "Headers · CSP · Honeypot" },
-  { n: "09", name: "Rate limiting", x: 900, y: 332, far: true, copy: "Nadie puede inundarte el formulario: límite por IP en cada envío.", tag: "Límite por IP" },
-  { n: "03", name: "Base de datos", x: 655, y: 502, dot: true, copy: "Cada fila tiene dueño. Nadie lee, edita ni borra lo que no es suyo.", tag: "Supabase · RLS insert-only" },
-  { n: "10", name: "Caching · CDN", x: 498, y: 512, far: true, copy: "Lo estático se sirve desde el borde, cerca de quien visita.", tag: "CDN · Caché en el borde" },
-  { n: "13", name: "Backup", x: 712, y: 556, far: true, copy: "Copias automáticas: tu información puede volver de cualquier error.", tag: "Copias diarias" },
-  { n: "05", name: "Hosting", x: 312, y: 290, dot: true, copy: "Infraestructura que no se cae un sábado por la noche.", tag: "Vercel · Edge" },
-  { n: "06", name: "Cloud", x: 222, y: 252, far: true, copy: "Servicios gestionados: sin servidores que cuidar ni parchear.", tag: "Supabase gestionado" },
-  { n: "07", name: "CI · CD", x: 306, y: 392, dot: true, copy: "Cada cambio pasa pruebas antes de tocar producción.", tag: "GitHub Actions · Tests" },
-  { n: "11", name: "Scaling", x: 212, y: 428, far: true, copy: "Un pico de visitas no tumba nada: las conexiones se administran solas.", tag: "Connection pooler" },
-  { n: "12", name: "Error tracking", x: 128, y: 380, copy: "Si algo falla a las 3am, me entero yo — antes de que lo note tu cliente.", tag: "Sentry · Alerta < 1 min" },
+  // SUPERFICIE — arriba, labels hacia arriba
+  { n: "01", name: "Front", x: 455, y: 105, dir: "n", dot: true, copy: "Lo que se ve: rápido, editorial y tuyo. Nada de pinta de plantilla.", tag: "Next.js · Lighthouse ≥95" },
+  { n: "14", name: "Descubribilidad", x: 660, y: 92, dir: "n", far: true, copy: "Google te encuentra y tú mides qué funciona: schema, sitemap, métricas.", tag: "Schema · Sitemap · Analytics" },
+  // BORDE — derecha, labels hacia la derecha
+  { n: "02", name: "API", x: 800, y: 190, dir: "e", dot: true, copy: "Cada dato que entra se valida antes de tocarse. Nada pasa sin revisión.", tag: "Zod · Server Actions" },
+  { n: "04", name: "Auth · RLS", x: 878, y: 268, dir: "e", far: true, copy: "Permisos a nivel de fila: la base de datos niega por defecto.", tag: "Políticas por fila" },
+  { n: "08", name: "Seguridad", x: 892, y: 356, dir: "e", dot: true, copy: "Headers, CSP y formularios blindados contra bots y spam.", tag: "Headers · CSP · Honeypot" },
+  { n: "09", name: "Rate limiting", x: 838, y: 442, dir: "e", far: true, copy: "Nadie puede inundarte el formulario: límite por IP en cada envío.", tag: "Límite por IP" },
+  // DATOS — abajo, labels hacia abajo
+  { n: "03", name: "Base de datos", x: 645, y: 500, dir: "s", dot: true, copy: "Cada fila tiene dueño. Nadie lee, edita ni borra lo que no es suyo.", tag: "Supabase · RLS insert-only" },
+  { n: "13", name: "Backup", x: 772, y: 540, dir: "s", far: true, copy: "Copias automáticas: tu información puede volver de cualquier error.", tag: "Copias diarias" },
+  { n: "10", name: "Caching · CDN", x: 492, y: 528, dir: "s", far: true, copy: "Lo estático se sirve desde el borde, cerca de quien visita.", tag: "CDN · Caché en el borde" },
+  // OPERACIÓN — izquierda, labels hacia la izquierda
+  { n: "06", name: "Cloud", x: 258, y: 172, dir: "o", far: true, copy: "Servicios gestionados: sin servidores que cuidar ni parchear.", tag: "Supabase gestionado" },
+  { n: "05", name: "Hosting", x: 348, y: 252, dir: "o", dot: true, copy: "Infraestructura que no se cae un sábado por la noche.", tag: "Vercel · Edge" },
+  { n: "11", name: "Scaling", x: 198, y: 322, dir: "o", far: true, copy: "Un pico de visitas no tumba nada: las conexiones se administran solas.", tag: "Connection pooler" },
+  { n: "07", name: "CI · CD", x: 292, y: 396, dir: "o", dot: true, copy: "Cada cambio pasa pruebas antes de tocar producción.", tag: "GitHub Actions · Tests" },
+  { n: "12", name: "Error tracking", x: 180, y: 462, dir: "o", copy: "Si algo falla a las 3am, me entero yo — antes de que lo note tu cliente.", tag: "Sentry · Alerta < 1 min" },
 ];
 
 const ANCLAS = [
-  { x: 550, y: 150 },
-  { x: 688, y: 270 },
-  { x: 583, y: 448 },
-  { x: 400, y: 332 },
+  { x: 550, y: 178 },
+  { x: 706, y: 262 },
+  { x: 604, y: 436 },
+  { x: 404, y: 300 },
 ] as const;
 
+// Las etiquetas de zona van a las ESQUINAS, donde no hay nodos que pisar.
 const ZONAS = [
-  { t: "Superficie", x: 550, y: 30 },
-  { t: "Borde", x: 995, y: 248 },
-  { t: "Datos", x: 862, y: 588 },
-  { t: "Operación", x: 108, y: 168 },
+  { t: "Superficie", x: 550, y: 28 },
+  { t: "Borde", x: 1010, y: 108 },
+  { t: "Datos", x: 902, y: 598 },
+  { t: "Operación", x: 96, y: 96 },
 ] as const;
 
 // r = rama (para el stagger del draw-on) · o = opacidad · on = tramo lila
 type Linea = { x1: number; y1: number; x2: number; y2: number; o: number; r: number; on?: boolean };
 
 const LINEAS: ReadonlyArray<Linea> = [
-  { x1: 550, y1: 290, x2: 550, y2: 162, o: 0.16, r: 0 },
-  { x1: 568, y1: 302, x2: 680, y2: 272, o: 0.16, r: 1 },
-  { x1: 556, y1: 330, x2: 583, y2: 440, o: 0.16, r: 2 },
-  { x1: 532, y1: 314, x2: 408, y2: 330, o: 0.16, r: 3 },
-  { x1: 550, y1: 150, x2: 472, y2: 100, o: 0.22, r: 0 },
-  { x1: 472, y1: 100, x2: 430, y2: 58, o: 0.14, r: 0 },
-  { x1: 550, y1: 150, x2: 628, y2: 92, o: 0.22, r: 0 },
-  { x1: 628, y1: 92, x2: 672, y2: 52, o: 0.14, r: 0 },
-  { x1: 688, y1: 270, x2: 778, y2: 224, o: 0.22, r: 1 },
-  { x1: 778, y1: 224, x2: 862, y2: 180, o: 0.18, r: 1 },
-  { x1: 862, y1: 180, x2: 925, y2: 148, o: 0.12, r: 1 },
-  { x1: 688, y1: 270, x2: 812, y2: 296, o: 0.22, r: 1 },
-  { x1: 812, y1: 296, x2: 900, y2: 332, o: 0.18, r: 1 },
-  { x1: 900, y1: 332, x2: 955, y2: 362, o: 0.12, r: 1 },
-  { x1: 583, y1: 448, x2: 655, y2: 502, o: 0.22, r: 2 },
-  { x1: 655, y1: 502, x2: 712, y2: 556, o: 0.18, r: 2 },
-  { x1: 712, y1: 556, x2: 762, y2: 588, o: 0.12, r: 2 },
-  { x1: 583, y1: 448, x2: 498, y2: 512, o: 0.22, r: 2 },
-  { x1: 498, y1: 512, x2: 428, y2: 556, o: 0.14, r: 2 },
-  { x1: 400, y1: 332, x2: 312, y2: 290, o: 0.22, r: 3 },
-  { x1: 312, y1: 290, x2: 222, y2: 252, o: 0.18, r: 3 },
-  { x1: 222, y1: 252, x2: 165, y2: 215, o: 0.12, r: 3 },
-  { x1: 400, y1: 332, x2: 306, y2: 392, o: 0.22, r: 3 },
-  { x1: 306, y1: 392, x2: 212, y2: 428, o: 0.18, r: 3 },
-  { x1: 212, y1: 428, x2: 128, y2: 380, o: 0.5, r: 3, on: true },
-  { x1: 128, y1: 380, x2: 72, y2: 350, o: 0.12, r: 3 },
+  // núcleo → ancla de cada zona
+  { x1: 550, y1: 288, x2: 550, y2: 190, o: 0.16, r: 0 },
+  { x1: 572, y1: 300, x2: 694, y2: 266, o: 0.16, r: 1 },
+  { x1: 558, y1: 332, x2: 600, y2: 424, o: 0.16, r: 2 },
+  { x1: 528, y1: 314, x2: 416, y2: 302, o: 0.16, r: 3 },
+  // SUPERFICIE
+  { x1: 550, y1: 178, x2: 455, y2: 105, o: 0.22, r: 0 },
+  { x1: 455, y1: 105, x2: 408, y2: 62, o: 0.12, r: 0 },
+  { x1: 550, y1: 178, x2: 660, y2: 92, o: 0.22, r: 0 },
+  { x1: 660, y1: 92, x2: 712, y2: 50, o: 0.12, r: 0 },
+  // BORDE
+  { x1: 706, y1: 262, x2: 800, y2: 190, o: 0.22, r: 1 },
+  { x1: 800, y1: 190, x2: 878, y2: 268, o: 0.18, r: 1 },
+  { x1: 878, y1: 268, x2: 892, y2: 356, o: 0.18, r: 1 },
+  { x1: 892, y1: 356, x2: 838, y2: 442, o: 0.18, r: 1 },
+  { x1: 706, y1: 262, x2: 892, y2: 356, o: 0.1, r: 1 },
+  // DATOS
+  { x1: 604, y1: 436, x2: 645, y2: 500, o: 0.22, r: 2 },
+  { x1: 645, y1: 500, x2: 772, y2: 540, o: 0.18, r: 2 },
+  { x1: 772, y1: 540, x2: 826, y2: 572, o: 0.12, r: 2 },
+  { x1: 604, y1: 436, x2: 492, y2: 528, o: 0.22, r: 2 },
+  { x1: 492, y1: 528, x2: 432, y2: 570, o: 0.12, r: 2 },
+  // OPERACIÓN
+  { x1: 404, y1: 300, x2: 348, y2: 252, o: 0.22, r: 3 },
+  { x1: 348, y1: 252, x2: 258, y2: 172, o: 0.18, r: 3 },
+  { x1: 258, y1: 172, x2: 202, y2: 128, o: 0.12, r: 3 },
+  { x1: 404, y1: 300, x2: 292, y2: 396, o: 0.22, r: 3 },
+  { x1: 292, y1: 396, x2: 198, y2: 322, o: 0.14, r: 3 },
+  { x1: 292, y1: 396, x2: 180, y2: 462, o: 0.5, r: 3, on: true },
+  { x1: 180, y1: 462, x2: 118, y2: 508, o: 0.12, r: 3 },
 ];
 
 const PUNTAS = [
-  { x: 430, y: 58 },
-  { x: 672, y: 52 },
-  { x: 925, y: 148 },
-  { x: 955, y: 362 },
-  { x: 762, y: 588 },
-  { x: 428, y: 556 },
-  { x: 165, y: 215 },
-  { x: 72, y: 350 },
+  { x: 408, y: 62 },
+  { x: 712, y: 50 },
+  { x: 202, y: 128 },
+  { x: 826, y: 572 },
+  { x: 432, y: 570 },
+  { x: 118, y: 508 },
 ] as const;
 
-// Satélites de acento lila (los "ticks" del video, en nuestra paleta)
+// Satélites de acento lila (los "ticks" de la referencia, en nuestra paleta)
 const SATELITES = [
-  { x1: 778, y1: 224, x2: 793, y2: 203 },
-  { x1: 655, y1: 502, x2: 673, y2: 487 },
-  { x1: 312, y1: 290, x2: 298, y2: 270 },
-  { x1: 472, y1: 100, x2: 456, y2: 82 },
+  { x1: 800, y1: 190, x2: 816, y2: 168 },
+  { x1: 645, y1: 500, x2: 663, y2: 484 },
+  { x1: 348, y1: 252, x2: 332, y2: 232 },
+  { x1: 455, y1: 105, x2: 438, y2: 86 },
 ] as const;
 
 const CAMPO = [
@@ -352,6 +364,7 @@ export function Constelacion() {
             type="button"
             className={[
               "cn-node",
+              `cn-node--${c.dir}`,
               c.dot ? "cn-node--dot" : "",
               c.far ? "cn-node--far" : "",
             ].join(" ")}
@@ -414,7 +427,17 @@ export function Constelacion() {
           />
         </div>
 
-        <div className="cn-ficha" role="status">
+        {/*
+          La ficha se coloca en el lado OPUESTO al nodo activo: si señalas algo
+          de Operación (izquierda), aparece a la derecha, y viceversa. Antes
+          estaba clavada arriba a la derecha y quedaba lejos de lo que mirabas.
+        */}
+        <div
+          className="cn-ficha"
+          data-lado={capa.x > W / 2 ? "izq" : "der"}
+          style={{ top: `clamp(2%, ${(capa.y / H) * 100 - 12}%, 62%)` }}
+          role="status"
+        >
           <div className="cn-ficha-inner" key={capa.n}>
             <h4>
               / {capa.n} — {capa.name}
