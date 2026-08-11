@@ -1,0 +1,53 @@
+name: Supabase keepalive
+
+# Supabase pausa los proyectos del plan gratuito tras 7 DÍAS SIN ACTIVIDAD.
+# Un proyecto pausado deja de aceptar escrituras: el formulario de leads falla
+# y ese lead se pierde sin que nadie se entere.
+#
+# OJO — lo que NO evita la pausa:
+#   · los backups automáticos de Supabase (los hace la plataforma, no cuentan como actividad)
+#   · el CI (solo corre en push)
+#   · los escenarios de Make disparados por webhook (solo corren si YA llegó un lead)
+#
+# Esto toca la API cada 3 días — la mitad del umbral, para aguantar un fallo suelto.
+# Es la capa 13 (backup/recuperación) de la constelación: un sitio que se apaga
+# solo a los 7 días no está entregado.
+
+on:
+  schedule:
+    - cron: "17 8 */3 * *" # cada 3 días, 08:17 UTC (3:17am Colombia)
+  workflow_dispatch: {} # para poder dispararlo a mano y comprobar que sirve
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Tocar la API de Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Faltan los secrets SUPABASE_URL y/o SUPABASE_ANON_KEY en el repo."
+            exit 1
+          fi
+
+          # GET a la raíz del REST API: cuenta como actividad y no lee ni escribe datos.
+          code=$(curl -s -o /tmp/out.txt -w "%{http_code}" --max-time 30 \
+            "${SUPABASE_URL}/rest/v1/" \
+            -H "apikey: ${SUPABASE_ANON_KEY}")
+
+          echo "HTTP $code"
+
+          # 200 y 404 son respuestas válidas: el proyecto está despierto y respondiendo.
+          if [ "$code" = "200" ] || [ "$code" = "404" ]; then
+            echo "✅ Proyecto activo"
+            exit 0
+          fi
+
+          # 503/540 = pausado o arrancando. Falla ruidosamente: el correo de
+          # GitHub Actions ES la alerta. Un keepalive que falla en silencio no sirve.
+          echo "::error::Supabase respondió $code — el proyecto puede estar PAUSADO. Revisar el dashboard."
+          head -c 400 /tmp/out.txt
+          exit 1
