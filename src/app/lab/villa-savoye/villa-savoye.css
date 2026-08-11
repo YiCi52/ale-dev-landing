@@ -1,0 +1,352 @@
+/*
+  Lab "Villa Savoye" — dirección A «Purismo» (brief aprobado 2026-08-11).
+  La página es el museo: hueso + carbón + UN acento (verde inglés corbusiano).
+  Tipos del lab: Archivo (display) · Inter (body) · IBM Plex Mono (cotas) —
+  reset visual: nada de Geist/lila (Castillo) ni Cormorant (Mari).
+  LIGHT por diseño, no sigue el tema del sitio.
+*/
+
+.vs {
+  --vs-bg: #fafaf7;
+  --vs-bg-2: #f2f1ec;
+  --vs-ink: #1a1a18;
+  --vs-dim: #6d6d66;
+  --vs-verde: #3f5c48;
+  --vs-linea: #dddbd2;
+  --vs-display: var(--font-vs-display), system-ui, sans-serif;
+  --vs-body: var(--font-vs-body), system-ui, sans-serif;
+  --vs-mono: var(--font-vs-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --vs-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  background: var(--vs-bg);
+  color: var(--vs-ink);
+  font-family: var(--vs-body);
+  overflow-x: clip;
+}
+
+.vs ::selection {
+  background: var(--vs-verde);
+  color: var(--vs-bg);
+}
+
+.vs :focus-visible {
+  outline: 2px solid var(--vs-verde);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* grano de papel sutilísimo — museo, no pantalla */
+.vs::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+}
+
+.vs-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.vs-eyebrow {
+  font-family: var(--vs-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--vs-dim);
+}
+
+/* ── Hero: lámina tipográfica ─────────────────────────────────────────── */
+.vs-hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 5vw, 6rem);
+  position: relative;
+}
+
+.vs-hero .vs-eyebrow::after {
+  content: "";
+  display: block;
+  width: 56px;
+  border-top: 2px solid var(--vs-verde);
+  margin-top: 0.9rem;
+}
+
+.vs-hero-titulo {
+  font-family: var(--vs-display);
+  font-size: clamp(4rem, 17vw, 15rem);
+  line-height: 0.88;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  margin: 1.5rem 0 2.2rem;
+}
+
+.vs-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1.2rem, 4vw, 3.5rem);
+  border-top: 1px solid var(--vs-linea);
+  padding-top: 1.4rem;
+  max-width: 60rem;
+}
+
+.vs-cota span {
+  display: block;
+  font-family: var(--vs-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vs-dim);
+  margin-bottom: 0.35rem;
+}
+
+.vs-cota b {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.vs-hero-lede {
+  max-width: 34rem;
+  margin-top: 2.4rem;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--vs-ink);
+}
+
+.vs-hero-hint {
+  position: absolute;
+  right: clamp(1.5rem, 5vw, 6rem);
+  bottom: 2rem;
+  font-family: var(--vs-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vs-verde);
+}
+
+.vs-hint-flecha {
+  display: inline-block;
+  margin-left: 0.4rem;
+  animation: vs-baja 1.8s var(--vs-ease) infinite;
+}
+
+@keyframes vs-baja {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+/* ── Desarme: escena pineada + fichas ─────────────────────────────────── */
+.vs-desarme {
+  position: relative;
+  height: 100svh;
+  overflow: clip;
+  background: linear-gradient(var(--vs-bg) 0%, var(--vs-bg-2) 100%);
+}
+
+.vs-scene {
+  position: absolute;
+  inset: 0;
+}
+
+.vs-scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.vs-hud {
+  position: absolute;
+  top: clamp(1.2rem, 3vw, 2.5rem);
+  right: clamp(1.5rem, 5vw, 6rem);
+  font-family: var(--vs-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  color: var(--vs-ink);
+}
+
+.vs-hud b {
+  font-weight: 600;
+  color: var(--vs-verde);
+}
+
+.vs-hud i {
+  font-style: normal;
+  color: var(--vs-dim);
+}
+
+.vs-fichas {
+  position: absolute;
+  left: clamp(1.5rem, 5vw, 6rem);
+  bottom: clamp(1.5rem, 6vh, 4rem);
+  width: min(24rem, calc(100% - 3rem));
+}
+
+.vs-punto {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  background: color-mix(in oklab, var(--vs-bg) 88%, transparent);
+  backdrop-filter: blur(6px);
+  border-left: 2px solid var(--vs-verde);
+  padding: 1.1rem 1.3rem 1.2rem;
+}
+
+.vs-punto-n {
+  font-family: var(--vs-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  color: var(--vs-verde);
+}
+
+.vs-punto h3 {
+  font-family: var(--vs-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0.3rem 0 0.5rem;
+}
+
+.vs-punto p {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--vs-ink);
+  margin: 0;
+}
+
+/* variante estática (reduced motion): todo apilado y legible */
+.vs-desarme--static {
+  height: auto;
+  padding: clamp(2rem, 6vw, 5rem);
+  display: grid;
+  gap: 2rem;
+}
+
+.vs-desarme--static .vs-scene {
+  position: relative;
+  height: min(70svh, 34rem);
+}
+
+.vs-static-list {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 44rem;
+}
+
+.vs-punto--static {
+  position: static;
+  opacity: 1;
+}
+
+/* ── Ficha técnica ─────────────────────────────────────────────────────── */
+.vs-ficha {
+  padding: clamp(3rem, 9vh, 7rem) clamp(1.5rem, 5vw, 6rem);
+  border-top: 1px solid var(--vs-linea);
+}
+
+.vs-ficha-grid {
+  margin: 2.2rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--vs-linea);
+  border-left: 1px solid var(--vs-linea);
+}
+
+.vs-ficha-item {
+  border-right: 1px solid var(--vs-linea);
+  border-bottom: 1px solid var(--vs-linea);
+  padding: 1.2rem 1.3rem 1.4rem;
+}
+
+.vs-ficha-item dt {
+  font-family: var(--vs-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vs-dim);
+  margin-bottom: 0.5rem;
+}
+
+.vs-ficha-item dd {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+/* ── Homenaje + declaración ───────────────────────────────────────────── */
+.vs-homenaje {
+  padding: clamp(3rem, 9vh, 7rem) clamp(1.5rem, 5vw, 6rem) clamp(4rem, 10vh, 8rem);
+  border-top: 1px solid var(--vs-linea);
+  display: grid;
+  gap: 3rem;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+}
+
+.vs-homenaje-texto p {
+  max-width: 36rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  line-height: 1.6;
+  margin: 1.4rem 0 0;
+}
+
+.vs-declaracion {
+  align-self: end;
+  border-left: 2px solid var(--vs-verde);
+  padding-left: 1.3rem;
+}
+
+.vs-declaracion p {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--vs-dim);
+  margin: 0 0 1rem;
+}
+
+.vs-declaracion b {
+  color: var(--vs-ink);
+  font-weight: 600;
+}
+
+.vs-declaracion-refs {
+  font-family: var(--vs-mono);
+  font-size: 0.7rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 760px) {
+  .vs-homenaje {
+    grid-template-columns: 1fr;
+  }
+
+  .vs-fichas {
+    width: calc(100% - 2.4rem);
+    left: 1.2rem;
+    bottom: 1.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vs-hint-flecha {
+    animation: none;
+  }
+}
