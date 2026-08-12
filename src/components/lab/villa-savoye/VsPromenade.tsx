@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import * as THREE from "three";
 
 import { createVillaStage } from "./sceneSetup";
+import { VsToggleNoche } from "./VsToggleNoche";
 
 /*
   LA PROMENADE ARCHITECTURALE — el tour interior. Le Corbusier diseñó la
@@ -101,16 +102,16 @@ export function VsPromenade() {
     const cards = cardsRef.current;
     if (!wrap || !host) return;
 
-    const stage = createVillaStage(host, 58); // FOV amplio: interior
-    const { renderer, scene, camera } = stage;
-    // adentro la niebla se acerca: el exterior se difumina tras la cinta
-    // (near en 42: difumina el paisaje sin lavar las pantallas del solárium)
-    scene.fog = new THREE.Fog(0xf4f3ec, 42, 130);
-
-    const rutaCurve = new THREE.CatmullRomCurve3(RUTA.map((p) => new THREE.Vector3(...p)));
-    const miradaCurve = new THREE.CatmullRomCurve3(MIRADA.map((p) => new THREE.Vector3(...p)));
-
     let dirty = true;
+    const stage = createVillaStage(host, 58, () => {
+      dirty = true;
+    }); // FOV amplio: interior
+    const { renderer, camera } = stage;
+
+    // 'centripetal': la curva NO se sale del pasillo entre waypoints —
+    // el overshoot de la catmull uniforme era lo que atravesaba muros
+    const rutaCurve = new THREE.CatmullRomCurve3(RUTA.map((p) => new THREE.Vector3(...p)), false, "centripetal");
+    const miradaCurve = new THREE.CatmullRomCurve3(MIRADA.map((p) => new THREE.Vector3(...p)), false, "centripetal");
     let progress = reduced ? 0.62 : 0; // estático: parada del salón
 
     const eye = new THREE.Vector3();
@@ -123,7 +124,7 @@ export function VsPromenade() {
       miradaCurve.getPoint(Math.min(progress, 0.999), target);
       camera.position.copy(eye);
       camera.lookAt(target);
-      renderer.render(scene, camera);
+      renderer.render(stage.scene, camera);
     };
 
     const onResize = () => {
@@ -204,9 +205,12 @@ export function VsPromenade() {
         La promenade architecturale: el recorrido interior de la casa
       </h2>
       <div ref={hostRef} className="vs-scene" aria-hidden="true" />
-      <div className="vs-hud" aria-hidden="true">
-        <b>I</b>
-        <i>/ IV</i>
+      <div className="vs-hud">
+        <VsToggleNoche />
+        <span aria-hidden="true">
+          <b>I</b>
+          <i>/ IV</i>
+        </span>
       </div>
       <div ref={cardsRef} className="vs-fichas">
         {PARADAS.map((p) => (

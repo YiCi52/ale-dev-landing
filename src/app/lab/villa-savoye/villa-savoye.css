@@ -45,8 +45,8 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.55;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cg stroke='%231a1a18' stroke-width='1' opacity='0.05'%3E%3Cpath d='M150 0V800M300 0V800M450 0V800M600 0V800M750 0V800M900 0V800M1050 0V800'/%3E%3Cpath d='M0 160H1200M0 320H1200M0 480H1200M0 640H1200'/%3E%3C/g%3E%3Cg stroke='%231a1a18' fill='none' opacity='0.065'%3E%3Cpath d='M0 800L1200 58'/%3E%3Cpath d='M0 0L1200 742'/%3E%3Ccircle cx='900' cy='320' r='260'/%3E%3Ccircle cx='300' cy='560' r='140'/%3E%3C/g%3E%3Cpath d='M0 494L1200 306' stroke='%233f5c48' opacity='0.12' fill='none'/%3E%3C/svg%3E");
+  opacity: 1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cg stroke='%231a1a18' stroke-width='1' opacity='0.09'%3E%3Cpath d='M150 0V800M300 0V800M450 0V800M600 0V800M750 0V800M900 0V800M1050 0V800'/%3E%3Cpath d='M0 160H1200M0 320H1200M0 480H1200M0 640H1200'/%3E%3C/g%3E%3Cg stroke='%231a1a18' fill='none' opacity='0.13'%3E%3Cpath d='M0 800L1200 58'/%3E%3Cpath d='M0 0L1200 742'/%3E%3Ccircle cx='900' cy='320' r='260'/%3E%3Ccircle cx='300' cy='560' r='140'/%3E%3C/g%3E%3Cpath d='M0 494L1200 306' stroke='%233f5c48' opacity='0.28' fill='none'/%3E%3C/svg%3E");
   background-size: cover;
   background-position: center;
 }
@@ -197,10 +197,45 @@
   position: absolute;
   top: clamp(1.2rem, 3vw, 2.5rem);
   right: clamp(1.5rem, 5vw, 6rem);
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
   font-family: var(--vs-mono);
   font-size: 0.8rem;
   letter-spacing: 0.1em;
   color: var(--vs-ink);
+}
+
+.vs-toggle-noche {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--vs-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vs-ink);
+  background: color-mix(in oklab, var(--vs-bg) 82%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--vs-linea);
+  border-radius: 999px;
+  padding: 0.42rem 0.85rem;
+  cursor: pointer;
+  transition:
+    border-color 200ms ease-out,
+    color 200ms ease-out,
+    background-color 200ms ease-out;
+}
+
+.vs-toggle-noche:hover {
+  border-color: var(--vs-verde);
+  color: var(--vs-verde);
+}
+
+.vs-toggle-noche[aria-pressed="true"] {
+  background: var(--vs-ink);
+  color: var(--vs-bg);
+  border-color: var(--vs-ink);
 }
 
 .vs-hud b {

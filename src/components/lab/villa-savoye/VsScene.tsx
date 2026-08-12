@@ -5,6 +5,7 @@ import type { Ref } from "react";
 import * as THREE from "three";
 
 import { createVillaStage } from "./sceneSetup";
+import { isNightMode } from "./nightMode";
 import type { CapaStep } from "./villaModel";
 
 /*
@@ -48,7 +49,9 @@ export function VsScene({ ref, isStatic = false }: Props) {
     const host = hostRef.current;
     if (!host) return;
 
-    const stage = createVillaStage(host);
+    const stage = createVillaStage(host, 34, () => {
+      dirtyRef.current = true;
+    });
     const { renderer, scene, camera, villa } = stage;
 
     const onResize = () => {
@@ -57,6 +60,53 @@ export function VsScene({ ref, isStatic = false }: Props) {
     };
     const ro = new ResizeObserver(onResize);
     ro.observe(host);
+
+    // ── Interactividad (ref. Pocito/v30): arrastrar orbita, hover enciende ──
+    const orbitRef = { extra: 0, down: false, lastX: 0 };
+    let hovered = 0;
+    const ray = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    const canvas = renderer.domElement;
+    canvas.style.touchAction = "pan-y"; // el scroll vertical sigue vivo en táctil
+    canvas.style.cursor = "grab";
+    const onDown = (e: PointerEvent) => {
+      orbitRef.down = true;
+      orbitRef.lastX = e.clientX;
+      canvas.style.cursor = "grabbing";
+      canvas.setPointerCapture(e.pointerId);
+    };
+    const onUp = (e: PointerEvent) => {
+      orbitRef.down = false;
+      canvas.style.cursor = hovered ? "pointer" : "grab";
+      canvas.releasePointerCapture(e.pointerId);
+    };
+    const onMove = (e: PointerEvent) => {
+      if (orbitRef.down) {
+        orbitRef.extra = THREE.MathUtils.clamp(
+          orbitRef.extra + (e.clientX - orbitRef.lastX) * 0.004,
+          -0.9,
+          0.9,
+        );
+        orbitRef.lastX = e.clientX;
+        dirtyRef.current = true;
+        return;
+      }
+      const r = canvas.getBoundingClientRect();
+      ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      const hit = ray.intersectObjects(villa.animated, false)[0];
+      const capa = (hit?.object.userData.capa as number | undefined) ?? 0;
+      if (capa !== hovered) {
+        hovered = capa;
+        canvas.style.cursor = capa ? "pointer" : "grab";
+        dirtyRef.current = true;
+      }
+    };
+    canvas.addEventListener("pointerdown", onDown);
+    canvas.addEventListener("pointerup", onUp);
+    canvas.addEventListener("pointermove", onMove);
+    const getHovered = () => hovered;
+    const getOrbit = () => orbitRef.extra;
 
     if (process.env.NODE_ENV !== "production") {
       (window as unknown as { __vs?: object }).__vs = { scene, camera, renderer, villa };
@@ -76,18 +126,21 @@ export function VsScene({ ref, isStatic = false }: Props) {
         m.position.copy(tmp);
       }
 
-      // resalte verde de la capa activa: pulso que entra y sale dentro del quinto
+      // resalte verde: pulso de la capa activa del scroll + la capa bajo el cursor
+      const hov = getHovered();
       for (let step = 1 as CapaStep; step <= 5; step = (step + 1) as CapaStep) {
         const local = THREE.MathUtils.clamp(p * 5 - (step - 1), 0, 1);
-        const pulso = Math.sin(Math.PI * local) * 0.4;
+        const pulso = Math.max(Math.sin(Math.PI * local) * 0.4, hov === step ? 0.5 : 0);
         for (const m of villa.highlights[step]) {
           const mat = m.material as THREE.MeshStandardMaterial;
+          // de noche la cinta conserva su brillo cálido (lo maneja el escenario)
+          if (mat === villa.materials.vidrio && isNightMode()) continue;
           mat.emissive.copy(NEGRO).lerp(VERDE, pulso);
         }
       }
 
-      // cámara: órbita lenta + leve retiro al final (la axonometría respira)
-      const ang = THREE.MathUtils.lerp(-0.62, 0.55, p);
+      // cámara: órbita del scroll + la órbita manual del arrastre
+      const ang = THREE.MathUtils.lerp(-0.62, 0.55, p) + getOrbit();
       // en viewport angosto (móvil) la cámara se retira para no cortar la casa
       const ajusteAngosto = camera.aspect < 1 ? 1.45 : 1;
       const radio = THREE.MathUtils.lerp(58, 72, p * p) * ajusteAngosto;
@@ -109,6 +162,9 @@ export function VsScene({ ref, isStatic = false }: Props) {
 
     return () => {
       cancelAnimationFrame(raf);
+      canvas.removeEventListener("pointerdown", onDown);
+      canvas.removeEventListener("pointerup", onUp);
+      canvas.removeEventListener("pointermove", onMove);
       ro.disconnect();
       stage.dispose();
     };

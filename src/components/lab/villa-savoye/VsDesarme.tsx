@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { VsScene } from "./VsScene";
 import type { VsSceneHandle } from "./VsScene";
+import { VsToggleNoche } from "./VsToggleNoche";
 
 /*
   El capítulo del desarme: sección pineada de 5 "quintos" — un punto de
@@ -129,9 +130,12 @@ export function VsDesarme() {
         Los cinco puntos de la arquitectura moderna, desarmados capa por capa
       </h2>
       <VsScene ref={sceneRef} />
-      <div className="vs-hud" aria-hidden="true">
-        <b>01</b>
-        <i>/ 05</i>
+      <div className="vs-hud">
+        <VsToggleNoche />
+        <span aria-hidden="true">
+          <b>01</b>
+          <i>/ 05</i>
+        </span>
       </div>
       <div ref={cardsRef} className="vs-fichas">
         {PUNTOS.map((p) => (

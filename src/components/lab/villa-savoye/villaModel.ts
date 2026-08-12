@@ -22,6 +22,11 @@ export type VillaBuild = {
   highlights: Record<CapaStep, THREE.Mesh[]>;
   /** todos los meshes con coreografía, para el update loop */
   animated: THREE.Mesh[];
+  /** materiales que el escenario ajusta (noche, texturas async) */
+  materials: {
+    vidrio: THREE.MeshStandardMaterial;
+    suelo: THREE.MeshStandardMaterial;
+  };
   dispose: () => void;
 };
 
@@ -130,12 +135,15 @@ export function buildVilla(): VillaBuild {
     m.receiveShadow = true;
     root.add(m);
     animated.push(m);
-    if (hl) highlights[hl].push(m);
+    if (hl) {
+      highlights[hl].push(m);
+      m.userData.capa = hl; // para el hover interactivo (raycaster)
+    }
     return m;
   };
 
   // ── Terreno: pradera (no se anima) — tono salvia para separar la casa blanca
-  const cesped = mesh(g(new THREE.CylinderGeometry(27, 27, 0.3, 48)), matSuelo, 0, -0.15, 0, []);
+  const cesped = mesh(g(new THREE.CylinderGeometry(85, 85, 0.3, 64)), matSuelo, 0, -0.15, 0, []);
   root.add(cesped);
 
   // ── Capa 1 · PILOTIS: retícula 5×5 de columnas (no se mueven: la casa sube)
@@ -327,5 +335,5 @@ export function buildVilla(): VillaBuild {
     mats.forEach((m) => m.dispose());
   };
 
-  return { root, highlights, animated, dispose };
+  return { root, highlights, animated, materials: { vidrio: matVidrio, suelo: matSuelo }, dispose };
 }
