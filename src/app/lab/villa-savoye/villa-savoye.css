@@ -182,6 +182,29 @@
   background: linear-gradient(var(--vs-bg) 0%, var(--vs-bg-2) 100%);
 }
 
+/* costuras suaves: el papel del hero se funde con el cielo del canvas
+   (arriba) y el cielo se funde de vuelta al papel (abajo) — sin línea dura */
+.vs-desarme::before,
+.vs-desarme::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: clamp(6rem, 18svh, 12rem);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.vs-desarme::before {
+  top: 0;
+  background: linear-gradient(var(--vs-bg) 0%, transparent 100%);
+}
+
+.vs-desarme::after {
+  bottom: 0;
+  background: linear-gradient(transparent 0%, var(--vs-bg) 100%);
+}
+
 .vs-scene {
   position: absolute;
   inset: 0;
@@ -195,7 +218,8 @@
 
 .vs-hud {
   position: absolute;
-  top: clamp(1.2rem, 3vw, 2.5rem);
+  /* debajo de la barra fija del sitio: antes el header la tapaba al pinear */
+  top: clamp(4.6rem, 9vh, 6.5rem);
   right: clamp(1.5rem, 5vw, 6rem);
   display: flex;
   align-items: center;

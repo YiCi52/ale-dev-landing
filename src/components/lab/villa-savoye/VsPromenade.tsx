@@ -45,10 +45,10 @@ const PARADAS = [
 const RUTA: [number, number, number][] = [
   [2, 2.0, 34], // llegando por el jardín
   [0.5, 1.95, 14], // bajo el volumen, entre pilotis
-  [0.2, 1.9, 4.6], // frente al vestíbulo verde
-  [1.6, 2.0, 6.6], // pie de la rampa (tramo A)
-  [1.6, 2.9, -0.2], // subiendo A
-  [2.8, 3.4, -0.6], // giro en el descanso
+  [0.3, 1.9, 6.9], // el vestíbulo verde a la izquierda (se mira, no se roza)
+  [1.7, 2.05, 7.2], // pie de la rampa (tramo A)
+  [1.7, 3.25, 1.2], // subiendo A — el ojo ya libra el muro curvo
+  [2.65, 3.42, -0.5], // giro en el descanso, pegado al eje del corredor
   [2.8, 4.6, 5.4], // subiendo B
   [2.4, 5.3, 7.0], // llegada al nobile
   [-1.5, 5.4, 4.5], // entrando al salón
@@ -68,7 +68,7 @@ const RUTA: [number, number, number][] = [
 const MIRADA: [number, number, number][] = [
   [0, 3.5, 20],
   [0, 3.2, 4],
-  [0.6, 2.4, 0],
+  [-2.5, 2.2, 0.5], // la curva verde del vestíbulo (ahora al oeste)
   [1.6, 2.6, 2], // pie de rampa: la pendiente por delante
   [1.6, 3.3, -4.5], // subiendo A: el descanso al fondo, a media altura
   [2.8, 3.9, 2], // giro: el tramo B por delante

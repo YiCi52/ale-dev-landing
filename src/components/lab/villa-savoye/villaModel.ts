@@ -160,18 +160,21 @@ export function buildVilla(): VillaBuild {
   // Sube con la casa en el paso 1 (pertenece al cuerpo, no a los pilotis).
   const LIFT = 2.6; // cuánto se levanta el cuerpo sobre los pilotis en el paso 1
   const rdc = mesh(
-    g(new THREE.CylinderGeometry(5.6, 5.6, H_PILOTIS - 0.2, 40, 1, true, Math.PI * 0.15, Math.PI * 1.7)),
+    g(new THREE.CylinderGeometry(4.3, 4.3, H_PILOTIS - 0.2, 40, 1, true, Math.PI * 0.15, Math.PI * 1.7)),
     matVerde,
-    0,
+    -3.1,
     (H_PILOTIS - 0.2) / 2,
     -0.6,
     [{ step: 1, delta: up(LIFT) }],
   );
-  // el hueco del arco (~54°) queda mirando a +z: es la entrada de la promenade
+  // Corrido al OESTE del corredor de la rampa: en la Savoye real la rampa va
+  // JUNTO al muro curvo del vestíbulo, no a través (el chequeo matemático de
+  // holgura del tour detectó que el cilindro original cruzaba el corredor).
+  // El hueco del arco (~54°) queda mirando a +z: es la entrada de la promenade
   rdc.rotation.y = Math.PI * 0.58;
   add(rdc, 1);
   // tapa del vestíbulo: sin ella, la cámara del tour ve el interior del tubo
-  const rdcTapa = mesh(g(new THREE.CylinderGeometry(5.6, 5.6, 0.12, 40)), matLosa, 0, H_PILOTIS - 0.2, -0.6, [
+  const rdcTapa = mesh(g(new THREE.CylinderGeometry(4.3, 4.3, 0.12, 40)), matLosa, -3.1, H_PILOTIS - 0.2, -0.6, [
     { step: 1, delta: up(LIFT) },
   ]);
   add(rdcTapa, 1);

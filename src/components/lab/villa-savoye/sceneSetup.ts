@@ -15,6 +15,32 @@ import { isNightMode, onNightMode } from "./nightMode";
 
 const SKY_URL = "/lab/villa-savoye/sky_2k.hdr";
 const GRASS_URL = "/lab/villa-savoye/grass_diff_1k.jpg";
+const ARBOLES_URL = "/lab/villa-savoye/arboles.jpg"; // plate Higgsfield: álamos de Poissy
+
+/** banda de horizonte: al plate se le funde el cielo (arriba) y el pasto
+    (abajo) con un degradado alfa en canvas, para que cosa con el HDRI */
+function makeHorizonTexture(img: HTMLImageElement): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = img.width;
+  c.height = img.height;
+  const ctx = c.getContext("2d")!;
+  ctx.drawImage(img, 0, 0);
+  ctx.globalCompositeOperation = "destination-out";
+  const arriba = ctx.createLinearGradient(0, 0, 0, c.height * 0.42);
+  arriba.addColorStop(0, "rgba(0,0,0,1)");
+  arriba.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = arriba;
+  ctx.fillRect(0, 0, c.width, c.height * 0.42);
+  const abajo = ctx.createLinearGradient(0, c.height * 0.62, 0, c.height);
+  abajo.addColorStop(0, "rgba(0,0,0,0)");
+  abajo.addColorStop(1, "rgba(0,0,0,1)");
+  ctx.fillStyle = abajo;
+  ctx.fillRect(0, c.height * 0.62, c.width, c.height * 0.38);
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = THREE.MirroredRepeatWrapping; // espejo: sin costuras al dar la vuelta
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
 
 export type VillaStage = {
   renderer: THREE.WebGLRenderer;
@@ -66,9 +92,32 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     envTex = pmrem.fromEquirectangular(hdr).texture;
     scene.background = hdr;
     scene.environment = envTex;
-    aplicarModo(isNightMode());
+    aplicarMezcla();
     onDirty?.();
   });
+
+  // ── Anillo de horizonte: la fila de álamos (Higgsfield) rodea la pradera ──
+  let matArboles: THREE.MeshBasicMaterial | null = null;
+  {
+    const img = new Image();
+    img.onload = () => {
+      const tex = makeHorizonTexture(img);
+      tex.repeat.set(4, 1); // 4 vueltas espejadas alrededor del anillo
+      matArboles = new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        side: THREE.BackSide, // se ve desde adentro
+        depthWrite: false,
+      });
+      const alto = 26; // proporción del plate a radio 80
+      const ring = new THREE.Mesh(new THREE.CylinderGeometry(80, 80, alto, 72, 1, true), matArboles);
+      ring.position.y = alto * 0.5 - 9.5; // la línea de árboles cae en el horizonte
+      ring.renderOrder = -1;
+      scene.add(ring);
+      onDirty?.();
+    };
+    img.src = ARBOLES_URL;
+  }
 
   // pasto fotográfico sobre la pradera (reemplaza el moteado procedural)
   new THREE.TextureLoader().load(GRASS_URL, (tex) => {
@@ -82,36 +131,55 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     onDirty?.();
   });
 
-  // ── Día / noche ─────────────────────────────────────────────────────────
-  const aplicarModo = (night: boolean) => {
-    if (night) {
-      renderer.toneMappingExposure = 0.9;
-      scene.backgroundIntensity = 0.055;
-      scene.environmentIntensity = 0.12;
-      sol.color.set(0x9db4e0); // luna
-      sol.intensity = 0.5;
-      hemi.intensity = 0.1;
-      // la casa se vuelve lámpara: la cinta emite cálido desde adentro
-      villa.materials.vidrio.emissive.set(0xffb163);
-      villa.materials.vidrio.emissiveIntensity = 1.15;
-      villa.materials.vidrio.opacity = 0.85;
-      scene.fog = null;
-    } else {
-      renderer.toneMappingExposure = 1.05;
-      scene.backgroundIntensity = 1;
-      scene.environmentIntensity = 0.85;
-      sol.color.set(0xfff4e4);
-      sol.intensity = 2.4;
-      hemi.intensity = 0.55;
-      villa.materials.vidrio.emissive.set(0x000000);
-      villa.materials.vidrio.emissiveIntensity = 1;
-      villa.materials.vidrio.opacity = 0.42;
-      scene.fog = null;
-    }
+  // ── Día / noche: atardecer continuo, no switch ──────────────────────────
+  // Un solo factor t (0=día, 1=noche) interpola exposición, cielo, sol y la
+  // cinta encendiéndose — el tween de GSAP lo lleva en ~2s con easing suave.
+  const DIA = { exp: 1.05, bg: 1, env: 0.85, solC: new THREE.Color(0xfff4e4), solI: 2.4, hemiI: 0.55, emC: new THREE.Color(0x000000), emI: 0, op: 0.42 };
+  const NOCHE = { exp: 0.9, bg: 0.055, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
+  const OCASO = new THREE.Color(0xff9e5e); // el sol pasa por naranja a mitad de camino
+  const BLANCO = new THREE.Color(0xffffff);
+  const NOCHE_ARBOLES = new THREE.Color(0x1c2333);
+  const mezcla = { t: isNightMode() ? 1 : 0 };
+  const tmpC = new THREE.Color();
+  const aplicarMezcla = () => {
+    const t = mezcla.t;
+    const L = THREE.MathUtils.lerp;
+    renderer.toneMappingExposure = L(DIA.exp, NOCHE.exp, t);
+    scene.backgroundIntensity = L(DIA.bg, NOCHE.bg, t);
+    scene.environmentIntensity = L(DIA.env, NOCHE.env, t);
+    // el color del sol viaja día → ocaso → luna (curva por el naranja)
+    if (t < 0.5) tmpC.lerpColors(DIA.solC, OCASO, t * 2);
+    else tmpC.lerpColors(OCASO, NOCHE.solC, (t - 0.5) * 2);
+    sol.color.copy(tmpC);
+    sol.intensity = L(DIA.solI, NOCHE.solI, t);
+    hemi.intensity = L(DIA.hemiI, NOCHE.hemiI, t);
+    const v = villa.materials.vidrio;
+    v.emissive.lerpColors(DIA.emC, NOCHE.emC, t);
+    // la cinta se enciende tarde (t>0.55): primero oscurece, luego la lámpara
+    v.emissiveIntensity = NOCHE.emI * THREE.MathUtils.smoothstep(t, 0.55, 1);
+    v.opacity = L(DIA.op, NOCHE.op, t);
+    // el anillo de álamos también anochece (material sin luz: se tinta a mano)
+    if (matArboles) matArboles.color.lerpColors(BLANCO, NOCHE_ARBOLES, t);
     onDirty?.();
   };
-  aplicarModo(isNightMode());
-  const offNight = onNightMode(aplicarModo);
+  aplicarMezcla();
+  let tweenRaf = 0;
+  const offNight = onNightMode((night) => {
+    // tween manual con rAF (sin depender de gsap acá): ~2s ease in-out
+    cancelAnimationFrame(tweenRaf);
+    const desde = mezcla.t;
+    const hasta = night ? 1 : 0;
+    const t0 = performance.now();
+    const DUR = 2000;
+    const paso = (now: number) => {
+      const k = Math.min(1, (now - t0) / DUR);
+      const e = k * k * (3 - 2 * k); // smoothstep
+      mezcla.t = desde + (hasta - desde) * e;
+      aplicarMezcla();
+      if (k < 1) tweenRaf = requestAnimationFrame(paso);
+    };
+    tweenRaf = requestAnimationFrame(paso);
+  });
 
   const resize = () => {
     const { clientWidth: w, clientHeight: h } = host;
@@ -122,6 +190,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   resize();
 
   const dispose = () => {
+    cancelAnimationFrame(tweenRaf);
     offNight();
     villa.dispose();
     envTex?.dispose();
