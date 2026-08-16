@@ -59,7 +59,11 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   // Antes estaba invertido (2 en móvil) — 2.6x de carga al hardware más lento.
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.25 : 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  // AgX y no ACES: ACES satura y tiñe los altos hacia crema — la Villa es
+  // BLANCA y con ACES se veía quemada a naranja. AgX hace roll-off suave y
+  // el blanco queda blanco. Las exposiciones de DIA/NOCHE compensan el
+  // oscurecimiento propio de AgX (~1.33x).
+  renderer.toneMapping = THREE.AgXToneMapping;
   renderer.shadowMap.enabled = true;
   // PCF duro a propósito: PCFSoftShadowMap está deprecado (r182) y caía a PCF
   // en silencio. La suavidad de verdad llega con el AO horneado de la Ronda 5.
@@ -162,8 +166,8 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   // ── Día / noche: atardecer continuo, no switch ──────────────────────────
   // Un solo factor t (0=día, 1=noche) interpola exposición, cielo, sol y la
   // cinta encendiéndose — el tween de GSAP lo lleva en ~2s con easing suave.
-  const DIA = { exp: 1.05, bg: 1, env: 0.85, solC: new THREE.Color(0xfff4e4), solI: 2.4, hemiI: 0.55, emC: new THREE.Color(0x000000), emI: 0, op: 0.42 };
-  const NOCHE = { exp: 0.9, bg: 0.055, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
+  const DIA = { exp: 1.4, bg: 1, env: 0.85, solC: new THREE.Color(0xfff4e4), solI: 2.4, hemiI: 0.55, emC: new THREE.Color(0x000000), emI: 0, op: 0.42 };
+  const NOCHE = { exp: 1.15, bg: 0.055, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
   const OCASO = new THREE.Color(0xff9e5e); // el sol pasa por naranja a mitad de camino
   const BLANCO = new THREE.Color(0xffffff);
   const NOCHE_ARBOLES = new THREE.Color(0x1c2333);
