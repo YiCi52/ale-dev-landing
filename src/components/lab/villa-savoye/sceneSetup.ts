@@ -52,14 +52,29 @@ export type VillaStage = {
 };
 
 export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => void): VillaStage {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  // sin alpha: el fondo siempre lo pinta el HDRI, el canal alfa solo costaba blending
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
   const small = window.innerWidth < 1024;
-  renderer.setPixelRatio(small ? Math.min(window.devicePixelRatio, 2) : Math.min(window.devicePixelRatio, 1.5));
+  // El aparato DÉBIL recibe MENOS píxeles: 1.25 en móvil, 1.5 en desktop.
+  // Antes estaba invertido (2 en móvil) — 2.6x de carga al hardware más lento.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.25 : 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // PCF duro a propósito: PCFSoftShadowMap está deprecado (r182) y caía a PCF
+  // en silencio. La suavidad de verdad llega con el AO horneado de la Ronda 5.
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   host.appendChild(renderer.domElement);
+
+  // Pérdida de contexto WebGL (pestaña al fondo, GPU reset): sin el
+  // preventDefault el canvas queda negro para siempre; con él, el navegador
+  // restaura y el onDirty repinta.
+  let disposed = false;
+  const canvas = renderer.domElement;
+  const onContextLost = (e: Event) => e.preventDefault();
+  const onContextRestored = () => onDirty?.();
+  canvas.addEventListener("webglcontextlost", onContextLost);
+  canvas.addEventListener("webglcontextrestored", onContextRestored);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(fov, 1, 0.15, 320);
@@ -87,6 +102,11 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   let envTex: THREE.Texture | null = null;
   let skyTex: THREE.DataTexture | null = null;
   new RGBELoader().load(SKY_URL, (hdr) => {
+    // la carga es async: si el stage ya se desmontó, soltar el HDR y salir
+    if (disposed) {
+      hdr.dispose();
+      return;
+    }
     hdr.mapping = THREE.EquirectangularReflectionMapping;
     skyTex = hdr;
     envTex = pmrem.fromEquirectangular(hdr).texture;
@@ -98,9 +118,11 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
 
   // ── Anillo de horizonte: la fila de álamos (Higgsfield) rodea la pradera ──
   let matArboles: THREE.MeshBasicMaterial | null = null;
+  let ringMesh: THREE.Mesh | null = null;
   {
     const img = new Image();
     img.onload = () => {
+      if (disposed) return;
       const tex = makeHorizonTexture(img);
       tex.repeat.set(4, 1); // 4 vueltas espejadas alrededor del anillo
       matArboles = new THREE.MeshBasicMaterial({
@@ -110,17 +132,23 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
         depthWrite: false,
       });
       const alto = 26; // proporción del plate a radio 80
-      const ring = new THREE.Mesh(new THREE.CylinderGeometry(80, 80, alto, 72, 1, true), matArboles);
-      ring.position.y = alto * 0.5 - 9.5; // la línea de árboles cae en el horizonte
-      ring.renderOrder = -1;
-      scene.add(ring);
+      ringMesh = new THREE.Mesh(new THREE.CylinderGeometry(80, 80, alto, 72, 1, true), matArboles);
+      ringMesh.position.y = alto * 0.5 - 9.5; // la línea de árboles cae en el horizonte
+      ringMesh.renderOrder = -1;
+      scene.add(ringMesh);
       onDirty?.();
     };
     img.src = ARBOLES_URL;
   }
 
   // pasto fotográfico sobre la pradera (reemplaza el moteado procedural)
+  let grassTex: THREE.Texture | null = null;
   new THREE.TextureLoader().load(GRASS_URL, (tex) => {
+    if (disposed) {
+      tex.dispose();
+      return;
+    }
+    grassTex = tex;
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(26, 26);
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -190,9 +218,20 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   resize();
 
   const dispose = () => {
+    disposed = true;
     cancelAnimationFrame(tweenRaf);
     offNight();
+    canvas.removeEventListener("webglcontextlost", onContextLost);
+    canvas.removeEventListener("webglcontextrestored", onContextRestored);
     villa.dispose();
+    // el anillo y las texturas cargadas async no son de la villa: se sueltan acá
+    if (ringMesh) {
+      scene.remove(ringMesh);
+      ringMesh.geometry.dispose();
+    }
+    matArboles?.map?.dispose();
+    matArboles?.dispose();
+    grassTex?.dispose();
     envTex?.dispose();
     skyTex?.dispose();
     pmrem.dispose();
