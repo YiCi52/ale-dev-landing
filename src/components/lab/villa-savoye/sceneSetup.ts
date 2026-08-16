@@ -9,8 +9,9 @@ import { isNightMode, onNightMode } from "./nightMode";
   Bootstrap compartido de las DOS escenas del lab (desarme y promenade).
   Atmósfera fotográfica sin servicios pagos: cielo HDRI real de Poly Haven
   (CC0) como fondo E iluminación (PMREM), pasto fotográfico en la pradera,
-  sombras suaves. Modo noche: mismo cielo atenuado, sol lunar frío y la
-  cinta de vidrio emitiendo cálido — la casa como lámpara (ref. Pocito/v30).
+  sombras suaves. Modo noche: sol lunar frío, la cinta de vidrio emitiendo
+  cálido — la casa como lámpara (ref. Pocito/v30) — y un domo de estrellas
+  procedural con Vía Láctea que aparece con el anochecer.
 */
 
 const SKY_URL = "/lab/villa-savoye/sky_2k.hdr";
@@ -163,11 +164,106 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     onDirty?.();
   });
 
+  // ── Cielo nocturno: mar de estrellas + Vía Láctea (procedural, 0 KB) ────
+  // La noche era el día con la exposición bajada. Ahora, a partir de t≈0.35
+  // se funde un domo de estrellas: tres poblaciones de Points (campo, campo
+  // brillante, polvo de la banda galáctica) más un halo aditivo con sprite
+  // suave que hace la nebulosa. Todo generado — nada descargado, nítido a
+  // cualquier DPR, y el fade viaja con el mismo t del atardecer.
+  const nightSky = new THREE.Group();
+  nightSky.visible = false;
+  scene.add(nightSky);
+  const starMats: { m: THREE.PointsMaterial; base: number }[] = [];
+  let nightSpriteTex: THREE.CanvasTexture | null = null;
+  {
+    // plano de la banda galáctica, inclinado para que cruce el cielo en diagonal
+    const N = new THREE.Vector3(0.42, 0.55, 0.72).normalize();
+    const e1 = new THREE.Vector3(1, 0, 0).cross(N).normalize();
+    const e2 = new THREE.Vector3().crossVectors(N, e1).normalize();
+    const R = 280; // dentro del far (320), fuera de todo lo demás
+    // aproximación de gaussiana (suma de uniformes): las estrellas se apiñan
+    // hacia el centro de la banda como en el cielo real
+    const gauss = () => (Math.random() + Math.random() + Math.random() + Math.random() - 2) / 2;
+
+    const dirTo = (out: THREE.Vector3, band: boolean) => {
+      if (band) {
+        const th = Math.random() * Math.PI * 2;
+        out.copy(e1).multiplyScalar(Math.cos(th)).addScaledVector(e2, Math.sin(th)).addScaledVector(N, gauss() * 0.16);
+      } else {
+        out.set(gauss(), gauss(), gauss());
+        if (out.lengthSq() < 1e-6) out.set(0, 1, 0);
+      }
+      return out.normalize();
+    };
+
+    const makeStars = (
+      count: number,
+      band: boolean,
+      size: number,
+      base: number,
+      map?: THREE.CanvasTexture,
+      blending?: THREE.Blending,
+    ) => {
+      const pos = new Float32Array(count * 3);
+      const col = new Float32Array(count * 3);
+      const v = new THREE.Vector3();
+      const c = new THREE.Color();
+      for (let i = 0; i < count; i++) {
+        dirTo(v, band);
+        // casi todo por encima del horizonte: lo de abajo lo tapan suelo y álamos
+        if (v.y < -0.12) {
+          v.y = -v.y * 0.4 - 0.05;
+          v.normalize();
+        }
+        pos.set([v.x * R, v.y * R, v.z * R], i * 3);
+        const roll = Math.random();
+        if (roll < 0.08) c.setHex(0xbfd4ff); // azuladas
+        else if (roll < 0.16) c.setHex(0xffe3bd); // cálidas
+        else c.setHex(0xffffff);
+        c.multiplyScalar(0.75 + Math.random() * 0.25);
+        col.set([c.r, c.g, c.b], i * 3);
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+      const m = new THREE.PointsMaterial({
+        size,
+        sizeAttenuation: false,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: blending ?? THREE.NormalBlending,
+      });
+      if (map) m.map = map;
+      const points = new THREE.Points(g, m);
+      points.renderOrder = -2; // los álamos (-1) siluetean por encima
+      nightSky.add(points);
+      starMats.push({ m, base });
+    };
+
+    // sprite radial suave para el halo difuso de la Vía Láctea
+    const spriteC = document.createElement("canvas");
+    spriteC.width = spriteC.height = 64;
+    const sctx = spriteC.getContext("2d")!;
+    const grad = sctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, "rgba(255,255,255,1)");
+    grad.addColorStop(1, "rgba(255,255,255,0)");
+    sctx.fillStyle = grad;
+    sctx.fillRect(0, 0, 64, 64);
+    nightSpriteTex = new THREE.CanvasTexture(spriteC);
+
+    makeStars(2200, false, 1.4, 0.9); // campo general
+    makeStars(320, false, 2.4, 1.0); // las brillantes
+    makeStars(6800, true, 1.0, 0.6); // polvo de la banda: la Vía Láctea "de puntos"
+    makeStars(200, true, 44, 0.05, nightSpriteTex, THREE.AdditiveBlending); // halo nebular
+  }
+
   // ── Día / noche: atardecer continuo, no switch ──────────────────────────
   // Un solo factor t (0=día, 1=noche) interpola exposición, cielo, sol y la
   // cinta encendiéndose — el tween de GSAP lo lleva en ~2s con easing suave.
   const DIA = { exp: 1.4, bg: 1, env: 0.85, solC: new THREE.Color(0xfff4e4), solI: 2.4, hemiI: 0.55, emC: new THREE.Color(0x000000), emI: 0, op: 0.42 };
-  const NOCHE = { exp: 1.15, bg: 0.055, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
+  const NOCHE = { exp: 1.15, bg: 0.03, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
   const OCASO = new THREE.Color(0xff9e5e); // el sol pasa por naranja a mitad de camino
   const BLANCO = new THREE.Color(0xffffff);
   const NOCHE_ARBOLES = new THREE.Color(0x1c2333);
@@ -192,6 +288,10 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     v.opacity = L(DIA.op, NOCHE.op, t);
     // el anillo de álamos también anochece (material sin luz: se tinta a mano)
     if (matArboles) matArboles.color.lerpColors(BLANCO, NOCHE_ARBOLES, t);
+    // las estrellas se funden con el anochecer (t 0.35→0.95) — no un switch
+    const nightT = THREE.MathUtils.smoothstep(t, 0.35, 0.95);
+    nightSky.visible = nightT > 0.01;
+    for (const { m, base } of starMats) m.opacity = base * nightT;
     onDirty?.();
   };
   aplicarMezcla();
@@ -235,6 +335,13 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     }
     matArboles?.map?.dispose();
     matArboles?.dispose();
+    nightSky.children.forEach((p) => {
+      if (p instanceof THREE.Points) {
+        p.geometry.dispose();
+        (p.material as THREE.Material).dispose();
+      }
+    });
+    nightSpriteTex?.dispose();
     grassTex?.dispose();
     envTex?.dispose();
     skyTex?.dispose();
