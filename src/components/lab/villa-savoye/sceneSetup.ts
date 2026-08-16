@@ -185,10 +185,10 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     // hacia el centro de la banda como en el cielo real
     const gauss = () => (Math.random() + Math.random() + Math.random() + Math.random() - 2) / 2;
 
-    const dirTo = (out: THREE.Vector3, band: boolean) => {
+    const dirTo = (out: THREE.Vector3, band: boolean, sigma = 0.16) => {
       if (band) {
         const th = Math.random() * Math.PI * 2;
-        out.copy(e1).multiplyScalar(Math.cos(th)).addScaledVector(e2, Math.sin(th)).addScaledVector(N, gauss() * 0.16);
+        out.copy(e1).multiplyScalar(Math.cos(th)).addScaledVector(e2, Math.sin(th)).addScaledVector(N, gauss() * sigma);
       } else {
         out.set(gauss(), gauss(), gauss());
         if (out.lengthSq() < 1e-6) out.set(0, 1, 0);
@@ -203,13 +203,15 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
       base: number,
       map?: THREE.CanvasTexture,
       blending?: THREE.Blending,
+      sigma = 0.16,
+      tint = 0xffffff,
     ) => {
       const pos = new Float32Array(count * 3);
       const col = new Float32Array(count * 3);
       const v = new THREE.Vector3();
       const c = new THREE.Color();
       for (let i = 0; i < count; i++) {
-        dirTo(v, band);
+        dirTo(v, band, sigma);
         // casi todo por encima del horizonte: lo de abajo lo tapan suelo y álamos
         if (v.y < -0.12) {
           v.y = -v.y * 0.4 - 0.05;
@@ -236,6 +238,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
         blending: blending ?? THREE.NormalBlending,
       });
       if (map) m.map = map;
+      m.color.setHex(tint);
       const points = new THREE.Points(g, m);
       points.renderOrder = -2; // los álamos (-1) siluetean por encima
       nightSky.add(points);
@@ -255,8 +258,12 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
 
     makeStars(2200, false, 1.4, 0.9); // campo general
     makeStars(320, false, 2.4, 1.0); // las brillantes
-    makeStars(6800, true, 1.0, 0.6); // polvo de la banda: la Vía Láctea "de puntos"
-    makeStars(200, true, 44, 0.05, nightSpriteTex, THREE.AdditiveBlending); // halo nebular
+    makeStars(9500, true, 1.0, 0.7); // polvo de la banda: la Vía Láctea "de puntos"
+    makeStars(300, true, 52, 0.085, nightSpriteTex, THREE.AdditiveBlending); // halo nebular ancho
+    // el núcleo: banda apretada (sigma chico) con tinte cálido — es lo que
+    // hace que se lea como galaxia y no como una franja de puntos
+    makeStars(2400, true, 1.0, 0.8, undefined, undefined, 0.055);
+    makeStars(160, true, 40, 0.09, nightSpriteTex, THREE.AdditiveBlending, 0.05, 0xffe4c2);
   }
 
   // ── Día / noche: atardecer continuo, no switch ──────────────────────────
