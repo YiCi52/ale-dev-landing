@@ -106,7 +106,7 @@ export function VsPromenade() {
     const stage = createVillaStage(host, 58, () => {
       dirty = true;
     }); // FOV amplio: interior
-    const { renderer, camera } = stage;
+    const { camera } = stage;
 
     // 'centripetal': la curva NO se sale del pasillo entre waypoints —
     // el overshoot de la catmull uniforme era lo que atravesaba muros
@@ -124,7 +124,7 @@ export function VsPromenade() {
       miradaCurve.getPoint(Math.min(progress, 0.999), target);
       camera.position.copy(eye);
       camera.lookAt(target);
-      renderer.render(stage.scene, camera);
+      stage.render();
     };
 
     const onResize = () => {

@@ -148,7 +148,7 @@ export function VsScene({ ref, isStatic = false }: Props) {
       camera.position.set(Math.sin(ang) * radio, altura, Math.cos(ang) * radio);
       camera.lookAt(0, THREE.MathUtils.lerp(5.5, 9.5, p), 0);
 
-      renderer.render(scene, camera);
+      stage.render();
     };
 
     let raf = 0;

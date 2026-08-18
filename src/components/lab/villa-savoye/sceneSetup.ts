@@ -1,5 +1,14 @@
 import * as THREE from "three";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+import {
+  EffectComposer,
+  EffectPass,
+  NoiseEffect,
+  RenderPass,
+  SMAAEffect,
+  ToneMappingEffect,
+  ToneMappingMode,
+} from "postprocessing";
 
 import { buildVilla } from "./villaModel";
 import type { VillaBuild } from "./villaModel";
@@ -13,6 +22,12 @@ import { isNightMode, onNightMode } from "./nightMode";
   cálido — la casa como lámpara (ref. Pocito/v30) — y un domo de estrellas
   procedural con Vía Láctea que aparece con el anochecer.
 */
+
+/** grain de película (ronda 1b): mata el banding de los degradados del cielo
+    día/noche a la vez que da textura. 0.02-0.04 es el rango del plan; sin
+    premultiply a propósito — el banding vive en las zonas OSCURAS y el
+    premultiply apagaría el ruido justo ahí */
+const GRANO = 0.03;
 
 const SKY_URL = "/lab/villa-savoye/sky_2k.hdr";
 const GRASS_URL = "/lab/villa-savoye/grass_diff_1k.jpg";
@@ -48,13 +63,17 @@ export type VillaStage = {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   villa: VillaBuild;
+  /** pinta un frame por el composer (escena → AgX → grain) */
+  render: () => void;
   resize: () => void;
   dispose: () => void;
 };
 
 export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => void): VillaStage {
-  // sin alpha: el fondo siempre lo pinta el HDRI, el canal alfa solo costaba blending
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  // sin alpha: el fondo siempre lo pinta el HDRI, el canal alfa solo costaba
+  // blending. Sin antialias del framebuffer: la escena ya no se dibuja ahí
+  // sino en los buffers del composer — el MSAA vive en el composer.
+  const renderer = new THREE.WebGLRenderer({ antialias: false });
   const small = window.innerWidth < 1024;
   // El aparato DÉBIL recibe MENOS píxeles: 1.25 en móvil, 1.5 en desktop.
   // Antes estaba invertido (2 en móvil) — 2.6x de carga al hardware más lento.
@@ -64,7 +83,12 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   // BLANCA y con ACES se veía quemada a naranja. AgX hace roll-off suave y
   // el blanco queda blanco. Las exposiciones de DIA/NOCHE compensan el
   // oscurecimiento propio de AgX (~1.33x).
-  renderer.toneMapping = THREE.AgXToneMapping;
+  // OJO ronda 1b: el AgX ya NO va en el renderer — desde three r152 el tone
+  // mapping se salta al renderizar a un render target (que es lo que hace el
+  // composer), así que vive en el ToneMappingEffect del pass final. El
+  // renderer queda en NoToneMapping y toneMappingExposure SIGUE mandando:
+  // el AgXToneMapping del shader lee ese uniform en el pass final.
+  renderer.toneMapping = THREE.NoToneMapping;
   renderer.shadowMap.enabled = true;
   // PCF duro a propósito: PCFSoftShadowMap está deprecado (r182) y caía a PCF
   // en silencio. La suavidad de verdad llega con el AO horneado de la Ronda 5.
@@ -83,6 +107,25 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(fov, 1, 0.15, 320);
+
+  // ── Composer (ronda 1b): escena → SMAA → AgX → grain ────────────────────
+  // HalfFloat para que el rango HDR llegue vivo al tone mapping. El AA es
+  // SMAA y NO el multisampling del composer: MSAA sobre RGBA16F pasa la
+  // consulta de formato pero el resolve falla en ANGLE/Metal (Chrome macOS)
+  // con INVALID_FRAMEBUFFER_OPERATION y el canvas queda negro.
+  const composer = new EffectComposer(renderer, {
+    frameBufferType: THREE.HalfFloatType,
+  });
+  composer.addPass(new RenderPass(scene, camera));
+  const grain = new NoiseEffect({ premultiply: false });
+  grain.blendMode.opacity.value = GRANO;
+  // orden dentro del pass: SMAA primero (sus vecinos salen del buffer de
+  // entrada — después del tone mapping serían inconsistentes), luego AgX a
+  // espacio de display, y el grain al final sobre el color ya cuantizable
+  composer.addPass(
+    new EffectPass(camera, new SMAAEffect(), new ToneMappingEffect({ mode: ToneMappingMode.AGX }), grain),
+  );
+  const render = () => composer.render();
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0xdcd8cd, 0.55);
   scene.add(hemi);
@@ -322,7 +365,8 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
 
   const resize = () => {
     const { clientWidth: w, clientHeight: h } = host;
-    renderer.setSize(w, h, false);
+    // el composer redimensiona el renderer Y sus buffers internos
+    composer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   };
@@ -353,9 +397,10 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     envTex?.dispose();
     skyTex?.dispose();
     pmrem.dispose();
+    composer.dispose(); // pases + buffers; el renderer se dispone aparte
     renderer.dispose();
     if (renderer.domElement.parentElement === host) host.removeChild(renderer.domElement);
   };
 
-  return { renderer, scene, camera, villa, resize, dispose };
+  return { renderer, scene, camera, villa, render, resize, dispose };
 }
