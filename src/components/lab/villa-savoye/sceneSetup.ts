@@ -109,22 +109,24 @@ function makeMilkyWayTexture(N: THREE.Vector3, e1: THREE.Vector3, e2: THREE.Vect
       const theta = ((px + 0.5) / W) * Math.PI * 2;
       dir.set(sinPhi * Math.cos(theta), Math.cos(phi), sinPhi * Math.sin(theta));
       const b = dir.dot(N); // distancia al plano galáctico
-      let t = Math.atan2(dir.dot(e2), dir.dot(e1)); // posición a lo largo
+      const t = Math.atan2(dir.dot(e2), dir.dot(e1)); // posición a lo largo
       let dt = t - tCore;
       if (dt > Math.PI) dt -= Math.PI * 2;
       if (dt < -Math.PI) dt += Math.PI * 2;
 
-      // banda base con grumos
-      const glow = Math.exp((-b * b) / (2 * 0.12 * 0.12)) * (0.45 + 0.55 * fbm(t * 3.2, b * 14));
-      // bulbo del núcleo: más ancho y más brillante, cálido
-      const core = Math.exp((-dt * dt) / (2 * 0.55 * 0.55)) * Math.exp((-b * b) / (2 * 0.16 * 0.16));
+      // banda base con grumos: el ruido al CUADRADO le quita el "piso" —
+      // sin eso la banda se ve pareja como niebla, no como nube de estrellas
+      const n = fbm(t * 3.2, b * 14);
+      const glow = Math.exp((-b * b) / (2 * 0.09 * 0.09)) * (0.15 + 0.85 * n * n);
+      // bulbo del núcleo: presente pero contenido, cálido
+      const core = Math.exp((-dt * dt) / (2 * 0.45 * 0.45)) * Math.exp((-b * b) / (2 * 0.12 * 0.12)) * (0.35 + 0.65 * n);
       // Great Rift: grieta oscura que serpentea DENTRO de la banda, patchy,
       // corre por la mitad del núcleo (como en el cielo real)
       const riftOff = 0.03 * Math.sin(t * 1.7 + 1.1) + 0.012;
       const riftAmp = Math.exp((-dt * dt) / (2 * 1.4 * 1.4));
-      const rift = Math.exp((-(b - riftOff) * (b - riftOff)) / (2 * 0.05 * 0.05)) * (0.45 + 0.55 * fbm(t * 4.1 + 211, b * 18 + 97)) * riftAmp;
+      const rift = Math.exp((-(b - riftOff) * (b - riftOff)) / (2 * 0.055 * 0.055)) * (0.45 + 0.55 * fbm(t * 4.1 + 211, b * 18 + 97)) * riftAmp;
 
-      const I = Math.min(1, Math.max(0, (glow * 0.72 + core * 0.85) * (1 - 0.8 * Math.min(1, rift))));
+      const I = Math.min(1, Math.max(0, (glow * 0.6 + core * 0.7) * (1 - 0.88 * Math.min(1, rift))));
       const warm = Math.min(1, core * 1.4);
       // la intensidad va EN el RGB con alfa opaco: el canvas 2D almacena
       // premultiplicado y con alfa variable el blending la multiplicaba dos
@@ -284,6 +286,9 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
       ringMesh.position.y = alto * 0.5 - 9.5; // la línea de árboles cae en el horizonte
       ringMesh.renderOrder = -1;
       scene.add(ringMesh);
+      // con el lazy mount (2b) el stage puede nacer YA en modo noche: la
+      // mezcla debe re-aplicarse cuando el anillo llega, o se queda de día
+      aplicarMezcla();
       onDirty?.();
     };
     img.src = ARBOLES_URL;
@@ -402,7 +407,9 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     const milkyMesh = new THREE.Mesh(new THREE.SphereGeometry(276, 48, 32), milkyMat);
     milkyMesh.renderOrder = -3; // debajo de los puntos (-2) y de los álamos (-1)
     nightSky.add(milkyMesh);
-    starMats.push({ m: milkyMat, base: 0.85 });
+    // base BAJA a propósito: el aditivo suma en lineal pre-AgX y con 0.85 el
+    // bulbo se leía como un rayo de niebla que tapaba media pantalla
+    starMats.push({ m: milkyMat, base: 0.3 });
   }
 
   // ── Día / noche: atardecer continuo, no switch ──────────────────────────
