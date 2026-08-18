@@ -29,9 +29,14 @@ import { isNightMode, onNightMode } from "./nightMode";
     premultiply apagaría el ruido justo ahí */
 const GRANO = 0.03;
 
-const SKY_URL = "/lab/villa-savoye/sky_2k.hdr";
-const GRASS_URL = "/lab/villa-savoye/grass_diff_1k.jpg";
-const ARBOLES_URL = "/lab/villa-savoye/arboles.jpg"; // plate Higgsfield: álamos de Poissy
+// Ronda 2: presupuesto de assets. El HDR baja a 1k y SOLO ilumina (PMREM);
+// el fondo es el mismo cielo horneado a WebP LDR con el AgX de three a
+// exposición de día (scripts del bake en el historial de sesión). Texturas
+// 2D en WebP. Total del route: 7.03 MB → ~1.9 MB.
+const SKY_URL = "/lab/villa-savoye/sky_1k.hdr"; // kloofendal_48d_partly_cloudy_puresky (Poly Haven CC0)
+const BG_URL = "/lab/villa-savoye/sky_bg_2k.webp";
+const GRASS_URL = "/lab/villa-savoye/grass_1k.webp";
+const ARBOLES_URL = "/lab/villa-savoye/arboles.webp"; // plate Higgsfield: álamos de Poissy
 
 /** banda de horizonte: al plate se le funde el cielo (arriba) y el pasto
     (abajo) con un degradado alfa en canvas, para que cosa con el HDRI */
@@ -145,10 +150,12 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   const villa = buildVilla();
   scene.add(villa.root);
 
-  // ── Cielo HDRI: fondo + iluminación de una sola fuente ──────────────────
+  // ── Cielo: el HDR 1k SOLO ilumina; el fondo es el WebP horneado ─────────
+  // Antes el 2k half-float (16.8 MB de VRAM) se quedaba vivo solo para
+  // pintarse de fondo. El prefiltrado del PMREM desenfoca igual con 1k, y
+  // la DataTexture se suelta apenas termina.
   const pmrem = new THREE.PMREMGenerator(renderer);
   let envTex: THREE.Texture | null = null;
-  let skyTex: THREE.DataTexture | null = null;
   new RGBELoader().load(SKY_URL, (hdr) => {
     // la carga es async: si el stage ya se desmontó, soltar el HDR y salir
     if (disposed) {
@@ -156,10 +163,23 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
       return;
     }
     hdr.mapping = THREE.EquirectangularReflectionMapping;
-    skyTex = hdr;
     envTex = pmrem.fromEquirectangular(hdr).texture;
-    scene.background = hdr;
+    hdr.dispose();
     scene.environment = envTex;
+    aplicarMezcla();
+    onDirty?.();
+  });
+
+  let bgTex: THREE.Texture | null = null;
+  new THREE.TextureLoader().load(BG_URL, (tex) => {
+    if (disposed) {
+      tex.dispose();
+      return;
+    }
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    bgTex = tex;
+    scene.background = tex;
     aplicarMezcla();
     onDirty?.();
   });
@@ -198,7 +218,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     }
     grassTex = tex;
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(26, 26);
+    tex.repeat.set(9, 9);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     villa.materials.suelo.map = tex;
@@ -206,6 +226,12 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     villa.materials.suelo.needsUpdate = true;
     onDirty?.();
   });
+
+  // NOTA ronda 2: se intentó una capa de macro-variación multiplicativa para
+  // romper el tile del pasto, pero MultiplyBlending pintaba el disco blanco
+  // bajo el pipeline del composer. Con repeat 9 el patrón no se nota a la
+  // distancia de cámara actual; si reaparece, se resuelve en la Ronda 5 con
+  // el bake (ahí el suelo recibe su propia textura horneada).
 
   // ── Cielo nocturno: mar de estrellas + Vía Láctea (procedural, 0 KB) ────
   // La noche era el día con la exposición bajada. Ahora, a partir de t≈0.35
@@ -302,18 +328,25 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     makeStars(2200, false, 1.4, 0.9); // campo general
     makeStars(320, false, 2.4, 1.0); // las brillantes
     makeStars(9500, true, 1.0, 0.7); // polvo de la banda: la Vía Láctea "de puntos"
-    makeStars(300, true, 52, 0.085, nightSpriteTex, THREE.AdditiveBlending); // halo nebular ancho
+    // Halos aditivos COMPENSADOS para el composer (ronda 1b): ahora suman en
+    // lineal ANTES del AgX y la acumulación pega mucho más fuerte que en
+    // display space — con los valores viejos (52/0.085 y 40/0.09) se leían
+    // como bolas de bokeh sueltas, no como nebulosa. Más chicos y tenues.
+    makeStars(300, true, 30, 0.03, nightSpriteTex, THREE.AdditiveBlending); // halo nebular ancho
     // el núcleo: banda apretada (sigma chico) con tinte cálido — es lo que
     // hace que se lea como galaxia y no como una franja de puntos
     makeStars(2400, true, 1.0, 0.8, undefined, undefined, 0.055);
-    makeStars(160, true, 40, 0.09, nightSpriteTex, THREE.AdditiveBlending, 0.05, 0xffe4c2);
+    makeStars(160, true, 24, 0.035, nightSpriteTex, THREE.AdditiveBlending, 0.05, 0xffe4c2);
   }
 
   // ── Día / noche: atardecer continuo, no switch ──────────────────────────
   // Un solo factor t (0=día, 1=noche) interpola exposición, cielo, sol y la
   // cinta encendiéndose — el tween de GSAP lo lleva en ~2s con easing suave.
-  const DIA = { exp: 1.4, bg: 1, env: 0.85, solC: new THREE.Color(0xfff4e4), solI: 2.4, hemiI: 0.55, emC: new THREE.Color(0x000000), emI: 0, op: 0.42 };
-  const NOCHE = { exp: 1.15, bg: 0.03, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
+  // bg compensa la doble exposición del fondo horneado: el WebP ya trae el
+  // AgX a exp 1.4, y el composer vuelve a multiplicar por exp antes de SU
+  // AgX — sin el 0.72 (≈1/1.4) el cielo se lava a blanco
+  const DIA = { exp: 1.4, bg: 0.72, env: 0.85, solC: new THREE.Color(0xfff4e4), solI: 2.4, hemiI: 0.55, emC: new THREE.Color(0x000000), emI: 0, op: 0.42 };
+  const NOCHE = { exp: 1.15, bg: 0.036, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
   const OCASO = new THREE.Color(0xff9e5e); // el sol pasa por naranja a mitad de camino
   const BLANCO = new THREE.Color(0xffffff);
   const NOCHE_ARBOLES = new THREE.Color(0x1c2333);
@@ -395,7 +428,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     nightSpriteTex?.dispose();
     grassTex?.dispose();
     envTex?.dispose();
-    skyTex?.dispose();
+    bgTex?.dispose();
     pmrem.dispose();
     composer.dispose(); // pases + buffers; el renderer se dispone aparte
     renderer.dispose();
