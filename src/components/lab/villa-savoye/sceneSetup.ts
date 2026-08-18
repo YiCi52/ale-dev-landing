@@ -63,6 +63,86 @@ function makeHorizonTexture(img: HTMLImageElement): THREE.CanvasTexture {
   return tex;
 }
 
+/** Nebulosa de la Vía Láctea pintada por píxel (equirect 1024x512 sobre una
+    esfera BackSide). Lo que la hace leerse real (referencias: astrofoto):
+    la banda con GRUMOS de ruido, el bulbo cálido del núcleo galáctico en UN
+    punto (no pareja), y sobre todo el Great Rift — la grieta de polvo OSCURO
+    que la parte a lo largo. Los sprites aditivos de antes nunca iban a dar
+    esto: 300 círculos se leen como bokeh, no como nube. Semilla fija. */
+function makeMilkyWayTexture(N: THREE.Vector3, e1: THREE.Vector3, e2: THREE.Vector3): THREE.CanvasTexture {
+  const W = 1024;
+  const H = 512;
+  const hash = (x: number, y: number): number => {
+    let h = (x | 0) * 374761393 + (y | 0) * 668265263 + 1013904223;
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+  };
+  const vnoise = (x: number, y: number): number => {
+    const xi = Math.floor(x);
+    const yi = Math.floor(y);
+    const fx = x - xi;
+    const fy = y - yi;
+    const sx = fx * fx * (3 - 2 * fx);
+    const sy = fy * fy * (3 - 2 * fy);
+    const a = hash(xi, yi);
+    const b = hash(xi + 1, yi);
+    const c = hash(xi, yi + 1);
+    const d = hash(xi + 1, yi + 1);
+    return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+  };
+  const fbm = (x: number, y: number): number => 0.6 * vnoise(x, y) + 0.3 * vnoise(x * 2.1 + 17, y * 2.1 + 31) + 0.1 * vnoise(x * 4.3 + 47, y * 4.3 + 89);
+
+  // el bulbo del núcleo va en el punto más ALTO de la banda: visible desde
+  // casi cualquier ángulo de cámara
+  const tCore = Math.atan2(e2.y, e1.y);
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+  const img = ctx.createImageData(W, H);
+  const dir = new THREE.Vector3();
+  for (let py = 0; py < H; py++) {
+    // equirect: v=0 arriba del canvas = +y (three voltea con flipY)
+    const phi = ((py + 0.5) / H) * Math.PI; // 0 = polo norte
+    const sinPhi = Math.sin(phi);
+    for (let px = 0; px < W; px++) {
+      const theta = ((px + 0.5) / W) * Math.PI * 2;
+      dir.set(sinPhi * Math.cos(theta), Math.cos(phi), sinPhi * Math.sin(theta));
+      const b = dir.dot(N); // distancia al plano galáctico
+      let t = Math.atan2(dir.dot(e2), dir.dot(e1)); // posición a lo largo
+      let dt = t - tCore;
+      if (dt > Math.PI) dt -= Math.PI * 2;
+      if (dt < -Math.PI) dt += Math.PI * 2;
+
+      // banda base con grumos
+      const glow = Math.exp((-b * b) / (2 * 0.12 * 0.12)) * (0.45 + 0.55 * fbm(t * 3.2, b * 14));
+      // bulbo del núcleo: más ancho y más brillante, cálido
+      const core = Math.exp((-dt * dt) / (2 * 0.55 * 0.55)) * Math.exp((-b * b) / (2 * 0.16 * 0.16));
+      // Great Rift: grieta oscura que serpentea DENTRO de la banda, patchy,
+      // corre por la mitad del núcleo (como en el cielo real)
+      const riftOff = 0.03 * Math.sin(t * 1.7 + 1.1) + 0.012;
+      const riftAmp = Math.exp((-dt * dt) / (2 * 1.4 * 1.4));
+      const rift = Math.exp((-(b - riftOff) * (b - riftOff)) / (2 * 0.05 * 0.05)) * (0.45 + 0.55 * fbm(t * 4.1 + 211, b * 18 + 97)) * riftAmp;
+
+      const I = Math.min(1, Math.max(0, (glow * 0.72 + core * 0.85) * (1 - 0.8 * Math.min(1, rift))));
+      const warm = Math.min(1, core * 1.4);
+      // la intensidad va EN el RGB con alfa opaco: el canvas 2D almacena
+      // premultiplicado y con alfa variable el blending la multiplicaba dos
+      // veces (∝ alfa²) — la nebulosa entera se aplastaba. Con aditivo,
+      // negro = cero contribución, así que el alfa no hace falta.
+      const o = (py * W + px) * 4;
+      img.data[o] = Math.round((0.72 + 0.28 * warm) * I * 255);
+      img.data[o + 1] = Math.round((0.78 + 0.1 * warm) * I * 255);
+      img.data[o + 2] = Math.round((0.92 - 0.2 * warm) * I * 255);
+      img.data[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 export type VillaStage = {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
@@ -242,8 +322,8 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   const nightSky = new THREE.Group();
   nightSky.visible = false;
   scene.add(nightSky);
-  const starMats: { m: THREE.PointsMaterial; base: number }[] = [];
-  let nightSpriteTex: THREE.CanvasTexture | null = null;
+  const starMats: { m: THREE.PointsMaterial | THREE.MeshBasicMaterial; base: number }[] = [];
+  let milkyTex: THREE.CanvasTexture | null = null;
   {
     // plano de la banda galáctica, inclinado para que cruce el cielo en diagonal
     const N = new THREE.Vector3(0.42, 0.55, 0.72).normalize();
@@ -265,16 +345,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
       return out.normalize();
     };
 
-    const makeStars = (
-      count: number,
-      band: boolean,
-      size: number,
-      base: number,
-      map?: THREE.CanvasTexture,
-      blending?: THREE.Blending,
-      sigma = 0.16,
-      tint = 0xffffff,
-    ) => {
+    const makeStars = (count: number, band: boolean, size: number, base: number, sigma = 0.16) => {
       const pos = new Float32Array(count * 3);
       const col = new Float32Array(count * 3);
       const v = new THREE.Vector3();
@@ -304,39 +375,34 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
         transparent: true,
         opacity: 0,
         depthWrite: false,
-        blending: blending ?? THREE.NormalBlending,
       });
-      if (map) m.map = map;
-      m.color.setHex(tint);
       const points = new THREE.Points(g, m);
       points.renderOrder = -2; // los álamos (-1) siluetean por encima
       nightSky.add(points);
       starMats.push({ m, base });
     };
 
-    // sprite radial suave para el halo difuso de la Vía Láctea
-    const spriteC = document.createElement("canvas");
-    spriteC.width = spriteC.height = 64;
-    const sctx = spriteC.getContext("2d")!;
-    const grad = sctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    grad.addColorStop(0, "rgba(255,255,255,1)");
-    grad.addColorStop(1, "rgba(255,255,255,0)");
-    sctx.fillStyle = grad;
-    sctx.fillRect(0, 0, 64, 64);
-    nightSpriteTex = new THREE.CanvasTexture(spriteC);
-
     makeStars(2200, false, 1.4, 0.9); // campo general
     makeStars(320, false, 2.4, 1.0); // las brillantes
-    makeStars(9500, true, 1.0, 0.7); // polvo de la banda: la Vía Láctea "de puntos"
-    // Halos aditivos COMPENSADOS para el composer (ronda 1b): ahora suman en
-    // lineal ANTES del AgX y la acumulación pega mucho más fuerte que en
-    // display space — con los valores viejos (52/0.085 y 40/0.09) se leían
-    // como bolas de bokeh sueltas, no como nebulosa. Más chicos y tenues.
-    makeStars(300, true, 30, 0.03, nightSpriteTex, THREE.AdditiveBlending); // halo nebular ancho
-    // el núcleo: banda apretada (sigma chico) con tinte cálido — es lo que
-    // hace que se lea como galaxia y no como una franja de puntos
-    makeStars(2400, true, 1.0, 0.8, undefined, undefined, 0.055);
-    makeStars(160, true, 24, 0.035, nightSpriteTex, THREE.AdditiveBlending, 0.05, 0xffe4c2);
+    makeStars(9500, true, 1.0, 0.7); // polvo de la banda: granularidad sobre la nebulosa
+    // banda apretada extra: refuerza el plano galáctico con puntos finos
+    makeStars(2400, true, 1.0, 0.8, 0.055);
+
+    // la nebulosa en sí: textura pintada sobre esfera interior (BackSide),
+    // aditiva y tenue — los puntos de arriba le dan el grano de estrellas
+    milkyTex = makeMilkyWayTexture(N, e1, e2);
+    const milkyMat = new THREE.MeshBasicMaterial({
+      map: milkyTex,
+      side: THREE.BackSide,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const milkyMesh = new THREE.Mesh(new THREE.SphereGeometry(276, 48, 32), milkyMat);
+    milkyMesh.renderOrder = -3; // debajo de los puntos (-2) y de los álamos (-1)
+    nightSky.add(milkyMesh);
+    starMats.push({ m: milkyMat, base: 0.85 });
   }
 
   // ── Día / noche: atardecer continuo, no switch ──────────────────────────
@@ -420,12 +486,12 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     matArboles?.map?.dispose();
     matArboles?.dispose();
     nightSky.children.forEach((p) => {
-      if (p instanceof THREE.Points) {
+      if (p instanceof THREE.Points || p instanceof THREE.Mesh) {
         p.geometry.dispose();
         (p.material as THREE.Material).dispose();
       }
     });
-    nightSpriteTex?.dispose();
+    milkyTex?.dispose();
     grassTex?.dispose();
     envTex?.dispose();
     bgTex?.dispose();
