@@ -118,16 +118,19 @@ function makeMilkyWayTexture(N: THREE.Vector3, e1: THREE.Vector3, e2: THREE.Vect
       // sin eso la banda se ve pareja como niebla, no como nube de estrellas
       const n = fbm(t * 3.2, b * 14);
       const glow = Math.exp((-b * b) / (2 * 0.09 * 0.09)) * (0.15 + 0.85 * n * n);
-      // bulbo del núcleo: presente pero contenido, cálido
-      const core = Math.exp((-dt * dt) / (2 * 0.45 * 0.45)) * Math.exp((-b * b) / (2 * 0.12 * 0.12)) * (0.35 + 0.65 * n);
+      // bulbo del núcleo: también con ruido² — sin él es una MANCHA lisa
+      // beige (3er reporte de Alejandro); el brillo vive en los grumos
+      const core = Math.exp((-dt * dt) / (2 * 0.35 * 0.35)) * Math.exp((-b * b) / (2 * 0.11 * 0.11)) * (0.1 + 0.9 * n * n);
       // Great Rift: grieta oscura que serpentea DENTRO de la banda, patchy,
       // corre por la mitad del núcleo (como en el cielo real)
       const riftOff = 0.03 * Math.sin(t * 1.7 + 1.1) + 0.012;
       const riftAmp = Math.exp((-dt * dt) / (2 * 1.4 * 1.4));
-      const rift = Math.exp((-(b - riftOff) * (b - riftOff)) / (2 * 0.055 * 0.055)) * (0.45 + 0.55 * fbm(t * 4.1 + 211, b * 18 + 97)) * riftAmp;
+      const rift = Math.exp((-(b - riftOff) * (b - riftOff)) / (2 * 0.055 * 0.055)) * (0.3 + 0.7 * fbm(t * 4.1 + 211, b * 18 + 97)) * riftAmp;
 
-      const I = Math.min(1, Math.max(0, (glow * 0.6 + core * 0.7) * (1 - 0.88 * Math.min(1, rift))));
-      const warm = Math.min(1, core * 1.4);
+      const I = Math.min(1, Math.max(0, (glow * 0.6 + core * 0.55) * (1 - 0.88 * Math.min(1, rift))));
+      // el tinte cálido sigue a los grumos brillantes (core ya trae ruido²),
+      // no al área del bulbo — así no hay "playa beige" en el cielo
+      const warm = Math.min(1, core * 1.1);
       // la intensidad va EN el RGB con alfa opaco: el canvas 2D almacena
       // premultiplicado y con alfa variable el blending la multiplicaba dos
       // veces (∝ alfa²) — la nebulosa entera se aplastaba. Con aditivo,
@@ -491,11 +494,12 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   // ── Día / noche: atardecer continuo, no switch ──────────────────────────
   // Un solo factor t (0=día, 1=noche) interpola exposición, cielo, sol y la
   // cinta encendiéndose — el tween de GSAP lo lleva en ~2s con easing suave.
-  // bg compensa la doble exposición del fondo horneado: el WebP ya trae el
-  // AgX a exp 1.4, y el composer vuelve a multiplicar por exp antes de SU
-  // AgX — sin el 0.72 (≈1/1.4) el cielo se lava a blanco
-  const DIA = { exp: 1.4, bg: 0.72, env: 0.85, solC: new THREE.Color(0xfff4e4), solI: 2.4, hemiI: 0.55, emC: new THREE.Color(0x000000), emI: 0, op: 0.42 };
-  const NOCHE = { exp: 1.15, bg: 0.036, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
+  // El fondo horneado guarda LINEAL/2.5 con OETF (sin tone mapping propio:
+  // doble AgX = cielo gris desaturado). bg=2.5 recupera la escala y el
+  // ÚNICO AgX del composer reproduce exacto el cielo de la ronda 1b:
+  // AgX(exp·2.5·stored) == AgX(exp·hdr) para hdr<2.5. Noche: 2.5·0.03.
+  const DIA = { exp: 1.4, bg: 2.5, env: 0.85, solC: new THREE.Color(0xfff4e4), solI: 2.4, hemiI: 0.55, emC: new THREE.Color(0x000000), emI: 0, op: 0.42 };
+  const NOCHE = { exp: 1.15, bg: 0.075, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
   const OCASO = new THREE.Color(0xff9e5e); // el sol pasa por naranja a mitad de camino
   const BLANCO = new THREE.Color(0xffffff);
   const NOCHE_ARBOLES = new THREE.Color(0x1c2333);
