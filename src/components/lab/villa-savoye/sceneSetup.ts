@@ -152,6 +152,8 @@ export type VillaStage = {
   villa: VillaBuild;
   /** pinta un frame por el composer (escena → AgX → grain) */
   render: () => void;
+  /** re-hornea el shadow map congelado — llamar SOLO cuando la geometría se mueve */
+  bakeShadows: () => void;
   resize: () => void;
   dispose: () => void;
 };
@@ -180,7 +182,47 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   // PCF duro a propósito: PCFSoftShadowMap está deprecado (r182) y caía a PCF
   // en silencio. La suavidad de verdad llega con el AO horneado de la Ronda 5.
   renderer.shadowMap.type = THREE.PCFShadowMap;
+  // Ronda 3: el shadow map se CONGELA — solo se re-hornea cuando la
+  // geometría se mueve (bakeShadows, lo llama el rig del desarme al cambiar
+  // el progreso). Orbitar la cámara o el tween día/noche no lo tocan:
+  // -21% del frame medido en el plan.
+  renderer.shadowMap.autoUpdate = false;
+  renderer.shadowMap.needsUpdate = true;
   host.appendChild(renderer.domElement);
+
+  // ── Ronda 3: carga con progreso real + revelado sin tirón ───────────────
+  // El canvas nace transparente. Cuando las 4 cargas async terminan (o vence
+  // el tope fail-open), se compila TODO (compileAsync + un render de
+  // calentamiento con el canvas aún invisible, que también compila el pass
+  // del composer y sube las texturas) y RECIÉN ahí se revela con un fade.
+  // Nada de render a medias: stage.render() no pinta hasta estar listo.
+  const PASOS = 5; // hdr · fondo · pasto · álamos · compilación
+  let pasosListos = 0;
+  let listo = false;
+  const loader = document.createElement("div");
+  loader.className = "vs-loader";
+  loader.setAttribute("aria-hidden", "true");
+  host.appendChild(loader);
+  const pintarProgreso = () => {
+    const n = Math.round((pasosListos / PASOS) * 10);
+    loader.textContent = `[${"=".repeat(n)}${"-".repeat(10 - n)}]`;
+  };
+  pintarProgreso();
+  renderer.domElement.style.opacity = "0";
+  renderer.domElement.style.transition = "opacity 600ms ease";
+  const cargas: Promise<void>[] = [];
+  const nuevoPaso = (): (() => void) => {
+    let done!: () => void;
+    cargas.push(new Promise<void>((r) => (done = r)));
+    let usado = false;
+    return () => {
+      if (usado) return;
+      usado = true;
+      pasosListos++;
+      pintarProgreso();
+      done();
+    };
+  };
 
   // Pérdida de contexto WebGL (pestaña al fondo, GPU reset): sin el
   // preventDefault el canvas queda negro para siempre; con él, el navegador
@@ -212,7 +254,11 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   composer.addPass(
     new EffectPass(camera, new SMAAEffect(), new ToneMappingEffect({ mode: ToneMappingMode.AGX }), grain),
   );
-  const render = () => composer.render();
+  // gated (ronda 3): no se pinta nada hasta que el revelado compile y suba
+  // todo — el primer frame visible ya es el definitivo, sin micro-tirón
+  const render = () => {
+    if (listo) composer.render();
+  };
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0xdcd8cd, 0.55);
   scene.add(hemi);
@@ -238,41 +284,62 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   // la DataTexture se suelta apenas termina.
   const pmrem = new THREE.PMREMGenerator(renderer);
   let envTex: THREE.Texture | null = null;
-  new RGBELoader().load(SKY_URL, (hdr) => {
-    // la carga es async: si el stage ya se desmontó, soltar el HDR y salir
-    if (disposed) {
+  const pasoHdr = nuevoPaso();
+  new RGBELoader().load(
+    SKY_URL,
+    (hdr) => {
+      // la carga es async: si el stage ya se desmontó, soltar el HDR y salir
+      if (disposed) {
+        hdr.dispose();
+        pasoHdr();
+        return;
+      }
+      hdr.mapping = THREE.EquirectangularReflectionMapping;
+      envTex = pmrem.fromEquirectangular(hdr).texture;
       hdr.dispose();
-      return;
-    }
-    hdr.mapping = THREE.EquirectangularReflectionMapping;
-    envTex = pmrem.fromEquirectangular(hdr).texture;
-    hdr.dispose();
-    scene.environment = envTex;
-    aplicarMezcla();
-    onDirty?.();
-  });
+      scene.environment = envTex;
+      aplicarMezcla();
+      pasoHdr();
+      onDirty?.();
+    },
+    undefined,
+    pasoHdr, // fail-open: un asset caído no congela el revelado
+  );
 
   let bgTex: THREE.Texture | null = null;
-  new THREE.TextureLoader().load(BG_URL, (tex) => {
-    if (disposed) {
-      tex.dispose();
-      return;
-    }
-    tex.mapping = THREE.EquirectangularReflectionMapping;
-    tex.colorSpace = THREE.SRGBColorSpace;
-    bgTex = tex;
-    scene.background = tex;
-    aplicarMezcla();
-    onDirty?.();
-  });
+  const pasoBg = nuevoPaso();
+  new THREE.TextureLoader().load(
+    BG_URL,
+    (tex) => {
+      if (disposed) {
+        tex.dispose();
+        pasoBg();
+        return;
+      }
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      tex.colorSpace = THREE.SRGBColorSpace;
+      bgTex = tex;
+      scene.background = tex;
+      aplicarMezcla();
+      pasoBg();
+      onDirty?.();
+    },
+    undefined,
+    pasoBg,
+  );
 
   // ── Anillo de horizonte: la fila de álamos (Higgsfield) rodea la pradera ──
   let matArboles: THREE.MeshBasicMaterial | null = null;
   let ringMesh: THREE.Mesh | null = null;
   {
+    const pasoArboles = nuevoPaso();
     const img = new Image();
+    img.onerror = pasoArboles;
     img.onload = () => {
-      if (disposed) return;
+      if (disposed) {
+        pasoArboles();
+        return;
+      }
       const tex = makeHorizonTexture(img);
       tex.repeat.set(4, 1); // 4 vueltas espejadas alrededor del anillo
       matArboles = new THREE.MeshBasicMaterial({
@@ -289,6 +356,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
       // con el lazy mount (2b) el stage puede nacer YA en modo noche: la
       // mezcla debe re-aplicarse cuando el anillo llega, o se queda de día
       aplicarMezcla();
+      pasoArboles();
       onDirty?.();
     };
     img.src = ARBOLES_URL;
@@ -296,9 +364,13 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
 
   // pasto fotográfico sobre la pradera (reemplaza el moteado procedural)
   let grassTex: THREE.Texture | null = null;
-  new THREE.TextureLoader().load(GRASS_URL, (tex) => {
+  const pasoPasto = nuevoPaso();
+  new THREE.TextureLoader().load(
+    GRASS_URL,
+    (tex) => {
     if (disposed) {
       tex.dispose();
+      pasoPasto();
       return;
     }
     grassTex = tex;
@@ -309,8 +381,12 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     villa.materials.suelo.map = tex;
     villa.materials.suelo.color.set(0xa9c08c); // tinte verde pradera
     villa.materials.suelo.needsUpdate = true;
+    pasoPasto();
     onDirty?.();
-  });
+    },
+    undefined,
+    pasoPasto,
+  );
 
   // NOTA ronda 2: se intentó una capa de macro-variación multiplicativa para
   // romper el tile del pasto, pero MultiplyBlending pintaba el disco blanco
@@ -469,6 +545,29 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     tweenRaf = requestAnimationFrame(paso);
   });
 
+  // ── el revelado: compilar + calentar + fundir el canvas ─────────────────
+  const revelar = async () => {
+    if (disposed || listo) return;
+    try {
+      await renderer.compileAsync(scene, camera);
+    } catch {
+      // contexto perdido a mitad de compilación: revelar igual, el manejo
+      // de webglcontextrestored repinta
+    }
+    if (disposed) return;
+    // calentamiento: un render REAL del composer con el canvas transparente —
+    // compila también el pass de efectos y fuerza la subida de texturas
+    listo = true;
+    composer.render();
+    pasosListos = PASOS;
+    pintarProgreso();
+    loader.remove();
+    renderer.domElement.style.opacity = "1";
+    onDirty?.();
+  };
+  const TOPE_MS = 8000; // fail-open: una carga colgada no deja la escena en negro
+  void Promise.race([Promise.all(cargas), new Promise<void>((r) => setTimeout(r, TOPE_MS))]).then(revelar);
+
   const resize = () => {
     const { clientWidth: w, clientHeight: h } = host;
     // el composer redimensiona el renderer Y sus buffers internos
@@ -481,6 +580,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   const dispose = () => {
     disposed = true;
     cancelAnimationFrame(tweenRaf);
+    loader.remove();
     offNight();
     canvas.removeEventListener("webglcontextlost", onContextLost);
     canvas.removeEventListener("webglcontextrestored", onContextRestored);
@@ -508,5 +608,9 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     if (renderer.domElement.parentElement === host) host.removeChild(renderer.domElement);
   };
 
-  return { renderer, scene, camera, villa, render, resize, dispose };
+  const bakeShadows = () => {
+    renderer.shadowMap.needsUpdate = true;
+  };
+
+  return { renderer, scene, camera, villa, render, bakeShadows, resize, dispose };
 }

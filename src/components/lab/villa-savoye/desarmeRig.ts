@@ -105,8 +105,16 @@ export function mountDesarme(host: HTMLElement, getProgress: () => number): Desa
   }
 
   const tmp = new THREE.Vector3();
+  let lastP = NaN; // NaN: el primer update SIEMPRE hornea el shadow map
   const update = () => {
     const p = getProgress();
+
+    // el shadow map está congelado (ronda 3): solo se re-hornea cuando el
+    // progreso MUEVE las capas — orbitar con el drag no lo toca
+    if (p !== lastP) {
+      lastP = p;
+      stage.bakeShadows();
+    }
 
     // coreografía de capas: home + Σ eased(paso) · delta
     for (const m of villa.animated) {

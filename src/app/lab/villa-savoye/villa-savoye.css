@@ -216,6 +216,20 @@
   height: 100%;
 }
 
+/* loader del stage (ronda 3): ASCII puro con progreso real, estilo cota de
+   plano — vive mientras compilan shaders y suben texturas, y se va con el
+   fade del canvas */
+.vs-loader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--vs-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: var(--vs-dim);
+}
+
 .vs-hud {
   position: absolute;
   /* debajo de la barra fija del sitio: antes el header la tapaba al pinear */
