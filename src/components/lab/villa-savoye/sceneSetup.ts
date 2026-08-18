@@ -26,10 +26,12 @@ import { isNightMode, onNightMode } from "./nightMode";
 */
 
 /** grain de película (ronda 1b): mata el banding de los degradados del cielo
-    día/noche a la vez que da textura. 0.02-0.04 es el rango del plan; sin
-    premultiply a propósito — el banding vive en las zonas OSCURAS y el
-    premultiply apagaría el ruido justo ahí */
-const GRANO = 0.03;
+    día/noche a la vez que da textura. Sin premultiply a propósito — el
+    banding vive en las zonas OSCURAS y el premultiply apagaría el ruido ahí.
+    Bajado de 0.03 a 0.013 (reporte de Alejandro: "granulado raro en toda la
+    página") — para DITHER contra el banding basta ±1-2/255; el look de
+    película grueso sobraba. */
+const GRANO = 0.013;
 
 // Ronda 2: presupuesto de assets. El HDR baja a 1k y SOLO ilumina (PMREM);
 // el fondo es el mismo cielo horneado a WebP LDR con el AgX de three a
