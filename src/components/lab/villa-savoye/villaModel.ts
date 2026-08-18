@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
 /*
   Villa Savoye procedural — solo primitivas (cajas + cilindros), cero assets.
@@ -107,6 +108,11 @@ export function buildVilla(): VillaBuild {
     geos.push(geo);
     return geo;
   };
+  // Ronda 4: TODAS las cajas llevan bisel de ~2 cm — las aristas
+  // matemáticamente perfectas gritan "procedural"; el chaflán atrapa un
+  // filo de luz en cada borde. El radio se acota en piezas delgadas.
+  const box = (w: number, h: number, d: number): RoundedBoxGeometry =>
+    g(new RoundedBoxGeometry(w, h, d, 2, Math.min(0.02, w * 0.3, h * 0.3, d * 0.3)));
 
   const matBlanco = std(HUESO);
   const matPiloti = std(HUESO, 0.7);
@@ -143,7 +149,9 @@ export function buildVilla(): VillaBuild {
   };
 
   // ── Terreno: pradera (no se anima) — tono salvia para separar la casa blanca
-  const cesped = mesh(g(new THREE.CylinderGeometry(85, 85, 0.3, 64)), matSuelo, 0, -0.15, 0, []);
+  // Ronda 4 (telefoto): la cámara del desarme orbita hasta r≈151 en móvil
+  // vertical — la pradera crece a 180 para que nunca se vea el borde
+  const cesped = mesh(g(new THREE.CylinderGeometry(180, 180, 0.3, 64)), matSuelo, 0, -0.15, 0, []);
   root.add(cesped);
 
   // ── Capa 1 · PILOTIS: retícula 5×5 de columnas (no se mueven: la casa sube)
@@ -193,7 +201,7 @@ export function buildVilla(): VillaBuild {
     { step: 3, delta: DRAWER },
   ];
   const losaPanel = (w: number, d: number, x: number, z: number) =>
-    add(mesh(g(new THREE.BoxGeometry(w, 0.3, d)), matLosa, x, yLosaPiso, z, losaOffsets), 3);
+    add(mesh(box(w, 0.3, d), matLosa, x, yLosaPiso, z, losaOffsets), 3);
   losaPanel(10.65, D - 0.7, -4.325, 0); // panel oeste (x −9.65 … 1.0)
   losaPanel(6.25, D - 0.7, 6.525, 0); // panel este (x 3.4 … 9.65)
   losaPanel(2.4, 2.45, 2.2, -8.425); // tapa norte del corredor
@@ -218,12 +226,12 @@ export function buildVilla(): VillaBuild {
   const RISE_1 = yNobile - 0.05; // planta baja → nobile (repartido en A+B)
   const tramo = (x: number, zC: number, yBase: number, rise: number, dir: 1 | -1) => {
     const largo = Math.hypot(RAMP_RUN, rise);
-    const m = mesh(g(new THREE.BoxGeometry(1.15, 0.1, largo)), matLosa, x, yBase + rise / 2, zC, soloLift);
+    const m = mesh(box(1.15, 0.1, largo), matLosa, x, yBase + rise / 2, zC, soloLift);
     m.rotation.x = dir * Math.atan2(rise, RAMP_RUN);
     add(m);
     // baranda-tabique (h 0.85) al borde exterior del tramo, mismo ángulo
     const b = mesh(
-      g(new THREE.BoxGeometry(0.08, 0.85, largo)),
+      box(0.08, 0.85, largo),
       matBlanco,
       x + (x < 2.2 ? -0.62 : 0.62),
       yBase + rise / 2 + 0.45,
@@ -236,15 +244,15 @@ export function buildVilla(): VillaBuild {
   // A: sube de la planta baja (z+) hacia el fondo (z−)
   tramo(1.6, 3.2, 0.2, RISE_1 / 2, 1);
   // descanso de giro al fondo
-  add(mesh(g(new THREE.BoxGeometry(2.6, 0.1, 1.3)), matLosa, 2.2, 0.2 + RISE_1 / 2, -0.9, soloLift));
+  add(mesh(box(2.6, 0.1, 1.3), matLosa, 2.2, 0.2 + RISE_1 / 2, -0.9, soloLift));
   // B: regresa subiendo hacia z+
   tramo(2.8, 3.2, 0.2 + RISE_1 / 2, RISE_1 / 2, -1);
   // descanso nobile (z+): conecta con la losa
-  add(mesh(g(new THREE.BoxGeometry(2.6, 0.1, 1.3)), matLosa, 2.2, yNobile, 7.15, soloLift));
+  add(mesh(box(2.6, 0.1, 1.3), matLosa, 2.2, yNobile, 7.15, soloLift));
   // C y D: del nobile al solárium (misma huella, un nivel arriba)
   const RISE_2 = H_VOLUMEN + 0.25;
   tramo(1.6, 3.2, yNobile, RISE_2 / 2, 1);
-  add(mesh(g(new THREE.BoxGeometry(2.6, 0.1, 1.3)), matLosa, 2.2, yNobile + RISE_2 / 2, -0.9, soloLift));
+  add(mesh(box(2.6, 0.1, 1.3), matLosa, 2.2, yNobile + RISE_2 / 2, -0.9, soloLift));
   tramo(2.8, 3.2, yNobile + RISE_2 / 2, RISE_2 / 2, -1);
   const tabique = mesh(
     g(new THREE.CylinderGeometry(3.4, 3.4, H_VOLUMEN - 0.5, 32, 1, true, 0, Math.PI)),
@@ -277,9 +285,9 @@ export function buildVilla(): VillaBuild {
     const float = normal.clone().multiplyScalar(1.6); // paso 4: la cinta flota
     const liftear = (extra: ExplodeOffset[]): ExplodeOffset[] => [{ step: 1, delta: up(LIFT) }, ...extra];
 
-    const bandaInfGeo = g(new THREE.BoxGeometry(lado.largo, H_BANDA_INF, T_MURO));
-    const bandaSupGeo = g(new THREE.BoxGeometry(lado.largo, H_BANDA_SUP, T_MURO));
-    const ventanaGeo = g(new THREE.BoxGeometry(lado.largo - 0.5, H_VENTANA, T_MURO * 0.5));
+    const bandaInfGeo = box(lado.largo, H_BANDA_INF, T_MURO);
+    const bandaSupGeo = box(lado.largo, H_BANDA_SUP, T_MURO);
+    const ventanaGeo = box(lado.largo - 0.5, H_VENTANA, T_MURO * 0.5);
 
     const bi = mesh(bandaInfGeo, matBlanco, lado.dx, yBandaInf, lado.dz, liftear([{ step: 5, delta: fan }]));
     bi.rotation.y = lado.rotY;
@@ -302,12 +310,12 @@ export function buildVilla(): VillaBuild {
   // losa de techo en paneles: mismo vacío del corredor para que la rampa D
   // desemboque en el solárium (tapa solo al norte; al sur queda la llegada)
   const techoPanel = (w: number, d: number, x: number, z: number) =>
-    add(mesh(g(new THREE.BoxGeometry(w, 0.35, d)), matBlanco, x, yTecho + 0.175, z, liftRoof), 2);
+    add(mesh(box(w, 0.35, d), matBlanco, x, yTecho + 0.175, z, liftRoof), 2);
   techoPanel(11, D, -4.5, 0); // oeste
   techoPanel(6.6, D, 6.7, 0); // este
   techoPanel(2.4, 6, 2.2, -7); // tapa norte del corredor
-  const antepechoLargoGeo = g(new THREE.BoxGeometry(W, 0.9, 0.22));
-  const antepechoCortoGeo = g(new THREE.BoxGeometry(0.22, 0.9, D));
+  const antepechoLargoGeo = box(W, 0.9, 0.22);
+  const antepechoCortoGeo = box(0.22, 0.9, D);
   const a1 = mesh(antepechoLargoGeo, matBlanco, 0, yTecho + 0.8, D / 2 - 0.11, liftRoof);
   const a2 = mesh(antepechoLargoGeo, matBlanco, 0, yTecho + 0.8, -(D / 2 - 0.11), liftRoof);
   const a3 = mesh(antepechoCortoGeo, matBlanco, W / 2 - 0.11, yTecho + 0.8, 0, liftRoof);

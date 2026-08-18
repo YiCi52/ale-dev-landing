@@ -12,6 +12,8 @@ import {
 
 import { buildVilla } from "./villaModel";
 import type { VillaBuild } from "./villaModel";
+import { bakeContactShadow } from "./contactShadow";
+import type { ContactShadow } from "./contactShadow";
 import { isNightMode, onNightMode } from "./nightMode";
 
 /*
@@ -238,7 +240,10 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   canvas.addEventListener("webglcontextrestored", onContextRestored);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(fov, 1, 0.15, 320);
+  // far 500 (ronda 4): con el telefoto la cámara orbita hasta r≈151 y el
+  // domo de estrellas está a R=280 — con far 320 el cielo del lado lejano
+  // se CLIPEABA en móvil vertical (bug latente desde antes del telefoto)
+  const camera = new THREE.PerspectiveCamera(fov, 1, 0.15, 500);
 
   // ── Composer (ronda 1b): escena → SMAA → AgX → grain ────────────────────
   // HalfFloat para que el rango HDR llegue vivo al tone mapping. El AA es
@@ -351,9 +356,12 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
         side: THREE.BackSide, // se ve desde adentro
         depthWrite: false,
       });
-      const alto = 26; // proporción del plate a radio 80
-      ringMesh = new THREE.Mesh(new THREE.CylinderGeometry(80, 80, alto, 72, 1, true), matArboles);
-      ringMesh.position.y = alto * 0.5 - 9.5; // la línea de árboles cae en el horizonte
+      // Ronda 4 (telefoto): el anillo crece de r=80 a r=170 para que la
+      // cámara alejada (hasta ~151) siga ADENTRO; alto y offset escalan
+      // para conservar la altura angular de los álamos (~10°)
+      const alto = 47;
+      ringMesh = new THREE.Mesh(new THREE.CylinderGeometry(170, 170, alto, 72, 1, true), matArboles);
+      ringMesh.position.y = alto * 0.5 - 17; // la línea de árboles cae en el horizonte
       ringMesh.renderOrder = -1;
       scene.add(ringMesh);
       // con el lazy mount (2b) el stage puede nacer YA en modo noche: la
@@ -378,7 +386,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     }
     grassTex = tex;
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(9, 9);
+    tex.repeat.set(19, 19); // pradera r=180 (ronda 4): mismo tamaño de tile que con 9 en r=85
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     villa.materials.suelo.map = tex;
@@ -550,6 +558,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   });
 
   // ── el revelado: compilar + calentar + fundir el canvas ─────────────────
+  let contacto: ContactShadow | null = null;
   const revelar = async () => {
     if (disposed || listo) return;
     try {
@@ -560,9 +569,22 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     }
     if (disposed) return;
     // calentamiento: un render REAL del composer con el canvas transparente —
-    // compila también el pass de efectos y fuerza la subida de texturas
+    // compila el pass de efectos, sube texturas Y hornea el shadow map
+    // congelado (el needsUpdate de la creación se consume AQUÍ, en un render
+    // con el sol presente)
     listo = true;
     composer.render();
+    // sombra de contacto (ronda 4): DESPUÉS del horneado PCF — su render
+    // ortográfico vive en la capa 1 donde el sol no existe, y si corre
+    // primero se come el needsUpdate sin hornear nada (la promenade quedaba
+    // sin sombras para siempre)
+    try {
+      contacto = bakeContactShadow(renderer, scene, villa);
+    } catch {
+      // sin sombra de contacto se vive; la PCF dinámica sigue ahí
+    }
+    renderer.shadowMap.needsUpdate = true; // re-armar por si el bake tocó el flag
+    composer.render(); // el frame definitivo, con todo
     pasosListos = PASOS;
     pintarProgreso();
     loader.remove();
@@ -606,6 +628,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     grassTex?.dispose();
     envTex?.dispose();
     bgTex?.dispose();
+    contacto?.dispose();
     pmrem.dispose();
     composer.dispose(); // pases + buffers; el renderer se dispone aparte
     renderer.dispose();

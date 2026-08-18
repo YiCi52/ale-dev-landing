@@ -85,7 +85,10 @@ function attachInteraccion(
 
 export function mountDesarme(host: HTMLElement, getProgress: () => number): DesarmeRig {
   let dirty = true;
-  const stage = createVillaStage(host, 34, () => {
+  // FOV 24 (ronda 4): la arquitectura moderna se fotografía con TELEOBJETIVO,
+  // no con gran angular — la perspectiva comprimida cambia toda la lectura.
+  // El radio de órbita escala ×1.44 (tan17°/tan12°) para conservar el encuadre.
+  const stage = createVillaStage(host, 24, () => {
     dirty = true;
   });
   const { renderer, scene, camera, villa } = stage;
@@ -143,8 +146,10 @@ export function mountDesarme(host: HTMLElement, getProgress: () => number): Desa
     const ang = THREE.MathUtils.lerp(-0.62, 0.55, p) + inter.getOrbit();
     // en viewport angosto (móvil) la cámara se retira para no cortar la casa
     const ajusteAngosto = camera.aspect < 1 ? 1.45 : 1;
-    const radio = THREE.MathUtils.lerp(58, 72, p * p) * ajusteAngosto;
-    const altura = THREE.MathUtils.lerp(13, 26, p);
+    // radios y altura ×1.44 respecto al FOV 34 viejo: mismo encuadre, misma
+    // elevación de cámara, perspectiva comprimida de teleobjetivo
+    const radio = THREE.MathUtils.lerp(84, 104, p * p) * ajusteAngosto;
+    const altura = THREE.MathUtils.lerp(19, 37, p);
     camera.position.set(Math.sin(ang) * radio, altura, Math.cos(ang) * radio);
     camera.lookAt(0, THREE.MathUtils.lerp(5.5, 9.5, p), 0);
 
