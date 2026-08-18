@@ -154,27 +154,47 @@ export function buildVilla(): VillaBuild {
   const cesped = mesh(g(new THREE.CylinderGeometry(180, 180, 0.3, 64)), matSuelo, 0, -0.15, 0, []);
   root.add(cesped);
 
-  // ── Capa 1 · PILOTIS: retícula 5×5 de columnas (no se mueven: la casa sube)
+  // ── Capa 1 · PILOTIS: retícula 5×5 RETRANQUEADA (4b) — en la Savoye real
+  // la losa vuela ~1.5 m más allá de las columnas: ese voladizo es lo que
+  // HACE posible la fachada libre (punto 5). Antes las columnas quedaban
+  // casi en el borde y el voladizo no se leía.
   const pilotiGeo = g(new THREE.CylinderGeometry(0.16, 0.16, H_PILOTIS, 14));
   for (let i = 0; i < 5; i++) {
     for (let j = 0; j < 5; j++) {
-      const x = (i - 2) * (W / 4 - 0.4);
-      const z = (j - 2) * (D / 4 - 0.4);
+      const x = (i - 2) * (W / 4 - 0.8);
+      const z = (j - 2) * (D / 4 - 0.8);
       add(mesh(pilotiGeo, matPiloti, x, H_PILOTIS / 2, z, []), 1);
     }
   }
 
-  // Núcleo curvo de planta baja (el vestíbulo verde real de la Savoye).
-  // Sube con la casa en el paso 1 (pertenece al cuerpo, no a los pilotis).
+  // Núcleo curvo de planta baja — 4b (obs. de Alejandro): en la Savoye real
+  // NO es un tambor sólido, es una fachada de VIDRIO curvo con montantes
+  // metálicos verde oscuro. El vidrio comparte material con la cinta: de
+  // noche el vestíbulo también se enciende (la casa como lámpara, desde
+  // abajo). Sube con la casa en el paso 1.
   const LIFT = 2.6; // cuánto se levanta el cuerpo sobre los pilotis en el paso 1
+  const H_RDC = H_PILOTIS - 0.2;
+  const ARC_INI = Math.PI * 0.15;
+  const ARC_LEN = Math.PI * 1.7;
   const rdc = mesh(
-    g(new THREE.CylinderGeometry(4.3, 4.3, H_PILOTIS - 0.2, 40, 1, true, Math.PI * 0.15, Math.PI * 1.7)),
-    matVerde,
+    g(new THREE.CylinderGeometry(4.3, 4.3, H_RDC, 40, 1, true, ARC_INI, ARC_LEN)),
+    matVidrio,
     -3.1,
-    (H_PILOTIS - 0.2) / 2,
+    H_RDC / 2,
     -0.6,
     [{ step: 1, delta: up(LIFT) }],
   );
+  // montantes cada ~1.4 m de arco, HIJOS del vidrio (heredan lift y rotación)
+  const montGeo = box(0.07, H_RDC, 0.12);
+  for (let k = 0; k <= 16; k++) {
+    const th = ARC_INI + (ARC_LEN * k) / 16;
+    const mont = new THREE.Mesh(montGeo, matVerde);
+    mont.position.set(4.3 * Math.sin(th), 0, 4.3 * Math.cos(th));
+    mont.rotation.y = th;
+    mont.castShadow = true;
+    mont.receiveShadow = true;
+    rdc.add(mont);
+  }
   // Corrido al OESTE del corredor de la rampa: en la Savoye real la rampa va
   // JUNTO al muro curvo del vestíbulo, no a través (el chequeo matemático de
   // holgura del tour detectó que el cilindro original cruzaba el corredor).
@@ -287,7 +307,6 @@ export function buildVilla(): VillaBuild {
 
     const bandaInfGeo = box(lado.largo, H_BANDA_INF, T_MURO);
     const bandaSupGeo = box(lado.largo, H_BANDA_SUP, T_MURO);
-    const ventanaGeo = box(lado.largo - 0.5, H_VENTANA, T_MURO * 0.5);
 
     const bi = mesh(bandaInfGeo, matBlanco, lado.dx, yBandaInf, lado.dz, liftear([{ step: 5, delta: fan }]));
     bi.rotation.y = lado.rotY;
@@ -295,9 +314,17 @@ export function buildVilla(): VillaBuild {
     const bs = mesh(bandaSupGeo, matBlanco, lado.dx, yBandaSup, lado.dz, liftear([{ step: 5, delta: fan }]));
     bs.rotation.y = lado.rotY;
     add(bs, 5);
-    const v = mesh(ventanaGeo, matVidrio, lado.dx, yVentana, lado.dz, liftear([{ step: 4, delta: float }]));
-    v.rotation.y = lado.rotY;
-    add(v, 4);
+    // 4b (obs. de Alejandro): en la Savoye real la cinta de los lados de la
+    // TERRAZA es ABERTURA sin vidrio — aquí +z (frente) y +x (derecha).
+    // Solo −x y −z (el salón, las cintas que el tour recorre por dentro)
+    // llevan vidrio: de noche brillan ESAS y las de la terraza no.
+    const esTerraza = lado.dz > 0 || lado.dx > 0;
+    if (!esTerraza) {
+      const ventanaGeo = box(lado.largo - 0.5, H_VENTANA, T_MURO * 0.5);
+      const v = mesh(ventanaGeo, matVidrio, lado.dx, yVentana, lado.dz, liftear([{ step: 4, delta: float }]));
+      v.rotation.y = lado.rotY;
+      add(v, 4);
+    }
   }
 
   // ── Capa 2 · CUBIERTA-JARDÍN: losa de techo + antepechos + solárium curvo
