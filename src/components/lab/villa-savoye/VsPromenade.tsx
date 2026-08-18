@@ -3,19 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import * as THREE from "three";
 
-import { createVillaStage } from "./sceneSetup";
+import type { PromenadeRig } from "./promenadeRig";
 import { VsToggleNoche } from "./VsToggleNoche";
 
 /*
   LA PROMENADE ARCHITECTURALE — el tour interior. Le Corbusier diseñó la
   Savoye para recorrerse en pendiente continua: aquí el scroll ES la rampa.
-  Cámara sobre una Catmull-Rom que entra bajo los pilotis, cruza el vestíbulo
-  verde, sube los dos tramos, barre el salón junto a la cinta de vidrio y
-  desemboca en el solárium. La mirada (lookAt) viaja por su propia curva con
-  paradas dirigidas (la cinta, las curvas del techo).
-  El modelo es el MISMO del desarme, ensamblado (progreso 0 = home).
+  La cámara y sus curvas viven en promenadeRig (import dinámico al entrar
+  en viewport, ronda 2b); este componente maneja el ScrollTrigger, las
+  fichas y el estado reduced-motion. El modelo es el MISMO del desarme,
+  ensamblado (progreso 0 = home).
 */
 
 const PARADAS = [
@@ -41,51 +39,6 @@ const PARADAS = [
   },
 ];
 
-// Recorrido del ojo (alturas = piso + ~1.6 de estatura)
-const RUTA: [number, number, number][] = [
-  [2, 2.0, 34], // llegando por el jardín
-  [0.5, 1.95, 14], // bajo el volumen, entre pilotis
-  [0.3, 1.9, 6.9], // el vestíbulo verde a la izquierda (se mira, no se roza)
-  [1.7, 2.05, 7.2], // pie de la rampa (tramo A)
-  [1.7, 3.25, 1.2], // subiendo A — el ojo ya libra el muro curvo
-  [2.65, 3.42, -0.5], // giro en el descanso, pegado al eje del corredor
-  [2.8, 4.6, 5.4], // subiendo B
-  [2.4, 5.3, 7.0], // llegada al nobile
-  [-1.5, 5.4, 4.5], // entrando al salón
-  [-5.5, 5.4, 0.5], // barrido junto a la cinta oeste
-  [-4.0, 5.5, -5.0], // esquina: la cinta dobla
-  [0.8, 5.5, -4.5], // regreso hacia la rampa alta
-  [1.6, 6.4, 0.5], // subiendo C
-  [2.8, 7.6, -0.4], // giro alto
-  [2.8, 8.6, 5.2], // subiendo D, se abre el cielo
-  [1.0, 9.0, 4.5], // desembocando al solárium
-  [-3.0, 9.1, 3.8], // abriendo el ángulo hacia las dos pantallas
-  [-5.8, 9.4, 2.6], // remate: las curvas en diagonal, el piso ancla el cuadro
-];
-
-// La mirada: va adelante del ojo, NIVELADA durante la subida (mirar la rampa,
-// no el enredo de losas de arriba), con desvíos dirigidos en el salón y el remate
-const MIRADA: [number, number, number][] = [
-  [0, 3.5, 20],
-  [0, 3.2, 4],
-  [-2.5, 2.2, 0.5], // la curva verde del vestíbulo (ahora al oeste)
-  [1.6, 2.6, 2], // pie de rampa: la pendiente por delante
-  [1.6, 3.3, -4.5], // subiendo A: el descanso al fondo, a media altura
-  [2.8, 3.9, 2], // giro: el tramo B por delante
-  [-1.5, 4.8, 3], // subiendo B: la mirada cruza el vacío del hall
-  [-3.5, 5.3, 2], // llegada al nobile: el salón ya se abre en diagonal
-  [-7, 5.3, 1], // hacia la cinta oeste
-  [-9.6, 5.4, -2], // pegado al vidrio: el "paisaje"
-  [-2, 5.4, -9.6], // la cinta norte
-  [1.7, 5.9, 2], // hacia la rampa alta
-  [1.6, 6.9, -4.5], // subiendo C: nivelada al descanso
-  [2.8, 7.9, 2], // giro alto: el tramo final
-  [2.7, 9.0, 8], // subiendo D: se abre el cielo
-  [-1.5, 8.9, 1], // el solárium por delante
-  [-1.0, 8.5, -1.5], // las pantallas curvas de frente, piso a la vista
-  [1.2, 8.3, -1.0], // remate: la curva grande en diagonal, anclada al suelo
-];
-
 export function VsPromenade() {
   const wrapRef = useRef<HTMLElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -102,46 +55,28 @@ export function VsPromenade() {
     const cards = cardsRef.current;
     if (!wrap || !host) return;
 
-    let dirty = true;
-    const stage = createVillaStage(host, 58, () => {
-      dirty = true;
-    }); // FOV amplio: interior
-    const { camera } = stage;
-
-    // 'centripetal': la curva NO se sale del pasillo entre waypoints —
-    // el overshoot de la catmull uniforme era lo que atravesaba muros
-    const rutaCurve = new THREE.CatmullRomCurve3(RUTA.map((p) => new THREE.Vector3(...p)), false, "centripetal");
-    const miradaCurve = new THREE.CatmullRomCurve3(MIRADA.map((p) => new THREE.Vector3(...p)), false, "centripetal");
-    let progress = reduced ? 0.62 : 0; // estático: parada del salón
-
-    const eye = new THREE.Vector3();
-    const target = new THREE.Vector3();
-    const update = () => {
-      // getPoint (parámetro uniforme), NO getPointAt (longitud de arco):
-      // ambas curvas tienen 18 puntos pareados — con arc-length se
-      // desincronizan y la mirada queda apuntando a cualquier muro
-      rutaCurve.getPoint(Math.min(progress, 0.999), eye);
-      miradaCurve.getPoint(Math.min(progress, 0.999), target);
-      camera.position.copy(eye);
-      camera.lookAt(target);
-      stage.render();
+    const progressRef = { current: reduced ? 0.62 : 0 }; // estático: parada del salón
+    let rig: PromenadeRig | null = null;
+    let alive = true;
+    let visible = false;
+    const mount = async () => {
+      const { mountPromenade } = await import("./promenadeRig");
+      if (!alive || !visible || rig) return;
+      rig = mountPromenade(host, () => progressRef.current);
     };
-
-    const onResize = () => {
-      stage.resize();
-      dirty = true;
+    const unmount = () => {
+      rig?.dispose();
+      rig = null;
     };
-    const ro = new ResizeObserver(onResize);
-    ro.observe(host);
-
-    let raf = 0;
-    const loop = () => {
-      raf = requestAnimationFrame(loop);
-      if (!dirty) return;
-      dirty = false;
-      update();
-    };
-    loop();
+    const io = new IntersectionObserver(
+      (entries) => {
+        visible = entries[0]?.isIntersecting ?? false;
+        if (visible) void mount();
+        else unmount();
+      },
+      { rootMargin: "20% 0px" },
+    );
+    io.observe(host);
 
     let st: ScrollTrigger | undefined;
     if (!reduced && cards) {
@@ -155,17 +90,17 @@ export function VsPromenade() {
         pin: true,
         scrub: 0.7,
         onUpdate: (self) => {
-          progress = self.progress;
-          dirty = true;
+          progressRef.current = self.progress;
+          rig?.markDirty();
           fichas.forEach((el, i) => {
             const a = i / 4;
             const b = (i + 1) / 4;
-            const enter = gsap.utils.clamp(0, 1, (progress - a) / 0.03);
-            const exit = i === 3 ? 1 : gsap.utils.clamp(0, 1, (b - progress) / 0.03);
+            const enter = gsap.utils.clamp(0, 1, (self.progress - a) / 0.03);
+            const exit = i === 3 ? 1 : gsap.utils.clamp(0, 1, (b - self.progress) / 0.03);
             const o = Math.min(enter, exit);
             gsap.set(el, { opacity: o, y: (1 - enter) * 22 });
           });
-          if (contador) contador.textContent = ["I", "II", "III", "IV"][Math.min(3, Math.floor(progress * 4))];
+          if (contador) contador.textContent = ["I", "II", "III", "IV"][Math.min(3, Math.floor(self.progress * 4))];
         },
       });
       if (document.fonts?.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
@@ -173,9 +108,9 @@ export function VsPromenade() {
 
     return () => {
       st?.kill();
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      stage.dispose();
+      alive = false;
+      io.disconnect();
+      unmount();
     };
   }, [reduced]);
 
