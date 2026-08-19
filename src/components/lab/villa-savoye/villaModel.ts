@@ -352,6 +352,41 @@ export function buildVilla(): VillaBuild {
   );
   add(tabique, 3);
 
+  // ── LA PLANTA REAL (pedido de Alejandro: "estructura clara") ────────────
+  // Zonas del nobile como en la casa: SALÓN al oeste, corredor de la rampa
+  // al centro, TERRAZA abierta al cielo al este, y la franja norte de
+  // servicio (cocina + habitación). Todo vive en la capa 3: la planta libre
+  // se extrae en el cajón CON sus muros — el punto de Le Corbusier, literal.
+  const H_MURO = H_VOLUMEN - 0.35; // de piso a techo
+  const yMuro = yLosaPiso + 0.15 + H_MURO / 2;
+  const montCintaGeo = box(0.06, H_VENTANA, 0.1); // montante de carpintería (vidriera Y cinta)
+  const muroInterior = (w: number, d: number, x: number, z: number) =>
+    add(mesh(box(w, H_MURO, d), matBlanco, x, yMuro, z, losaOffsets), 3);
+
+  // vidriera salón↔corredor (x≈0.95) con puerta en z 4.6–6.4: el tour la
+  // cruza DOS veces — entrar al salón y volver. Vidrio + montantes café.
+  const vidriera = (zC: number, largo: number) => {
+    const v = mesh(box(0.06, H_MURO, largo), matVidrio, 0.95, yMuro, zC, losaOffsets);
+    const n = Math.max(2, Math.floor(largo / 1.1));
+    for (let k = 0; k <= n; k++) {
+      // mismo montante de la cinta, estirado a la altura del muro
+      const mont = new THREE.Mesh(montCintaGeo, matCarpinteria);
+      mont.scale.y = H_MURO / H_VENTANA;
+      mont.position.set(0, 0, -largo / 2 + (largo * k) / n);
+      mont.castShadow = true;
+      v.add(mont);
+    }
+    add(v, 3);
+  };
+  vidriera(0.55, 8.1); // tramo sur de la puerta (z −3.5 … 4.6)
+  vidriera(6.8, 0.8); // tramo norte de la puerta (z 6.4 … 7.2)
+
+  // franja norte: muro z=−3.5 con puerta junto al corredor, y el muro que
+  // separa cocina (este) de habitación (oeste)
+  muroInterior(7.45, 0.15, -5.925, -3.5); // z −3.5, x −9.65 … −2.2
+  muroInterior(1.9, 0.15, 0.05, -3.5); // z −3.5, x −0.9 … 1.0 (puerta en el medio)
+  muroInterior(0.15, 4.45, -4.5, -7.425); // x −4.5, z −9.65 … −5.2 (puerta al norte)
+
   // ── Capas 4 y 5 · fachada por lados: banda inferior, cinta de vidrio, banda superior
   type Lado = { dx: number; dz: number; rotY: number; largo: number };
   const lados: Lado[] = [
@@ -363,7 +398,6 @@ export function buildVilla(): VillaBuild {
   const yBandaInf = yBase + H_BANDA_INF / 2;
   const yVentana = yBase + H_BANDA_INF + H_VENTANA / 2;
   const yBandaSup = yBase + H_BANDA_INF + H_VENTANA + H_BANDA_SUP / 2;
-  const montCintaGeo = box(0.06, H_VENTANA, 0.1); // montante de la carpintería
 
   for (const lado of lados) {
     const normal = new THREE.Vector3(lado.dx, 0, lado.dz).normalize();
@@ -418,7 +452,11 @@ export function buildVilla(): VillaBuild {
     add(mesh(box(w - 0.3, 0.025, d - 0.3), matPisoOscuro, x, yTecho + 0.3625, z, liftRoof), 2);
   };
   techoPanel(11, D, -4.5, 0); // oeste
-  techoPanel(6.6, D, 6.7, 0); // este
+  // este RECORTADO (planta real): la TERRAZA del sureste queda ABIERTA AL
+  // CIELO — el techo solo cubre la franja norte (cocina/habitación). Por eso
+  // en las referencias se ve cielo a través de la cinta de la terraza. La
+  // rampa C/D también queda a cielo abierto, como la exterior de la casa real
+  techoPanel(6.6, 10.15, 6.7, -4.925); // este, solo z −10 … 0.15
   techoPanel(2.4, 6, 2.2, -7); // tapa norte del corredor
   const antepechoLargoGeo = box(W, 0.9, 0.22);
   const antepechoCortoGeo = box(0.22, 0.9, D);
@@ -437,12 +475,14 @@ export function buildVilla(): VillaBuild {
     liftRoof,
   );
   add(sol1, 2);
+  // sol2 se corre al panel este: su posición vieja (2.4, 2.6) quedó flotando
+  // sobre la terraza ahora abierta
   const sol2 = mesh(
     g(new THREE.CylinderGeometry(3.1, 3.1, 2.2, 36, 1, true, Math.PI * 1.1, Math.PI * 0.85)),
     matBlanco,
-    2.4,
+    4.8,
     yTecho + 1.45,
-    2.6,
+    -2.2,
     liftRoof,
   );
   add(sol2, 2);

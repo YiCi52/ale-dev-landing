@@ -33,33 +33,34 @@ const OFFSETS_TECHO = [
 const SIN_OFFSETS: { step: number; delta: THREE.Vector3 }[] = [];
 
 type Pieza = { archivo: string; x: number; y: number; z: number; rotY: number; offsets: typeof OFFSETS_NOBILE };
+// Amoblado por HABITACIÓN sobre la planta real, minimalista (un objeto por
+// superficie). El salón vive al oeste de la vidriera; la terraza abierta al
+// cielo recibe el estar exterior y las jardineras — como en la casa real.
 const PIEZAS: Pieza[] = [
-  // ── salón (nobile): dos lounge de espaldas a la cinta oeste + centro
+  // ── SALÓN · grupo de estar contra la cinta oeste
   { archivo: "mid_century_lounge_chair", x: -8.3, y: Y_NOBILE, z: 1.2, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
   { archivo: "mid_century_lounge_chair", x: -8.3, y: Y_NOBILE, z: -1.4, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
   { archivo: "modern_coffee_table_01", x: -6.9, y: Y_NOBILE, z: -0.1, rotY: 0, offsets: OFFSETS_NOBILE },
-  { archivo: "modern_arm_chair_01", x: -6.2, y: Y_NOBILE, z: 2.4, rotY: -Math.PI * 0.78, offsets: OFFSETS_NOBILE },
-  { archivo: "potted_plant_04", x: -8.8, y: Y_NOBILE, z: -6.5, rotY: 0.4, offsets: OFFSETS_NOBILE },
-  // ── comedor junto a la cinta norte
-  { archivo: "dining_table", x: -4.5, y: Y_NOBILE, z: -7.6, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
-  { archivo: "dining_chair_02", x: -3.5, y: Y_NOBILE, z: -7.0, rotY: -Math.PI * 0.65, offsets: OFFSETS_NOBILE },
-  { archivo: "dining_chair_02", x: -5.5, y: Y_NOBILE, z: -7.0, rotY: Math.PI * 0.65, offsets: OFFSETS_NOBILE },
-  { archivo: "dining_chair_02", x: -4.5, y: Y_NOBILE, z: -8.7, rotY: 0, offsets: OFFSETS_NOBILE },
-  // ── toit-jardin (viaja con el techo en el paso 2): jardineras + estar
-  { archivo: "planter_box_02", x: -7.5, y: Y_TECHO, z: 8.6, rotY: 0, offsets: OFFSETS_TECHO },
-  { archivo: "planter_box_02", x: -3.5, y: Y_TECHO, z: 8.6, rotY: 0, offsets: OFFSETS_TECHO },
-  { archivo: "outdoor_table_chair_set_01", x: 6.5, y: Y_TECHO, z: 5.0, rotY: 0.6, offsets: OFFSETS_TECHO },
-  // ── planta baja: una maceta en la explanada, cerca del vestíbulo
-  { archivo: "potted_plant_04", x: -7.0, y: Y_SUELO, z: 6.0, rotY: 2.1, offsets: SIN_OFFSETS },
-  // ── densidad MINIMALISTA (feedback: "la siento vacía" + "minimalista"):
-  // no llenar — pocas piezas precisas y UN objeto por superficie. Mesa
-  // auxiliar junto al armchair, bowl en la mesa de centro, jarrón en el
-  // comedor, jarrón escultural de piso en la esquina, verde en el solárium
-  { archivo: "modern_coffee_table_02", x: -5.6, y: Y_NOBILE, z: 3.35, rotY: 0.4, offsets: OFFSETS_NOBILE },
   { archivo: "wooden_bowl_01", x: -6.7, y: Y_NOBILE + 0.45, z: -0.45, rotY: 0.7, offsets: OFFSETS_NOBILE },
-  { archivo: "ceramic_vase_01", x: -4.3, y: Y_NOBILE + 0.75, z: -7.7, rotY: 0, offsets: OFFSETS_NOBILE },
+  { archivo: "modern_arm_chair_01", x: -6.2, y: Y_NOBILE, z: 2.4, rotY: -Math.PI * 0.78, offsets: OFFSETS_NOBILE },
+  { archivo: "modern_coffee_table_02", x: -5.6, y: Y_NOBILE, z: 3.35, rotY: 0.4, offsets: OFFSETS_NOBILE },
   { archivo: "brass_vase_02", x: -9.0, y: Y_NOBILE, z: 3.4, rotY: 0, offsets: OFFSETS_NOBILE },
-  { archivo: "potted_plant_04", x: 3.2, y: Y_TECHO, z: 0.4, rotY: 1.2, offsets: OFFSETS_TECHO },
+  { archivo: "potted_plant_04", x: -8.9, y: Y_NOBILE, z: 7.6, rotY: 0.4, offsets: OFFSETS_NOBILE },
+  // ── SALÓN · comedor al noreste, junto a la puerta de la franja norte
+  { archivo: "dining_table", x: -2.4, y: Y_NOBILE, z: -1.6, rotY: 0, offsets: OFFSETS_NOBILE },
+  { archivo: "dining_chair_02", x: -1.5, y: Y_NOBILE, z: -0.9, rotY: -Math.PI * 0.7, offsets: OFFSETS_NOBILE },
+  { archivo: "dining_chair_02", x: -3.3, y: Y_NOBILE, z: -0.9, rotY: Math.PI * 0.7, offsets: OFFSETS_NOBILE },
+  { archivo: "dining_chair_02", x: -2.4, y: Y_NOBILE, z: -2.7, rotY: 0, offsets: OFFSETS_NOBILE },
+  { archivo: "ceramic_vase_01", x: -2.4, y: Y_NOBILE + 0.75, z: -1.6, rotY: 0, offsets: OFFSETS_NOBILE },
+  // ── TERRAZA (abierta al cielo, misma losa del nobile: viaja en el cajón)
+  { archivo: "outdoor_table_chair_set_01", x: 6.4, y: Y_NOBILE, z: 4.4, rotY: -0.4, offsets: OFFSETS_NOBILE },
+  { archivo: "planter_box_02", x: 8.6, y: Y_NOBILE, z: 8.3, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
+  { archivo: "planter_box_02", x: 4.6, y: Y_NOBILE, z: 8.9, rotY: 0, offsets: OFFSETS_NOBILE },
+  // ── TOIT-JARDIN: jardinera + verde junto al solárium
+  { archivo: "planter_box_02", x: -7.5, y: Y_TECHO, z: 8.6, rotY: 0, offsets: OFFSETS_TECHO },
+  { archivo: "potted_plant_04", x: -3.0, y: Y_TECHO, z: 1.5, rotY: 1.2, offsets: OFFSETS_TECHO },
+  // ── PLANTA BAJA: una maceta en la explanada
+  { archivo: "potted_plant_04", x: -7.0, y: Y_SUELO, z: 6.0, rotY: 2.1, offsets: SIN_OFFSETS },
 ];
 
 export type Muebles = { dispose: () => void };

@@ -29,8 +29,8 @@ const PARADAS = [
   },
   {
     n: "III",
-    titulo: "El salón y la cinta",
-    texto: "Arriba, la ventana corrida hace lo prometido: la luz entra pareja y el paisaje de Poissy se vuelve un panorama continuo.",
+    titulo: "El salón y la terraza",
+    texto: "La vidriera abre el salón; la ventana corrida vuelve el paisaje un panorama. Y al cruzar el corredor, la terraza: un cuarto sin techo, a cielo abierto.",
   },
   {
     n: "IV",
