@@ -51,6 +51,15 @@ const PIEZAS: Pieza[] = [
   { archivo: "outdoor_table_chair_set_01", x: 6.5, y: Y_TECHO, z: 5.0, rotY: 0.6, offsets: OFFSETS_TECHO },
   // ── planta baja: una maceta en la explanada, cerca del vestíbulo
   { archivo: "potted_plant_04", x: -7.0, y: Y_SUELO, z: 6.0, rotY: 2.1, offsets: SIN_OFFSETS },
+  // ── densidad MINIMALISTA (feedback: "la siento vacía" + "minimalista"):
+  // no llenar — pocas piezas precisas y UN objeto por superficie. Mesa
+  // auxiliar junto al armchair, bowl en la mesa de centro, jarrón en el
+  // comedor, jarrón escultural de piso en la esquina, verde en el solárium
+  { archivo: "modern_coffee_table_02", x: -5.6, y: Y_NOBILE, z: 3.35, rotY: 0.4, offsets: OFFSETS_NOBILE },
+  { archivo: "wooden_bowl_01", x: -6.7, y: Y_NOBILE + 0.45, z: -0.45, rotY: 0.7, offsets: OFFSETS_NOBILE },
+  { archivo: "ceramic_vase_01", x: -4.3, y: Y_NOBILE + 0.75, z: -7.7, rotY: 0, offsets: OFFSETS_NOBILE },
+  { archivo: "brass_vase_02", x: -9.0, y: Y_NOBILE, z: 3.4, rotY: 0, offsets: OFFSETS_NOBILE },
+  { archivo: "potted_plant_04", x: 3.2, y: Y_TECHO, z: 0.4, rotY: 1.2, offsets: OFFSETS_TECHO },
 ];
 
 export type Muebles = { dispose: () => void };
