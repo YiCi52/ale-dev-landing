@@ -21,8 +21,8 @@ export type VillaBuild = {
   root: THREE.Group;
   /** meshes que se resaltan (emissive verde) durante cada paso */
   highlights: Record<CapaStep, THREE.Mesh[]>;
-  /** todos los meshes con coreografía, para el update loop */
-  animated: THREE.Mesh[];
+  /** todo lo que lleva coreografía (meshes de la casa + grupos de muebles) */
+  animated: THREE.Object3D[];
   /** materiales que el escenario ajusta (noche, texturas async) */
   materials: {
     vidrio: THREE.MeshStandardMaterial;
@@ -133,7 +133,7 @@ export function buildVilla(): VillaBuild {
   const matLosa = std(0xefede6, 0.9);
   matLosa.side = THREE.DoubleSide;
 
-  const animated: THREE.Mesh[] = [];
+  const animated: THREE.Object3D[] = [];
   const highlights: Record<CapaStep, THREE.Mesh[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
   const add = (m: THREE.Mesh, hl?: CapaStep) => {
     // sombras en todo (el vidrio translúcido no proyecta: solo recibe)

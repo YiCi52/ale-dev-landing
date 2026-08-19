@@ -14,6 +14,8 @@ import { buildVilla } from "./villaModel";
 import type { VillaBuild } from "./villaModel";
 import { bakeContactShadow } from "./contactShadow";
 import type { ContactShadow } from "./contactShadow";
+import { cargarMuebles } from "./muebles";
+import type { Muebles } from "./muebles";
 import { isNightMode, onNightMode } from "./nightMode";
 
 /*
@@ -203,7 +205,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   // calentamiento con el canvas aún invisible, que también compila el pass
   // del composer y sube las texturas) y RECIÉN ahí se revela con un fade.
   // Nada de render a medias: stage.render() no pinta hasta estar listo.
-  const PASOS = 5; // hdr · fondo · pasto · álamos · compilación
+  const PASOS = 6; // hdr · fondo · pasto · álamos · muebles · compilación
   let pasosListos = 0;
   let listo = false;
   const loader = document.createElement("div");
@@ -287,6 +289,13 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
 
   const villa = buildVilla();
   scene.add(villa.root);
+
+  // muebles del salón (ronda 8): GLBs meshopt, cuentan como paso del loader
+  const pasoMuebles = nuevoPaso();
+  const muebles: Muebles = cargarMuebles(villa, () => {
+    pasoMuebles();
+    onDirty?.();
+  });
 
   // ── Cielo: el HDR 1k SOLO ilumina; el fondo es el WebP horneado ─────────
   // Antes el 2k half-float (16.8 MB de VRAM) se quedaba vivo solo para
@@ -631,6 +640,7 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     envTex?.dispose();
     bgTex?.dispose();
     contacto?.dispose();
+    muebles.dispose();
     pmrem.dispose();
     composer.dispose(); // pases + buffers; el renderer se dispone aparte
     renderer.dispose();

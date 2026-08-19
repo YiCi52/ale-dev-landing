@@ -8,7 +8,11 @@ import type { NextConfig } from "next";
   - 'unsafe-eval' SOLO en dev: React lo usa para reconstruir callstacks (DEV-only).
     En prod NUNCA lo necesita, así que el CSP se endurece.
   - style-src 'unsafe-inline' por CSS-in-JS de Tailwind v4 runtime.
-  - connect-src incluye Supabase para inserts del form de contacto.
+  - connect-src incluye Supabase para inserts del form de contacto, y blob:
+    para los GLB del lab (GLTFLoader desempaca las texturas del binario como
+    blobs del propio documento y las lee con fetch/createImageBitmap; img-src
+    blob: cubre el fallback de Safari vía <img>). blob: no abre exfiltración:
+    son objetos en memoria del mismo documento.
   - frame-ancestors 'none' bloquea clickjacking (más estricto que X-Frame-Options).
   - form-action 'self' bloquea submits a dominios externos (defense vs. form hijack).
 */
@@ -22,9 +26,9 @@ const csp = [
   "default-src 'self'",
   scriptSrc,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "img-src 'self' data: https:",
+  "img-src 'self' data: blob: https:",
   "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self' https://*.supabase.co https://*.supabase.in",
+  "connect-src 'self' blob: https://*.supabase.co https://*.supabase.in",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
