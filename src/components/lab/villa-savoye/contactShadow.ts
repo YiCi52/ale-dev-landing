@@ -103,7 +103,7 @@ export function bakeContactShadow(
     new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, color: 0x000000 }),
   );
   mesh.rotation.x = -Math.PI / 2;
-  mesh.position.y = 0.02;
+  mesh.position.y = 0.14; // sobre la plataforma de concreto (top 0.12)
   scene.add(mesh);
 
   return {

@@ -64,6 +64,35 @@ function mesh(
 
 const up = (dy: number): THREE.Vector3 => new THREE.Vector3(0, dy, 0);
 
+/** yeso con vida: ruido gris sutil para bump+roughness del blanco — contra el
+    "blanco plano" (obs. de Alejandro); el bake de la ronda 5 hará el resto */
+function makeYesoTexture(): THREE.CanvasTexture | null {
+  if (typeof document === "undefined") return null;
+  const c = document.createElement("canvas");
+  c.width = c.height = 256;
+  const ctx = c.getContext("2d");
+  if (!ctx) return null;
+  ctx.fillStyle = "#e8e8e8";
+  ctx.fillRect(0, 0, 256, 256);
+  let s = 7;
+  const rnd = () => {
+    s = (s * 16807) % 2147483647;
+    return s / 2147483647;
+  };
+  for (let i = 0; i < 1400; i++) {
+    const g = 215 + Math.floor(rnd() * 40);
+    ctx.fillStyle = `rgba(${g},${g},${g},0.5)`;
+    const r = 0.6 + rnd() * 2.4;
+    ctx.beginPath();
+    ctx.arc(rnd() * 256, rnd() * 256, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(3, 3);
+  return tex;
+}
+
 /** moteado de pradera: ruido suave verde-salvia dibujado en un canvas 256² */
 function makeLawnTexture(): THREE.CanvasTexture | null {
   if (typeof document === "undefined") return null;
@@ -132,6 +161,22 @@ export function buildVilla(): VillaBuild {
   }
   const matLosa = std(0xefede6, 0.9);
   matLosa.side = THREE.DoubleSide;
+  // 4b-ext (referencias savoye-01/03/05): concreto pulido bajo la casa,
+  // baldosa oscura en pisos habitables, carpintería café de la cinta y
+  // metal de barandillas
+  const matConcreto = std(0xb5a888, 0.85);
+  const matPisoOscuro = std(0x393a35, 0.92);
+  const matCarpinteria = std(0x453c33, 0.6);
+  const matMetal = std(0x8a8378, 0.35, 0.9);
+  // yeso: el blanco deja de ser plano — micro-bump y roughness variada
+  const yesoTex = makeYesoTexture();
+  if (yesoTex) {
+    for (const m of [matBlanco, matLosa]) {
+      m.bumpMap = yesoTex;
+      m.bumpScale = 0.03;
+      m.roughnessMap = yesoTex;
+    }
+  }
 
   const animated: THREE.Object3D[] = [];
   const highlights: Record<CapaStep, THREE.Mesh[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
@@ -153,6 +198,11 @@ export function buildVilla(): VillaBuild {
   // vertical — la pradera crece a 180 para que nunca se vea el borde
   const cesped = mesh(g(new THREE.CylinderGeometry(180, 180, 0.3, 64)), matSuelo, 0, -0.15, 0, []);
   root.add(cesped);
+  // plataforma de concreto pulido bajo la casa (ref savoye-01): el pasto NO
+  // llega hasta los pilotis — la casa se posa sobre su explanada
+  const plataforma = mesh(box(30, 0.12, 26), matConcreto, 0, 0.06, 0, []);
+  plataforma.receiveShadow = true;
+  root.add(plataforma);
 
   // ── Capa 1 · PILOTIS: retícula 5×5 RETRANQUEADA (4b) — en la Savoye real
   // la losa vuela ~1.5 m más allá de las columnas: ese voladizo es lo que
@@ -206,6 +256,10 @@ export function buildVilla(): VillaBuild {
     { step: 1, delta: up(LIFT) },
   ]);
   add(rdcTapa, 1);
+  // muro verde sólido del bloque de servicio (ref savoye-01): en la casa real
+  // acompaña al tambor de vidrio; va al oeste del corredor de la rampa
+  const muroVerde = mesh(box(0.22, H_RDC, 5), matVerde, 0.8, H_RDC / 2, 0.5, [{ step: 1, delta: up(LIFT) }]);
+  add(muroVerde, 1);
 
   // ── Cuerpo del piano nobile ───────────────────────────────────────────────
   const yBase = H_PILOTIS; // cara inferior del volumen
@@ -220,8 +274,12 @@ export function buildVilla(): VillaBuild {
     { step: 1, delta: up(LIFT) },
     { step: 3, delta: DRAWER },
   ];
-  const losaPanel = (w: number, d: number, x: number, z: number) =>
+  const losaPanel = (w: number, d: number, x: number, z: number) => {
     add(mesh(box(w, 0.3, d), matLosa, x, yLosaPiso, z, losaOffsets), 3);
+    // baldosa oscura del piso habitable (refs savoye-03/04): capa fina sobre
+    // la losa, viaja con ella en el cajón
+    add(mesh(box(w - 0.25, 0.025, d - 0.25), matPisoOscuro, x, yLosaPiso + 0.165, z, losaOffsets), 3);
+  };
   losaPanel(10.65, D - 0.7, -4.325, 0); // panel oeste (x −9.65 … 1.0)
   losaPanel(6.25, D - 0.7, 6.525, 0); // panel este (x 3.4 … 9.65)
   losaPanel(2.4, 2.45, 2.2, -8.425); // tapa norte del corredor
@@ -259,6 +317,13 @@ export function buildVilla(): VillaBuild {
       soloLift,
     );
     b.rotation.x = m.rotation.x;
+    // pasamanos tubular metálico (ref savoye-03), hijo del tabique: hereda
+    // ángulo y coreografía
+    const tubo = new THREE.Mesh(g(new THREE.CylinderGeometry(0.025, 0.025, largo, 10)), matMetal);
+    tubo.rotation.x = Math.PI / 2;
+    tubo.position.y = 0.47;
+    tubo.castShadow = true;
+    b.add(tubo);
     add(b);
   };
   // A: sube de la planta baja (z+) hacia el fondo (z−)
@@ -298,6 +363,7 @@ export function buildVilla(): VillaBuild {
   const yBandaInf = yBase + H_BANDA_INF / 2;
   const yVentana = yBase + H_BANDA_INF + H_VENTANA / 2;
   const yBandaSup = yBase + H_BANDA_INF + H_VENTANA + H_BANDA_SUP / 2;
+  const montCintaGeo = box(0.06, H_VENTANA, 0.1); // montante de la carpintería
 
   for (const lado of lados) {
     const normal = new THREE.Vector3(lado.dx, 0, lado.dz).normalize();
@@ -323,6 +389,16 @@ export function buildVilla(): VillaBuild {
       const ventanaGeo = box(lado.largo - 0.5, H_VENTANA, T_MURO * 0.5);
       const v = mesh(ventanaGeo, matVidrio, lado.dx, yVentana, lado.dz, liftear([{ step: 4, delta: float }]));
       v.rotation.y = lado.rotY;
+      // carpintería café oscuro con montantes regulares (ref savoye-01):
+      // hijos del vidrio — flotan con la cinta en el paso 4
+      const nMont = Math.floor((lado.largo - 0.5) / 1.15);
+      for (let k = 0; k <= nMont; k++) {
+        const mx = -(lado.largo - 0.5) / 2 + ((lado.largo - 0.5) * k) / nMont;
+        const mont = new THREE.Mesh(montCintaGeo, matCarpinteria);
+        mont.position.set(mx, 0, 0);
+        mont.castShadow = true;
+        v.add(mont);
+      }
       add(v, 4);
     }
   }
@@ -336,8 +412,11 @@ export function buildVilla(): VillaBuild {
   ];
   // losa de techo en paneles: mismo vacío del corredor para que la rampa D
   // desemboque en el solárium (tapa solo al norte; al sur queda la llegada)
-  const techoPanel = (w: number, d: number, x: number, z: number) =>
+  const techoPanel = (w: number, d: number, x: number, z: number) => {
     add(mesh(box(w, 0.35, d), matBlanco, x, yTecho + 0.175, z, liftRoof), 2);
+    // baldosa oscura de la terraza-jardín y el solárium (ref savoye-05)
+    add(mesh(box(w - 0.3, 0.025, d - 0.3), matPisoOscuro, x, yTecho + 0.3625, z, liftRoof), 2);
+  };
   techoPanel(11, D, -4.5, 0); // oeste
   techoPanel(6.6, D, 6.7, 0); // este
   techoPanel(2.4, 6, 2.2, -7); // tapa norte del corredor
@@ -371,6 +450,8 @@ export function buildVilla(): VillaBuild {
   const dispose = () => {
     geos.forEach((geo) => geo.dispose());
     mats.forEach((m) => m.dispose());
+    lawnTex?.dispose();
+    yesoTex?.dispose();
   };
 
   return { root, highlights, animated, materials: { vidrio: matVidrio, suelo: matSuelo }, dispose };

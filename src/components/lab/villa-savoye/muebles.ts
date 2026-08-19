@@ -18,22 +18,39 @@ import type { VillaBuild } from "./villaModel";
 */
 
 const BASE = "/lab/villa-savoye/muebles";
-const Y_PISO = 3.6; // yLosaPiso + media losa (espejo de villaModel)
-// espejo de villaModel: LIFT del paso 1 y DRAWER del paso 3
+const Y_NOBILE = 3.625; // top de la baldosa oscura del nobile
+const Y_TECHO = 6.925; // top de la baldosa de la terraza-jardín
+const Y_SUELO = 0.12; // top de la plataforma de concreto
+// espejo de villaModel: LIFT del paso 1, DRAWER del paso 3, ROOF del paso 2
 const OFFSETS_NOBILE = [
   { step: 1, delta: new THREE.Vector3(0, 2.6, 0) },
   { step: 3, delta: new THREE.Vector3(16, 0, 0) },
 ];
+const OFFSETS_TECHO = [
+  { step: 1, delta: new THREE.Vector3(0, 2.6, 0) },
+  { step: 2, delta: new THREE.Vector3(0, 6.5, 0) },
+];
+const SIN_OFFSETS: { step: number; delta: THREE.Vector3 }[] = [];
 
-type Pieza = { archivo: string; x: number; z: number; rotY: number };
+type Pieza = { archivo: string; x: number; y: number; z: number; rotY: number; offsets: typeof OFFSETS_NOBILE };
 const PIEZAS: Pieza[] = [
-  // dos lounge de espaldas a la cinta oeste, mirando al centro
-  { archivo: "mid_century_lounge_chair", x: -8.3, z: 1.2, rotY: Math.PI / 2 },
-  { archivo: "mid_century_lounge_chair", x: -8.3, z: -1.4, rotY: Math.PI / 2 },
-  { archivo: "modern_coffee_table_01", x: -6.9, z: -0.1, rotY: 0 },
-  { archivo: "modern_arm_chair_01", x: -6.2, z: 2.4, rotY: -Math.PI * 0.78 },
-  // el comedor, junto a la cinta norte
-  { archivo: "dining_table", x: -4.5, z: -7.6, rotY: Math.PI / 2 },
+  // ── salón (nobile): dos lounge de espaldas a la cinta oeste + centro
+  { archivo: "mid_century_lounge_chair", x: -8.3, y: Y_NOBILE, z: 1.2, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
+  { archivo: "mid_century_lounge_chair", x: -8.3, y: Y_NOBILE, z: -1.4, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
+  { archivo: "modern_coffee_table_01", x: -6.9, y: Y_NOBILE, z: -0.1, rotY: 0, offsets: OFFSETS_NOBILE },
+  { archivo: "modern_arm_chair_01", x: -6.2, y: Y_NOBILE, z: 2.4, rotY: -Math.PI * 0.78, offsets: OFFSETS_NOBILE },
+  { archivo: "potted_plant_04", x: -8.8, y: Y_NOBILE, z: -6.5, rotY: 0.4, offsets: OFFSETS_NOBILE },
+  // ── comedor junto a la cinta norte
+  { archivo: "dining_table", x: -4.5, y: Y_NOBILE, z: -7.6, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
+  { archivo: "dining_chair_02", x: -3.5, y: Y_NOBILE, z: -7.0, rotY: -Math.PI * 0.65, offsets: OFFSETS_NOBILE },
+  { archivo: "dining_chair_02", x: -5.5, y: Y_NOBILE, z: -7.0, rotY: Math.PI * 0.65, offsets: OFFSETS_NOBILE },
+  { archivo: "dining_chair_02", x: -4.5, y: Y_NOBILE, z: -8.7, rotY: 0, offsets: OFFSETS_NOBILE },
+  // ── toit-jardin (viaja con el techo en el paso 2): jardineras + estar
+  { archivo: "planter_box_02", x: -7.5, y: Y_TECHO, z: 8.6, rotY: 0, offsets: OFFSETS_TECHO },
+  { archivo: "planter_box_02", x: -3.5, y: Y_TECHO, z: 8.6, rotY: 0, offsets: OFFSETS_TECHO },
+  { archivo: "outdoor_table_chair_set_01", x: 6.5, y: Y_TECHO, z: 5.0, rotY: 0.6, offsets: OFFSETS_TECHO },
+  // ── planta baja: una maceta en la explanada, cerca del vestíbulo
+  { archivo: "potted_plant_04", x: -7.0, y: Y_SUELO, z: 6.0, rotY: 2.1, offsets: SIN_OFFSETS },
 ];
 
 export type Muebles = { dispose: () => void };
@@ -76,10 +93,10 @@ export function cargarMuebles(villa: VillaBuild, onListo: () => void): Muebles {
               return;
             }
             const g = gltf.scene;
-            g.position.set(pieza.x, Y_PISO, pieza.z);
+            g.position.set(pieza.x, pieza.y, pieza.z);
             g.rotation.y = pieza.rotY;
-            g.userData.home = new THREE.Vector3(pieza.x, Y_PISO, pieza.z);
-            g.userData.offsets = OFFSETS_NOBILE;
+            g.userData.home = new THREE.Vector3(pieza.x, pieza.y, pieza.z);
+            g.userData.offsets = pieza.offsets;
             g.traverse((o) => {
               if (o instanceof THREE.Mesh) {
                 o.castShadow = true;
