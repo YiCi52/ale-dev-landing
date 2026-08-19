@@ -166,6 +166,9 @@ export function buildVilla(): VillaBuild {
   // metal de barandillas
   const matConcreto = std(0xb5a888, 0.85);
   const matPisoOscuro = std(0x393a35, 0.92);
+  // foto real (LC4 en el salón): el piso INTERIOR es baldosa ocre clara;
+  // la gris oscura es la de la terraza y la cubierta
+  const matPisoInterior = std(0xc9b995, 0.88);
   const matCarpinteria = std(0x453c33, 0.6);
   const matMetal = std(0x8a8378, 0.35, 0.9);
   // yeso: el blanco deja de ser plano — micro-bump y roughness variada
@@ -274,16 +277,15 @@ export function buildVilla(): VillaBuild {
     { step: 1, delta: up(LIFT) },
     { step: 3, delta: DRAWER },
   ];
-  const losaPanel = (w: number, d: number, x: number, z: number) => {
+  const losaPanel = (w: number, d: number, x: number, z: number, piso: THREE.MeshStandardMaterial) => {
     add(mesh(box(w, 0.3, d), matLosa, x, yLosaPiso, z, losaOffsets), 3);
-    // baldosa oscura del piso habitable (refs savoye-03/04): capa fina sobre
-    // la losa, viaja con ella en el cajón
-    add(mesh(box(w - 0.25, 0.025, d - 0.25), matPisoOscuro, x, yLosaPiso + 0.165, z, losaOffsets), 3);
+    // capa fina de piso sobre la losa, viaja con ella en el cajón
+    add(mesh(box(w - 0.25, 0.025, d - 0.25), piso, x, yLosaPiso + 0.165, z, losaOffsets), 3);
   };
-  losaPanel(10.65, D - 0.7, -4.325, 0); // panel oeste (x −9.65 … 1.0)
-  losaPanel(6.25, D - 0.7, 6.525, 0); // panel este (x 3.4 … 9.65)
-  losaPanel(2.4, 2.45, 2.2, -8.425); // tapa norte del corredor
-  losaPanel(2.4, 2.45, 2.2, 8.425); // tapa sur del corredor
+  losaPanel(10.65, D - 0.7, -4.325, 0, matPisoInterior); // oeste: salón+norte, ocre claro
+  losaPanel(6.25, D - 0.7, 6.525, 0, matPisoOscuro); // este: LA TERRAZA, baldosa gris
+  losaPanel(2.4, 2.45, 2.2, -8.425, matPisoInterior); // tapa norte del corredor
+  losaPanel(2.4, 2.45, 2.2, 8.425, matPisoInterior); // tapa sur del corredor
   const colGeo = g(new THREE.CylinderGeometry(0.13, 0.13, H_VOLUMEN - 0.4, 12));
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {

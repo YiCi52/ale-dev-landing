@@ -36,6 +36,7 @@ const RUTA: [number, number, number][] = [
   [2.6, 5.4, 4.6], // el corredor
   [5.2, 5.4, 3.4], // ENTRA a la terraza abierta al cielo
   [7.9, 5.4, 5.9], // el fondo de la terraza, junto al estar exterior
+  [7.4, 5.4, 3.6], // pausa: mirar DE VUELTA hacia la vidriera (la foto real)
   [5.6, 5.4, 7.8], // giro junto a las jardineras
   [1.7, 5.5, 3.3], // vuelve al pie de la rampa C
   [1.6, 6.4, 0.5], // subiendo C, ya a cielo abierto
@@ -65,6 +66,7 @@ const MIRADA: [number, number, number][] = [
   [2.6, 5.4, 4.8], // el corredor por delante
   [5.8, 5.3, 3.8], // la terraza se abre
   [8.3, 5.2, 6.0], // el estar exterior
+  [0.3, 5.35, 5.1], // look-back: la vidriera y el salón desde afuera
   [5.4, 5.3, 8.8], // las jardineras contra la fachada sur
   [2.2, 5.6, 4.0], // de vuelta a la rampa
   [1.6, 6.2, -2.5], // la pendiente C por delante
