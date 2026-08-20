@@ -207,8 +207,9 @@ nuestro modelo el nivel bajo se ve demasiado, perdemos el gesto.
 
 - **SOLÁRIUM**: no es "toda la cubierta". Es un recinto pavimentado **acotado por una
   pantalla curva** que barre desde el oeste. Tiene límites, no es un plano libre.
-- **HAY DOS PANTALLAS CURVAS, no una**: la del solárium y **una segunda al sureste**. Hoy
-  el modelo tiene una sola.
+- **HAY DOS PANTALLAS CURVAS**: la del solárium y una segunda al sureste. ✅ El modelo YA
+  las tiene (`sol1` r=4.6 y `sol2` r=3.1) — lo afirmé al revés sin mirar el código, otra
+  vez el mismo error de asegurar sin verificar. Solo hay que reubicarlas sobre la planta nueva.
 - **DOS "VIDE"** (vacíos): huecos reales en la losa de cubierta que dejan ver la terraza de
   abajo — uno grande al este y otro menor al oeste. Nuestro recorte de techo corresponde
   al grande; **el pequeño no existe en el modelo**.

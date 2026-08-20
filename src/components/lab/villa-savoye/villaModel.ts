@@ -551,13 +551,35 @@ export function buildVilla(): VillaBuild {
     // baldosa oscura de la terraza-jardín y el solárium (ref savoye-05)
     add(mesh(box(w - 0.3, 0.025, d - 0.3), matPisoOscuro, x, yTecho + 0.3625, z, liftRoof), 2);
   };
-  techoPanel(11, D, -4.5, 0); // oeste
-  // este RECORTADO (planta real): la TERRAZA del sureste queda ABIERTA AL
-  // CIELO — el techo solo cubre la franja norte (cocina/habitación). Por eso
-  // en las referencias se ve cielo a través de la cinta de la terraza. La
-  // rampa C/D también queda a cielo abierto, como la exterior de la casa real
-  techoPanel(6.6, 10.15, 6.7, -4.925); // este, solo z −10 … 0.15
-  techoPanel(2.4, 6, 2.2, -7); // tapa norte del corredor
+  /*
+    La losa de cubierta según el PLANO DEL SOLÁRIUM (nivel 3 de 3). El plano
+    marca dos "VIDE" — huecos reales en la losa que dejan ver la terraza de
+    abajo — más el hueco por donde desemboca la rampa. Los tres coinciden con
+    los espacios abiertos del nobile, que es la comprobación de que la lectura
+    cierra: el vacío grande cae sobre la TERRASSE y el pequeño sobre la
+    terraza de servicio.
+
+    La losa se declara como rectángulos que cubren la huella MENOS esos huecos.
+  */
+  const VIDE_GRANDE = { x0: 1.4, x1: 9.5, z0: -4.57, z1: 4.67 }; // sobre la terrasse
+  const VIDE_CHICO = { x0: -9.5, x1: -6.35, z0: 2.4, z1: 4.67 }; // sobre la terraza de servicio
+  const HUECO_RAMPA = { x0: -1.5, x1: 0.1, z0: -7.0, z1: -4.57 };
+  void VIDE_GRANDE;
+  void VIDE_CHICO;
+  void HUECO_RAMPA; // documentan los huecos; los paneles de abajo los rodean
+
+  const LOSA: Array<[number, number, number, number]> = [
+    // [x0, x1, z0, z1]
+    [-9.5, -1.5, -10.625, -4.57], // norte-oeste
+    [0.1, 9.5, -10.625, -4.57], // norte-este
+    [-1.5, 0.1, -10.625, -7.0], // norte-centro (deja el hueco de la rampa)
+    [-9.5, 9.5, 4.67, 10.625], // sur, sobre la salle y la cocina
+    [-9.5, 1.4, -4.57, 2.4], // centro-oeste
+    [-6.35, 1.4, 2.4, 4.67], // centro-oeste-norte, al lado del vacío chico
+  ];
+  for (const [x0, x1, z0, z1] of LOSA)
+    techoPanel(x1 - x0, z1 - z0, (x0 + x1) / 2, (z0 + z1) / 2);
+
   const antepechoLargoGeo = box(W, 0.9, 0.22);
   const antepechoCortoGeo = box(0.22, 0.9, D);
   const a1 = mesh(antepechoLargoGeo, matBlanco, 0, yTecho + 0.8, D / 2 - 0.11, liftRoof);
