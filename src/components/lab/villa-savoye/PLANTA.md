@@ -169,3 +169,33 @@ libre hecha visible, y hoy no lo tenemos.
 **La cinta de ventanas está BIEN**: 1.20 m de alto sobre antepecho de 0.55, lo que da
 ~37% de la banda — coincide con la proporción medida en la elevación FLC 19704.
 (Corrige un dato erróneo que circuló en el análisis del 19-ago, donde se dijo 0.30 m.)
+
+## La planta baja NO es un cilindro (corrección de Alejandro, 20-ago)
+
+Nuestro `villaModel.ts` la arma como un **tambor cilíndrico de radio 4.3** con 16 montantes
+en arco. Las fotos de aproximación (Antoine Gravier / Unsplash, vía ArchEyes) muestran otra
+cosa:
+
+- La **fachada de llegada es RECTA**, con una **persiana de lamas horizontales** ocupando
+  el centro. Un plano, no una curva.
+- El **verde solo se curva en los EXTREMOS**, envolviendo las esquinas y perdiéndose hacia
+  atrás.
+- La curva grande vive en el **lado de la entrada** (la que sigue el radio de giro del auto),
+  no en el que se ve al llegar.
+
+⇒ La forma correcta en planta es un **rectángulo con un lado curvo**, no un cilindro. Desde
+la fachada de llegada tiene que leerse plano.
+
+**Lo que SÍ está bien** y conviene no tocar: el verde del volumen bajo (`VERDE_RDC`
+0x3f5c48) y la carpintería café de la cinta. Se verificaron contra las mismas fotos.
+
+## 7. Verificación contra fotos — paso formal, no opcional
+
+La lección detrás de este error: los tres hallazgos de hoy (la casa no es blanca, los
+muebles son LC, la planta baja no es un cilindro) **no salieron del plano**. Salieron de
+mirar fotos, y salieron porque Alejandro insistió, no porque el proceso las buscara.
+
+**Se agrega como paso 3b del MÉTODO**: con el volumen levantado y antes de seguir, comparar
+el modelo contra fotos **de cada fachada y de cada ambiente visible**, elemento por elemento
+— forma en planta, color, material, carpintería, mobiliario, vegetación. Lista escrita, no
+vistazo. Es más barato mirar diez fotos que rehacer una capa.
