@@ -116,3 +116,56 @@ basura flotando en un salón de 10 × 13 m.
 **La regla que resume todo**: cada capa se apoya en la anterior, así que una capa que
 cambia obliga a rehacer las de arriba. Por eso el orden no es burocracia — es lo que
 decide si el proyecto converge o gira en círculos.
+
+---
+
+# MATERIA Y COLOR — leído de las fotos reales (20-ago-2026)
+
+> Fuente: fotografías del interior en ArchEyes + la elevación original de la Fondation
+> Le Corbusier (lámina **FLC 19704**). Alejandro señaló que la página tenía "desde los
+> muebles hasta las plantas" y tenía razón: esto no se deduce de un plano.
+
+## ⚠️ LA CASA NO ES BLANCA POR DENTRO
+
+Es el hallazgo que más cambia la pieza, y cuesta casi nada: son colores de material.
+Le Corbusier aplicó **polychromie architecturale** en el nobile:
+
+- **Muro del salón: ROSA TERRACOTA**, un paño entero. No un acento: la pared completa.
+- **Otro paño AZUL/turquesa** junto a la vidriera.
+- **Piso de baldosa OCRE claro** en el área principal — ya corregido en el modelo —
+  y un **cambio a baldosa CAFÉ OSCURO** cerca del vidrio, como umbral. Son dos
+  materiales de piso, no uno.
+- Cielorraso claro, y una **viga/ducto pintado de NEGRO** que cruza en diagonal.
+
+Hoy el modelo es hueso y blanco en todo. Pintar esos dos paños es la mejora de mayor
+retorno por hora de todo el proyecto.
+
+## Los muebles reales (y por qué los nuestros están mal)
+
+Las fotos muestran **mobiliario de Le Corbusier/Perriand**, no piezas mid-century de madera:
+
+- **LC4** — la chaise longue negra de cuero con estructura cromada. Es LA pieza.
+- **LC2** — sillones cúbicos de cuero **cognac / rojo óxido** con marco de tubo cromado.
+  En las fotos hay dos o tres en una sala enorme: **la densidad correcta es muy baja**.
+- Bajo la cinta de ventanas corre un **radiador de rejilla horizontal a todo lo largo**.
+  Ese detalle solo lee "esta casa" de inmediato y es geometría barata.
+
+Nuestro `mid_century_lounge_chair` y el `dining_table` con mantel a cuadros no tienen
+nada que ver. **Buscar LC2/LC4 en Sketchfab CC0** antes de seguir con Poly Haven.
+
+## La terraza
+
+- **Jardineras de HORMIGÓN blanco, empotradas** — no cajones de madera rústicos.
+  Con arbustos bajos tipo lavanda.
+- **Pavimento de losas grandes de hormigón** en retícula, distinto del piso interior.
+- La rampa exterior con **baranda de tubo metálico delgado, horizontal**.
+
+## Un detalle de estructura que sí verifiqué
+
+Un **piloti redondo queda DENTRO de la línea del vidrio** de la vidriera al jardín: la
+columna atraviesa el plano acristalado en vez de esconderse en un muro. Es la fachada
+libre hecha visible, y hoy no lo tenemos.
+
+**La cinta de ventanas está BIEN**: 1.20 m de alto sobre antepecho de 0.55, lo que da
+~37% de la banda — coincide con la proporción medida en la elevación FLC 19704.
+(Corrige un dato erróneo que circuló en el análisis del 19-ago, donde se dijo 0.30 m.)
