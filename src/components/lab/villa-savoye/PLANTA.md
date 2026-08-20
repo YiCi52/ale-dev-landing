@@ -199,6 +199,23 @@ y pintada de verde oscuro**, así que desde lejos desaparece detrás de los pilo
 blanca parece flotar sola. Ese es justamente el efecto que buscaba Le Corbusier — si en
 nuestro modelo el nivel bajo se ve demasiado, perdemos el gesto.
 
+## 6b. TERCER NIVEL — solárium y cubierta (leído 20-ago, tras la regla de Alejandro)
+
+> **Casi construyo sin haber mirado este plano.** La lámina trae TRES niveles y yo solo
+> había abierto dos. Ver L-027: contar los niveles y confirmar un plano por cada uno ANTES
+> de modelar.
+
+- **SOLÁRIUM**: no es "toda la cubierta". Es un recinto pavimentado **acotado por una
+  pantalla curva** que barre desde el oeste. Tiene límites, no es un plano libre.
+- **HAY DOS PANTALLAS CURVAS, no una**: la del solárium y **una segunda al sureste**. Hoy
+  el modelo tiene una sola.
+- **DOS "VIDE"** (vacíos): huecos reales en la losa de cubierta que dejan ver la terraza de
+  abajo — uno grande al este y otro menor al oeste. Nuestro recorte de techo corresponde
+  al grande; **el pequeño no existe en el modelo**.
+- La **rampa** remata arriba con su propio cerramiento, y la **escalera helicoidal**
+  desemboca junto al solárium.
+- Cuadraditos sueltos rotulados "L." repartidos por la cubierta: luminarias o maceteros.
+
 ## 7. Verificación contra fotos — paso formal, no opcional
 
 La lección detrás de este error: los tres hallazgos de hoy (la casa no es blanca, los
