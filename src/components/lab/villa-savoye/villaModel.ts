@@ -400,40 +400,92 @@ export function buildVilla(): VillaBuild {
   );
   add(tabique, 3);
 
-  // ── LA PLANTA REAL (pedido de Alejandro: "estructura clara") ────────────
-  // Zonas del nobile como en la casa: SALÓN al oeste, corredor de la rampa
-  // al centro, TERRAZA abierta al cielo al este, y la franja norte de
-  // servicio (cocina + habitación). Todo vive en la capa 3: la planta libre
-  // se extrae en el cajón CON sus muros — el punto de Le Corbusier, literal.
+  /*
+    ── PIANO NOBILE ───────────────────────────────────────────────────────
+    Nivel 2 de 3, levantado del PLANO ORIGINAL — los recintos y sus cotas
+    viven en PLANTA.md §2, que MANDA sobre este archivo.
+
+    Los muros se declaran como TABLA, no a mano uno por uno: cada tabique es
+    un eje constante, un tramo, y sus huecos de puerta. Así el código se lee
+    contra el documento sin traducir, y agregar una puerta es una línea.
+
+    Todo vive en la capa 3: la planta libre se extrae en el cajón CON sus
+    muros — el punto de Le Corbusier, literal.
+  */
   const H_MURO = H_VOLUMEN - 0.35; // de piso a techo
   const yMuro = yLosaPiso + 0.15 + H_MURO / 2;
   const montCintaGeo = box(0.06, H_VENTANA, 0.1); // montante de carpintería (vidriera Y cinta)
-  const muroInterior = (w: number, d: number, x: number, z: number) =>
-    add(mesh(box(w, H_MURO, d), matBlanco, x, yMuro, z, losaOffsets), 3);
+  const T_TABIQUE = 0.15;
 
-  // vidriera salón↔corredor (x≈0.95) con puerta en z 4.6–6.4: el tour la
-  // cruza DOS veces — entrar al salón y volver. Vidrio + montantes café.
-  const vidriera = (zC: number, largo: number) => {
-    const v = mesh(box(0.06, H_MURO, largo), matVidrio, 0.95, yMuro, zC, losaOffsets);
-    const n = Math.max(2, Math.floor(largo / 1.1));
-    for (let k = 0; k <= n; k++) {
-      // mismo montante de la cinta, estirado a la altura del muro
-      const mont = new THREE.Mesh(montCintaGeo, matCarpinteria);
-      mont.scale.y = H_MURO / H_VENTANA;
-      mont.position.set(0, 0, -largo / 2 + (largo * k) / n);
-      mont.castShadow = true;
-      v.add(mont);
-    }
-    add(v, 3);
+  type Tabique = {
+    eje: "x" | "z";
+    /** la coordenada que se mantiene constante */
+    v: number;
+    /** tramo sobre el eje libre */
+    a: number;
+    b: number;
+    /** huecos de puerta sobre el eje libre */
+    puertas?: Array<[number, number]>;
+    /** acristalado con montantes (la vidriera y el panel corredizo) */
+    vidrio?: boolean;
+    nombre: string;
   };
-  vidriera(0.55, 8.1); // tramo sur de la puerta (z −3.5 … 4.6)
-  vidriera(6.8, 0.8); // tramo norte de la puerta (z 6.4 … 7.2)
 
-  // franja norte: muro z=−3.5 con puerta junto al corredor, y el muro que
-  // separa cocina (este) de habitación (oeste)
-  muroInterior(7.45, 0.15, -5.925, -3.5); // z −3.5, x −9.65 … −2.2
-  muroInterior(1.9, 0.15, 0.05, -3.5); // z −3.5, x −0.9 … 1.0 (puerta en el medio)
-  muroInterior(0.15, 4.45, -4.5, -7.425); // x −4.5, z −9.65 … −5.2 (puerta al norte)
+  const TABIQUES: Tabique[] = [
+    // El gesto central: la SALLE abre a la TERRASSE por el panel corredizo.
+    // El tramo de vidrio ES la abertura — por eso va acristalado y sin puerta.
+    { nombre: "panel corredizo salle↔terrasse", eje: "z", v: 4.78, a: 0.1, b: 9.5, vidrio: true },
+    { nombre: "muro sur del corredor", eje: "z", v: 4.78, a: -9.5, b: 0.1, puertas: [[-8.9, -8.0]] },
+    { nombre: "cuisine ↔ salle", eje: "x", v: -4.79, a: 4.78, b: 10.63, puertas: [[6.4, 7.3]] },
+    { nombre: "rampa · costado este", eje: "x", v: 0.1, a: -4.83, b: 4.78 },
+    { nombre: "rampa · costado oeste", eje: "x", v: -1.5, a: -7.0, b: 4.78 },
+    { nombre: "terrasse ↔ abri/boudoir", eje: "z", v: -4.83, a: 1.36, b: 9.5 },
+    { nombre: "boudoir ↔ abri", eje: "x", v: 4.47, a: -10.63, b: -4.83, puertas: [[-7.6, -6.7]] },
+    { nombre: "boudoir · costado oeste", eje: "x", v: 1.36, a: -10.63, b: -4.83 },
+    { nombre: "ala de dormitorios · eje norte-sur", eje: "x", v: -5.12, a: -10.63, b: 4.78,
+      puertas: [[-9.6, -8.7], [-3.6, -2.7], [2.6, 3.5]] },
+    { nombre: "chambre 1 ↔ chambre 3", eje: "z", v: -4.99, a: -9.5, b: -5.12, puertas: [[-7.6, -6.7]] },
+    { nombre: "chambre 3 ↔ terrasse de servicio", eje: "z", v: 1.92, a: -9.5, b: -5.12 },
+    { nombre: "chambre 2 ↔ núcleo húmedo", eje: "z", v: -6.17, a: -5.12, b: 1.36, puertas: [[-3.4, -2.5]] },
+    { nombre: "núcleo húmedo · cara sur", eje: "z", v: -0.28, a: -5.12, b: -1.5, puertas: [[-4.4, -3.5]] },
+  ];
+
+  /** Parte el tramo [a,b] por los huecos de puerta y devuelve los pedazos macizos. */
+  const tramosSolidos = (a: number, b: number, puertas: Array<[number, number]> = []) => {
+    const ordenadas = [...puertas].sort((p, q) => p[0] - q[0]);
+    const out: Array<[number, number]> = [];
+    let cursor = a;
+    for (const [p0, p1] of ordenadas) {
+      if (p0 > cursor) out.push([cursor, Math.min(p0, b)]);
+      cursor = Math.max(cursor, p1);
+    }
+    if (cursor < b) out.push([cursor, b]);
+    return out.filter(([u, w]) => w - u > 0.05);
+  };
+
+  for (const t of TABIQUES) {
+    for (const [u, w] of tramosSolidos(t.a, t.b, t.puertas)) {
+      const largo = w - u;
+      const centro = (u + w) / 2;
+      const [dx, dz] = t.eje === "x" ? [t.v, centro] : [centro, t.v];
+      const geo = t.eje === "x" ? box(T_TABIQUE, H_MURO, largo) : box(largo, H_MURO, T_TABIQUE);
+      const m = mesh(geo, t.vidrio ? matVidrio : matBlanco, dx, yMuro, dz, losaOffsets);
+      m.name = t.nombre;
+      if (t.vidrio) {
+        // montantes de carpintería cada ~1.1 m, hijos del vidrio
+        const n = Math.max(2, Math.floor(largo / 1.1));
+        for (let k = 0; k <= n; k++) {
+          const mont = new THREE.Mesh(montCintaGeo, matCarpinteria);
+          mont.scale.y = H_MURO / H_VENTANA;
+          const off = -largo / 2 + (largo * k) / n;
+          mont.position.set(t.eje === "x" ? 0 : off, 0, t.eje === "x" ? off : 0);
+          mont.castShadow = true;
+          m.add(mont);
+        }
+      }
+      add(m, 3);
+    }
+  }
 
   // ── Capas 4 y 5 · fachada por lados: banda inferior, cinta de vidrio, banda superior
   type Lado = { dx: number; dz: number; rotY: number; largo: number };
