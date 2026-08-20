@@ -231,40 +231,75 @@ export function buildVilla(): VillaBuild {
     }
   }
 
-  // Núcleo curvo de planta baja — 4b (obs. de Alejandro): en la Savoye real
-  // NO es un tambor sólido, es una fachada de VIDRIO curvo con montantes
-  // metálicos verde oscuro. El vidrio comparte material con la cinta: de
-  // noche el vestíbulo también se enciende (la casa como lámpara, desde
-  // abajo). Sube con la casa en el paso 1.
+  /*
+    ── REZ-DE-CHAUSSÉE ────────────────────────────────────────────────────
+    Reconstruido 20-ago del PLANO ORIGINAL del nivel (ver PLANTA.md §"La
+    planta baja"). Antes era un tambor de radio 4.3, que era el error de
+    fondo: el cilindro se lo comía todo y no existía el bloque recto.
+
+    El plano muestra dos piezas que conviven:
+      · una HERRADURA acristalada de más de 180°, que sigue el radio de giro
+        del automóvil — hay TRES autos dibujados dentro del arco. Es la forma
+        que manda en el nivel.
+      · un BLOQUE RECTO de servicio (lingerie · dos chambre · wc) apoyado en
+        la esquina noroeste, que es la fachada plana con persiana que se ve
+        al aproximarse, con la curva perdiéndose por los dos extremos.
+
+    El nivel va retranqueado y en verde oscuro a propósito: desde lejos
+    desaparece tras los pilotis y la caja blanca parece flotar sola. Ese es
+    el gesto — si este nivel se ve demasiado, se pierde.
+  */
   const LIFT = 2.6; // cuánto se levanta el cuerpo sobre los pilotis en el paso 1
   const H_RDC = H_PILOTIS - 0.2;
-  const ARC_INI = Math.PI * 0.15;
-  const ARC_LEN = Math.PI * 1.7;
+  const R_HERRADURA = 6.5; // medido en el plano: el arco barre ~14 m de ancho
+  // La abertura mira al NOROESTE (−x, −z), que es donde encaja el bloque recto
+  const ARC_INI = Math.PI * 0.62;
+  const ARC_LEN = Math.PI * 1.62;
   const rdc = mesh(
-    g(new THREE.CylinderGeometry(4.3, 4.3, H_RDC, 40, 1, true, ARC_INI, ARC_LEN)),
+    g(new THREE.CylinderGeometry(R_HERRADURA, R_HERRADURA, H_RDC, 56, 1, true, ARC_INI, ARC_LEN)),
     matVidrio,
-    -3.1,
+    0.3,
     H_RDC / 2,
-    -0.6,
+    1.0,
     [{ step: 1, delta: up(LIFT) }],
   );
-  // montantes cada ~1.4 m de arco, HIJOS del vidrio (heredan lift y rotación)
+  // montantes verticales cada ~1.4 m de arco, HIJOS del vidrio (heredan el lift)
   const montGeo = box(0.07, H_RDC, 0.12);
-  for (let k = 0; k <= 16; k++) {
-    const th = ARC_INI + (ARC_LEN * k) / 16;
+  const N_MONT = Math.round((R_HERRADURA * ARC_LEN) / 1.4);
+  for (let k = 0; k <= N_MONT; k++) {
+    const th = ARC_INI + (ARC_LEN * k) / N_MONT;
     const mont = new THREE.Mesh(montGeo, matVerde);
-    mont.position.set(4.3 * Math.sin(th), 0, 4.3 * Math.cos(th));
+    mont.position.set(R_HERRADURA * Math.sin(th), 0, R_HERRADURA * Math.cos(th));
     mont.rotation.y = th;
     mont.castShadow = true;
     mont.receiveShadow = true;
     rdc.add(mont);
   }
-  // Corrido al OESTE del corredor de la rampa: en la Savoye real la rampa va
-  // JUNTO al muro curvo del vestíbulo, no a través (el chequeo matemático de
-  // holgura del tour detectó que el cilindro original cruzaba el corredor).
-  // El hueco del arco (~54°) queda mirando a +z: es la entrada de la promenade
-  rdc.rotation.y = Math.PI * 0.58;
   add(rdc, 1);
+
+  /*
+    El bloque de servicio: lingerie, dos dormitorios y el wc. En el plano es
+    el único volumen de muros rectos del nivel, y cierra la herradura por el
+    noroeste. Su cara larga es la fachada plana con la persiana de lamas.
+  */
+  const servicio = mesh(
+    box(5.2, H_RDC, 6.4),
+    matVerde,
+    -6.1,
+    H_RDC / 2,
+    -3.6,
+    [{ step: 1, delta: up(LIFT) }],
+  );
+  add(servicio, 1);
+
+  // persiana de lamas horizontales sobre la cara de llegada (+z) del bloque
+  const lamaGeo = box(4.6, 0.07, 0.06);
+  for (let k = 0; k < 9; k++) {
+    const lama = new THREE.Mesh(lamaGeo, matMetal);
+    lama.position.set(0, -H_RDC / 2 + 0.55 + k * 0.22, 3.24);
+    lama.castShadow = true;
+    servicio.add(lama);
+  }
   // tapa del vestíbulo: sin ella, la cámara del tour ve el interior del tubo
   const rdcTapa = mesh(g(new THREE.CylinderGeometry(4.3, 4.3, 0.12, 40)), matLosa, -3.1, H_PILOTIS - 0.2, -0.6, [
     { step: 1, delta: up(LIFT) },
