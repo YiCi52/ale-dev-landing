@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { CRUJIA, D, T_TABIQUE, TABIQUES, VOLADIZO, W, tramosSolidos } from "./planta";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
 /*
@@ -37,20 +38,7 @@ const VERDE_RDC = 0x3f5c48; // el verde real de la planta baja de la Savoye
 const VIDRIO = 0x2e3d3a;
 const SUELO = 0xdcddcc; // salvia claro: separa la casa blanca sin robar protagonismo
 
-/*
-  Volumen principal (piano nobile) — HUELLA REAL, ver PLANTA.md §1.
-
-  La casa NO es un cuadrado. Es un rectangulo de 19.0 x 21.25: una trama de
-  4x4 vanos de 4.75 m (sistema Dom-ino) con voladizos de 1.125 m en el eje Z.
-  Hasta el 20-ago esto era un cuadrado de 20x20 estilizado "a ojo", y toda la
-  planta que se le retrofiteo encima heredaba el error.
-
-  El origen sigue en el centro: X va de -9.5 a +9.5, Z de -10.625 a +10.625.
-*/
-const CRUJIA = 4.75;
-const VOLADIZO = 1.125;
-const W = CRUJIA * 4; // 19.0 en x
-const D = CRUJIA * 4 + VOLADIZO * 2; // 21.25 en z
+// La huella y los tabiques viven en ./planta (traducción de PLANTA.md §1-2).
 const H_PILOTIS = 3.3;
 const H_BANDA_INF = 0.55;
 const H_VENTANA = 1.2;
@@ -415,53 +403,6 @@ export function buildVilla(): VillaBuild {
   const H_MURO = H_VOLUMEN - 0.35; // de piso a techo
   const yMuro = yLosaPiso + 0.15 + H_MURO / 2;
   const montCintaGeo = box(0.06, H_VENTANA, 0.1); // montante de carpintería (vidriera Y cinta)
-  const T_TABIQUE = 0.15;
-
-  type Tabique = {
-    eje: "x" | "z";
-    /** la coordenada que se mantiene constante */
-    v: number;
-    /** tramo sobre el eje libre */
-    a: number;
-    b: number;
-    /** huecos de puerta sobre el eje libre */
-    puertas?: Array<[number, number]>;
-    /** acristalado con montantes (la vidriera y el panel corredizo) */
-    vidrio?: boolean;
-    nombre: string;
-  };
-
-  const TABIQUES: Tabique[] = [
-    // El gesto central: la SALLE abre a la TERRASSE por el panel corredizo.
-    // El tramo de vidrio ES la abertura — por eso va acristalado y sin puerta.
-    { nombre: "panel corredizo salle↔terrasse", eje: "z", v: 4.78, a: 0.1, b: 9.5, vidrio: true },
-    { nombre: "muro sur del corredor", eje: "z", v: 4.78, a: -9.5, b: 0.1, puertas: [[-8.9, -8.0]] },
-    { nombre: "cuisine ↔ salle", eje: "x", v: -4.79, a: 4.78, b: 10.63, puertas: [[6.4, 7.3]] },
-    { nombre: "rampa · costado este", eje: "x", v: 0.1, a: -4.83, b: 4.78 },
-    { nombre: "rampa · costado oeste", eje: "x", v: -1.5, a: -7.0, b: 4.78 },
-    { nombre: "terrasse ↔ abri/boudoir", eje: "z", v: -4.83, a: 1.36, b: 9.5 },
-    { nombre: "boudoir ↔ abri", eje: "x", v: 4.47, a: -10.63, b: -4.83, puertas: [[-7.6, -6.7]] },
-    { nombre: "boudoir · costado oeste", eje: "x", v: 1.36, a: -10.63, b: -4.83 },
-    { nombre: "ala de dormitorios · eje norte-sur", eje: "x", v: -5.12, a: -10.63, b: 4.78,
-      puertas: [[-9.6, -8.7], [-3.6, -2.7], [2.6, 3.5]] },
-    { nombre: "chambre 1 ↔ chambre 3", eje: "z", v: -4.99, a: -9.5, b: -5.12, puertas: [[-7.6, -6.7]] },
-    { nombre: "chambre 3 ↔ terrasse de servicio", eje: "z", v: 1.92, a: -9.5, b: -5.12 },
-    { nombre: "chambre 2 ↔ núcleo húmedo", eje: "z", v: -6.17, a: -5.12, b: 1.36, puertas: [[-3.4, -2.5]] },
-    { nombre: "núcleo húmedo · cara sur", eje: "z", v: -0.28, a: -5.12, b: -1.5, puertas: [[-4.4, -3.5]] },
-  ];
-
-  /** Parte el tramo [a,b] por los huecos de puerta y devuelve los pedazos macizos. */
-  const tramosSolidos = (a: number, b: number, puertas: Array<[number, number]> = []) => {
-    const ordenadas = [...puertas].sort((p, q) => p[0] - q[0]);
-    const out: Array<[number, number]> = [];
-    let cursor = a;
-    for (const [p0, p1] of ordenadas) {
-      if (p0 > cursor) out.push([cursor, Math.min(p0, b)]);
-      cursor = Math.max(cursor, p1);
-    }
-    if (cursor < b) out.push([cursor, b]);
-    return out.filter(([u, w]) => w - u > 0.05);
-  };
 
   for (const t of TABIQUES) {
     for (const [u, w] of tramosSolidos(t.a, t.b, t.puertas)) {
