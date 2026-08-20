@@ -21,7 +21,10 @@
   --color-bg-elevated: oklch(18% 0.008 285);
   --color-fg: oklch(95.5% 0.007 85);
   --color-fg-muted: oklch(66% 0.01 300);
-  --color-fg-subtle: oklch(46% 0.012 295);
+  /* Subido de 46% a 63% (2.80:1 -> ~5.6:1): este token pinta las etiquetas
+     y placeholders del formulario de captacion, o sea el camino de la
+     conversion. 46% era un gris de 'estado deshabilitado' y fallaba AA. */
+  --color-fg-subtle: oklch(63% 0.012 295);
   --color-border: oklch(100% 0 0 / 0.1);
   --color-border-strong: oklch(100% 0 0 / 0.16);
   /* Lila Ion (#A78BFA ref) — texto/chips/hovers OK. El muted (Violeta

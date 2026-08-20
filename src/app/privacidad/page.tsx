@@ -8,6 +8,7 @@ import {
 } from "@/components/ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/privacidad" },
   title: "Política de privacidad — Alejandro Díaz del Castillo",
   description:
     "Cómo trato los datos personales que recibo en el formulario de contacto. Cumplimiento de la Ley 1581 de 2012 (Colombia).",
@@ -128,7 +129,7 @@ export default function PrivacidadPage() {
           </Block>
 
           <Block heading="6. Tus derechos (Ley 1581 de 2012)">
-            <p>Como titular de los datos podés:</p>
+            <p>Como titular de los datos puedes:</p>
             <ul className="list-disc list-outside pl-6 space-y-2 mt-3">
               <li>
                 <b>Conocer</b> qué datos tuyos tengo y para qué los uso.
@@ -150,7 +151,7 @@ export default function PrivacidadPage() {
               </li>
             </ul>
             <p className="mt-3">
-              Para ejercer cualquiera de estos derechos, escribime a{" "}
+              Para ejercer cualquiera de estos derechos, escríbeme a{" "}
               <a
                 href="mailto:addelcv@gmail.com"
                 className="underline underline-offset-4 hover:text-muted"

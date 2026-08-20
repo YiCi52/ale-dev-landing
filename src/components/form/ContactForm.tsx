@@ -11,6 +11,7 @@ import {
 import { submitContact } from "@/app/actions/contact";
 import { Button, Text } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { WHATSAPP_URL } from "@/lib/site";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -76,14 +77,14 @@ export function ContactForm() {
           autoComplete="email"
           {...register("email")}
           className={inputClasses(!!errors.email)}
-          placeholder="vos@ejemplo.com"
+          placeholder="tu@ejemplo.com"
         />
       </Field>
 
       <Field
         id="whatsapp"
         label="WhatsApp (opcional)"
-        hint="Solo si preferís que te escriba por ahí."
+        hint="Solo si prefieres que te escriba por ahí."
         error={errors.whatsapp?.message}
         className="sm:col-span-1"
       >
@@ -122,8 +123,8 @@ export function ContactForm() {
 
       <Field
         id="mensaje"
-        label="¿Qué necesitás?"
-        hint="Contame brevemente qué tenés en mente, para quién y por qué."
+        label="¿Qué necesitas?"
+        hint="Cuéntame brevemente qué tienes en mente, para quién y por qué."
         error={errors.mensaje?.message}
         className="sm:col-span-2"
       >
@@ -163,8 +164,9 @@ export function ContactForm() {
           >
             política de privacidad
           </a>
-          . Tus datos solo se usan para responder tu consulta. No los
-          compartimos con terceros.
+          . Tus datos se usan solo para responder tu consulta y coordinar el
+          proyecto. No se venden ni se usan para publicidad; los proveedores
+          que los procesan están detallados en la política.
         </label>
       </div>
       {errors.consentimiento && (
@@ -197,8 +199,16 @@ export function ContactForm() {
           className="sm:col-span-2 border border-[color:var(--color-border-strong)] bg-[color:var(--color-bg-elevated)] px-4 py-3 rounded-sm"
         >
           <Text size="sm">
-            Algo falló al enviar. Probá de nuevo o escribime directo por
-            WhatsApp.
+            Algo falló al enviar. Inténtalo de nuevo o escríbeme directo por{" "}
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground underline underline-offset-4 hover:text-muted"
+            >
+              WhatsApp
+            </a>
+            .
           </Text>
         </div>
       )}
@@ -260,8 +270,17 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
         Recibido. Gracias.
       </p>
       <Text size="lg" tone="muted" className="mt-4 max-w-md">
-        Te respondo en menos de 24h hábiles desde addelcv@gmail.com. Si es
-        urgente, también podés escribirme por WhatsApp.
+        Te respondo en menos de 24h hábiles por correo. Si es urgente,
+        escríbeme por{" "}
+        <a
+          href={WHATSAPP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-foreground underline underline-offset-4 hover:text-muted"
+        >
+          WhatsApp
+        </a>
+        .
       </Text>
       <button
         type="button"

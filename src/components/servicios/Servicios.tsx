@@ -58,7 +58,7 @@ const cotizaSteps: ReadonlyArray<CotizaStep> = [
   {
     step: "03",
     title: "Un número, desglosado",
-    note: "Vas a ver de dónde sale. Si no cuadra con lo que tienes, ajustamos el alcance, no el precio.",
+    note: "Vas a ver de dónde sale. Si no encaja con lo que tienes, ajustamos el alcance, no el precio.",
   },
 ];
 

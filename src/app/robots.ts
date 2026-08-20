@@ -7,7 +7,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/styleguide"],
+        disallow: ["/api/"], // /styleguide sale por noindex, no por Disallow:
+        // bloquear el rastreo impide que Google LEA el noindex (se indexa igual
+        // si alguien la enlaza, y sin descripcion).
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

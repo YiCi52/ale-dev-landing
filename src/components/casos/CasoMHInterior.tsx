@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Button, Eyebrow, Heading, Reveal, Section, Text } from "@/components/ui";
 import DecryptedText from "@/components/DecryptedText";
 import ScrollFloat from "@/components/ScrollFloat";
+import { CASE_MH_INTERIOR } from "@/lib/site";
 
 /*
   Caso #1 del nicho — MH Interior Design (Maria Hernández, Bogotá).
@@ -234,7 +235,7 @@ export function CasoMHInterior() {
             </Text>
             <Button
               as="a"
-              href="https://mhinterior.vercel.app"
+              href={CASE_MH_INTERIOR}
               size="md"
               variant="primary"
               target="_blank"

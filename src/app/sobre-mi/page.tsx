@@ -4,6 +4,7 @@ import { Proceso } from "@/components/proceso/Proceso";
 import { Reveal } from "@/components/ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/sobre-mi" },
   title: "Sobre mí — Alejandro Díaz del Castillo",
   description:
     "Una persona, no una agencia. Quién está detrás de Castillo Studio y cómo trabaja: proceso, criterios y forma de acompañar cada proyecto.",

@@ -34,7 +34,7 @@ export function SobreMi() {
             <DecryptedText text="Sobre mí" animateOn="view" sequential speed={45} />
           </Eyebrow>
           <Reveal variant="clip" className="mt-6">
-            <Heading level="h2">
+            <Heading level="h2" as="h1">
               Una persona,
               <br />
               <span className="text-muted">no una agencia.</span>

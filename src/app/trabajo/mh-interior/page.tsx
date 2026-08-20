@@ -4,6 +4,7 @@ import { CasoMHInterior } from "@/components/casos/CasoMHInterior";
 import { Container } from "@/components/ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/trabajo/mh-interior" },
   title: "MH Interior Design — portafolio bilingüe con captura de clientes",
   description:
     "Caso completo: sitio de portafolio para una diseñadora de interiores en Bogotá, con seis proyectos, dos idiomas y un sistema que registra y notifica cada contacto.",

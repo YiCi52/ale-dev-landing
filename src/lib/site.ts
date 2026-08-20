@@ -16,6 +16,16 @@ export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
   "https://ale-dev-landing.vercel.app";
 
+/**
+ * WhatsApp de contacto. Vive acá y no escrito a mano en cada componente
+ * porque aparece en el formulario (salida de emergencia cuando el envío
+ * falla), en el panel de éxito y en el footer: tres sitios que se
+ * desincronizan solos. Formato internacional sin signos — wa.me lo exige.
+ */
+export const WHATSAPP_NUMBER = "573003519162";
+export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
+export const WHATSAPP_DISPLAY = "+57 300 351 9162";
+
 export const SITE_NAME = "Castillo Studio";
 
 export const FOUNDER_NAME = "Alejandro Díaz del Castillo";

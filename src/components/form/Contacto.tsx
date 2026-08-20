@@ -23,7 +23,7 @@ export function Contacto() {
           </Reveal>
           <Reveal delay={120}>
             <Text size="lg" tone="muted" className="mt-8 max-w-md">
-              Contame qué tenés en mente. Si encaja en lo que construyo, te paso
+              Cuéntame qué tienes en mente. Si encaja en lo que construyo, te paso
               propuesta en 2–3 días. Si no, te recomiendo a alguien que sí.
             </Text>
           </Reveal>

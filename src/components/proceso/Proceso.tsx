@@ -16,7 +16,7 @@ const pasos = [
     titulo: "Propuesta y anticipo",
     duracion: "2–3 días",
     body:
-      "Te paso por escrito qué construyo, qué entregable, qué plazo y cuánto cuesta. Anticipo vía Bre-B antes de tocar código. Sin sorpresas.",
+      "Te paso por escrito qué construyo, qué entregable, qué plazo y cuánto cuesta. Anticipo del 50% antes de tocar código, en pesos o en dólares. Sin sorpresas.",
   },
   {
     n: "03",
