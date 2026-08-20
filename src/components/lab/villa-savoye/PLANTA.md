@@ -170,27 +170,34 @@ libre hecha visible, y hoy no lo tenemos.
 ~37% de la banda — coincide con la proporción medida en la elevación FLC 19704.
 (Corrige un dato erróneo que circuló en el análisis del 19-ago, donde se dijo 0.30 m.)
 
-## La planta baja: cilindro Y plano, no uno u otro (precisado 20-ago)
+## La planta baja — resuelto con el plano original (20-ago)
 
-⚠️ **Corrección de una corrección.** Primero escribí "no es un cilindro" y era demasiado
-absoluto — Alejandro lo frenó con la foto de la entrada, donde el **vidrio curvo con
-montantes verticales** envolviendo el vestíbulo se ve sin lugar a dudas.
+Pasé por dos lecturas equivocadas antes de mirar el documento bueno: primero dije "no es
+un cilindro" (falso), después "cilindro Y plano en lados opuestos" (impreciso). **El plano
+del rez-de-chaussée de la misma lámina lo zanja:**
 
-La forma real del volumen bajo tiene **las dos cosas**:
+- El vestíbulo es una **HERRADURA acristalada** — un arco de más de 180° que arranca al
+  oeste, barre por el sur y sube por el este. Sigue el radio de giro del automóvil, con
+  **tres autos dibujados dentro del arco**. Es la forma dominante del nivel, no un detalle.
+- El único bloque de **muros rectos** es el de servicio, arrinconado en la esquina noroeste:
+  **LINGERIE · dos CHAMBRE · WC**. Eso es lo que se ve como fachada plana con persiana en
+  las fotos de aproximación, con la curva perdiéndose por los dos extremos.
+- La **rampa** cruza el centro y la **escalera helicoidal** queda al oeste del vestíbulo.
 
-- **Lado de la ENTRADA: CURVO Y ACRISTALADO.** El tambor de vidrio con montantes
-  verticales, siguiendo el radio de giro del automóvil. Es el gesto que da origen a toda
-  la planta baja. **Esto el modelo ya lo tiene y NO se toca.**
-- **Lado de LLEGADA (el que se ve al aproximarse): RECTO.** Un plano con una **persiana de
-  lamas horizontales** ocupando el centro, y el verde curvándose solo al doblar las
-  esquinas. **Esto es lo que falta.**
+⇒ En planta: **herradura acristalada + un bloque rectangular de servicio en una esquina.**
+Las dos cosas conviven, pero la que manda es la curva.
 
-⇒ En planta: **un cuerpo con un lado curvo acristalado y el opuesto recto con persiana.**
-El error del modelo no es tener cilindro; es que el cilindro se lo come todo y no existe
-la cara recta.
+**Qué corregir en el modelo**: hoy es un tambor de radio **4.3** — el arco real es bastante
+mayor (barre más de la mitad del ancho de la huella) y es una **U abierta** donde encuentra
+el bloque de servicio, no un cilindro cerrado con una muesca. Y falta el bloque recto.
 
-**Lo que SÍ está bien** y conviene no tocar: el verde del volumen bajo (`VERDE_RDC`
-0x3f5c48), la carpintería café de la cinta, y el tambor de vidrio con sus montantes.
+**Qué NO tocar**: el tambor acristalado con montantes verticales, el verde (`VERDE_RDC`
+0x3f5c48) y la carpintería café de la cinta. Los tres verificados contra fotos.
+
+**Por qué la duda era legítima** (y vale para la pieza): la planta baja está **retranqueada
+y pintada de verde oscuro**, así que desde lejos desaparece detrás de los pilotis y la caja
+blanca parece flotar sola. Ese es justamente el efecto que buscaba Le Corbusier — si en
+nuestro modelo el nivel bajo se ve demasiado, perdemos el gesto.
 
 ## 7. Verificación contra fotos — paso formal, no opcional
 
