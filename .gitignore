@@ -46,3 +46,6 @@ next-env.d.ts
 
 # claude code — local-only config (PRDs y memoria del proyecto sí se trackean)
 .claude/launch.json
+
+# intermedios del bake de Villa Savoye (regenerables con scripts/bake-villa-lightmap.py)
+artefactos-bake/
