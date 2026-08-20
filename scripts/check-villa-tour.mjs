@@ -13,28 +13,11 @@
 */
 import * as THREE from "three";
 
-import { D, W, cajasNobile } from "../src/components/lab/villa-savoye/planta.ts";
 import { RUTA } from "../src/components/lab/villa-savoye/ruta.ts";
 
-const H_PILOTIS = 3.3, H_BANDA_INF = 0.55, H_VENTANA = 1.2, H_BANDA_SUP = 1.5;
-const H_VOLUMEN = H_BANDA_INF + H_VENTANA + H_BANDA_SUP;
-const T_MURO = 0.3;
-const yBase = H_PILOTIS;
-const yLosa = yBase + 0.15;
-const yTecho = yBase + H_VOLUMEN;
+import { HERRADURA, H_RDC, cajasTodas } from "../src/components/lab/villa-savoye/planta.ts";
 
-const cajas = [
-  ...cajasNobile(yLosa, yTecho).map(([mn, mx]) => ["tabique", mn, mx]),
-  // fachadas: banda inferior y superior, con la cinta de ventanas en medio
-  ["fachada +z inf", [-W / 2, yBase, D / 2 - T_MURO], [W / 2, yBase + H_BANDA_INF, D / 2]],
-  ["fachada +z sup", [-W / 2, yBase + H_BANDA_INF + H_VENTANA, D / 2 - T_MURO], [W / 2, yTecho, D / 2]],
-  ["fachada -z inf", [-W / 2, yBase, -D / 2], [W / 2, yBase + H_BANDA_INF, -D / 2 + T_MURO]],
-  ["fachada -z sup", [-W / 2, yBase + H_BANDA_INF + H_VENTANA, -D / 2], [W / 2, yTecho, -D / 2 + T_MURO]],
-  ["fachada +x inf", [W / 2 - T_MURO, yBase, -D / 2], [W / 2, yBase + H_BANDA_INF, D / 2]],
-  ["fachada +x sup", [W / 2 - T_MURO, yBase + H_BANDA_INF + H_VENTANA, -D / 2], [W / 2, yTecho, D / 2]],
-  ["fachada -x inf", [-W / 2, yBase, -D / 2], [-W / 2 + T_MURO, yBase + H_BANDA_INF, D / 2]],
-  ["fachada -x sup", [-W / 2, yBase + H_BANDA_INF + H_VENTANA, -D / 2], [-W / 2 + T_MURO, yTecho, D / 2]],
-];
+const cajas = cajasTodas();
 
 const curva = new THREE.CatmullRomCurve3(RUTA.map((p) => new THREE.Vector3(...p)), false, "centripetal");
 const CLEAR = 0.35;
@@ -43,6 +26,20 @@ const fallas = [];
 for (let i = 0; i <= N; i++) {
   const t = i / N;
   const p = curva.getPoint(t);
+  // la herradura es un cilindro: se comprueba por distancia radial al arco
+  if (p.y < H_RDC + 0.1) {
+    const rx = p.x - HERRADURA.cx, rz = p.z - HERRADURA.cz;
+    const r = Math.hypot(rx, rz);
+    let th = Math.atan2(rx, rz);
+    while (th < HERRADURA.arcIni) th += Math.PI * 2;
+    const dentroDelArco = th <= HERRADURA.arcIni + HERRADURA.arcLen;
+    const [pa, pb] = HERRADURA.puerta;
+    const enLaPuerta = th >= pa && th <= pb;
+    if (dentroDelArco && !enLaPuerta && Math.abs(r - HERRADURA.r) < CLEAR) {
+      fallas.push({ t: +t.toFixed(3), p: [+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2)], d: +Math.abs(r - HERRADURA.r).toFixed(2), nombre: "herradura de vidrio" });
+      continue;
+    }
+  }
   for (const [nombre, mn, mx] of cajas) {
     const dx = Math.max(mn[0] - p.x, 0, p.x - mx[0]);
     const dy = Math.max(mn[1] - p.y, 0, p.y - mx[1]);

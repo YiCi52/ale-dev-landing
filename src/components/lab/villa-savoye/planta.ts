@@ -90,3 +90,101 @@ export function cajasNobile(yMin: number, yMax: number): Array<[number[], number
   }
   return out;
 }
+
+/*
+  ── EL RESTO DE LA CASA, para que los verificadores la vean ────────────────
+
+  El chequeo del recorrido solo miraba los tabiques del nobile y las fachadas,
+  y daba "0 colisiones" mientras la cámara atravesaba la herradura de la
+  planta baja y salía por la losa de cubierta. Tercera vez que el mismo error
+  aparece: un verificador que mira un subconjunto reporta cero y no significa
+  nada. Todo lo que ocupa espacio vive acá.
+*/
+
+/** Alturas de referencia (deben coincidir con villaModel). */
+export const H_PILOTIS = 3.3;
+export const H_BANDA_INF = 0.55;
+export const H_VENTANA = 1.2;
+export const H_BANDA_SUP = 1.5;
+export const H_VOLUMEN = H_BANDA_INF + H_VENTANA + H_BANDA_SUP;
+export const Y_LOSA = H_PILOTIS + 0.15;
+export const Y_TECHO = H_PILOTIS + H_VOLUMEN;
+
+/*
+  El VACÍO de la losa del nobile por donde sube la rampa. Estaba en las
+  coordenadas de la rampa vieja (x 1.0…3.4) y por eso la cámara salía por el
+  piso: subía la rampa y se estrellaba contra la losa.
+*/
+export const VACIO_RAMPA = { x0: -1.5, x1: 0.1, z0: -7.0, z1: 4.78 };
+
+/** Planta baja: la herradura acristalada + el bloque recto de servicio. */
+export const H_RDC = H_PILOTIS - 0.2;
+/*
+  La herradura lleva PUERTA. Sin ella el vestíbulo es una vitrina cerrada y
+  la promenade entra atravesando el vidrio — que es literalmente lo que
+  pasaba. El hueco mira al sur, que es por donde se llega desde el jardín.
+*/
+export const HERRADURA = {
+  cx: 0.3, cz: 1.0, r: 6.5,
+  arcIni: Math.PI * 0.62, arcLen: Math.PI * 1.62,
+  /** ángulos (rad) del hueco de entrada, dentro del arco */
+  puerta: [5.95, 6.35] as [number, number],
+};
+export const BLOQUE_SERVICIO = { x: -6.1, z: -3.6, w: 5.2, d: 6.4 };
+
+/** Paneles de la losa de cubierta: la huella menos los dos vacíos y el hueco de la rampa. */
+export const LOSA: Array<[number, number, number, number]> = [
+  // La banda de la RAMPA (x −1.5…0.1) queda ABIERTA AL CIELO en todo su
+  // largo: los tramos C y D son exteriores, como en la casa real. Antes solo
+  // se abría el trozo norte y la cámara salía por el techo a mitad de subida.
+  [-9.5, -1.5, -10.625, -4.57], // norte-oeste
+  [0.1, 9.5, -10.625, -4.57], // norte-este
+  [-1.5, 0.1, -10.625, -7.0], // norte-centro, arriba del arranque de la rampa
+  [-9.5, -1.5, 4.78, 10.625], // sur-oeste, sobre la cocina
+  [0.1, 9.5, 4.78, 10.625], // sur-este, sobre la salle
+  [-1.5, 0.1, 4.78, 10.625], // sur-centro, donde la rampa ya termino
+  [-9.5, -1.5, -4.57, 2.4], // centro-oeste
+  [0.1, 1.4, -4.57, 2.4], // centro-este, junto a la rampa
+  [-6.35, -1.5, 2.4, 4.78], // centro-oeste-norte, al lado del vacio chico
+  [0.1, 1.4, 2.4, 4.78],
+];
+
+/** TODO lo que un recorrido puede atravesar, como cajas [min,max] con nombre. */
+export function cajasTodas(): Array<[string, number[], number[]]> {
+  const T_MURO = 0.3;
+  const out: Array<[string, number[], number[]]> = [];
+  for (const [mn, mx] of cajasNobile(Y_LOSA, Y_TECHO)) out.push(["tabique nobile", mn, mx]);
+
+  const bandas: Array<[string, number, number]> = [
+    ["inf", H_PILOTIS, H_PILOTIS + H_BANDA_INF],
+    ["sup", H_PILOTIS + H_BANDA_INF + H_VENTANA, Y_TECHO],
+  ];
+  for (const [n, y0, y1] of bandas) {
+    out.push([`fachada +z ${n}`, [-W / 2, y0, D / 2 - T_MURO], [W / 2, y1, D / 2]]);
+    out.push([`fachada -z ${n}`, [-W / 2, y0, -D / 2], [W / 2, y1, -D / 2 + T_MURO]]);
+    out.push([`fachada +x ${n}`, [W / 2 - T_MURO, y0, -D / 2], [W / 2, y1, D / 2]]);
+    out.push([`fachada -x ${n}`, [-W / 2, y0, -D / 2], [-W / 2 + T_MURO, y1, D / 2]]);
+  }
+
+  // losa del nobile (el piso: la cámara no puede atravesarlo desde abajo)
+  // la losa del nobile, en paneles alrededor del vacío de la rampa
+  const v = VACIO_RAMPA;
+  out.push(["losa nobile oeste", [-W / 2, H_PILOTIS, -D / 2], [v.x0, Y_LOSA, D / 2]]);
+  out.push(["losa nobile este", [v.x1, H_PILOTIS, -D / 2], [W / 2, Y_LOSA, D / 2]]);
+  out.push(["losa nobile norte", [v.x0, H_PILOTIS, -D / 2], [v.x1, Y_LOSA, v.z0]]);
+  out.push(["losa nobile sur", [v.x0, H_PILOTIS, v.z1], [v.x1, Y_LOSA, D / 2]]);
+
+  // planta baja: el bloque de servicio (la herradura se chequea radialmente)
+  const b = BLOQUE_SERVICIO;
+  out.push(["bloque de servicio", [b.x - b.w / 2, 0, b.z - b.d / 2], [b.x + b.w / 2, H_RDC, b.z + b.d / 2]]);
+
+  // cubierta
+  for (const [x0, x1, z0, z1] of LOSA)
+    out.push(["losa de cubierta", [x0, Y_TECHO, z0], [x1, Y_TECHO + 0.4, z1]]);
+  const A = 0.22;
+  out.push(["antepecho +z", [-W / 2, Y_TECHO, D / 2 - A], [W / 2, Y_TECHO + 1.25, D / 2]]);
+  out.push(["antepecho -z", [-W / 2, Y_TECHO, -D / 2], [W / 2, Y_TECHO + 1.25, -D / 2 + A]]);
+  out.push(["antepecho +x", [W / 2 - A, Y_TECHO, -D / 2], [W / 2, Y_TECHO + 1.25, D / 2]]);
+  out.push(["antepecho -x", [-W / 2, Y_TECHO, -D / 2], [-W / 2 + A, Y_TECHO + 1.25, D / 2]]);
+  return out;
+}

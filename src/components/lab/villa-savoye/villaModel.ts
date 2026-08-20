@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { CRUJIA, D, T_TABIQUE, TABIQUES, VOLADIZO, W, tramosSolidos } from "./planta";
+import { CRUJIA, D, HERRADURA, LOSA, T_TABIQUE, TABIQUES, VOLADIZO, W, tramosSolidos } from "./planta";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
 /*
@@ -239,31 +239,39 @@ export function buildVilla(): VillaBuild {
   */
   const LIFT = 2.6; // cuánto se levanta el cuerpo sobre los pilotis en el paso 1
   const H_RDC = H_PILOTIS - 0.2;
-  const R_HERRADURA = 6.5; // medido en el plano: el arco barre ~14 m de ancho
-  // La abertura mira al NOROESTE (−x, −z), que es donde encaja el bloque recto
-  const ARC_INI = Math.PI * 0.62;
-  const ARC_LEN = Math.PI * 1.62;
-  const rdc = mesh(
-    g(new THREE.CylinderGeometry(R_HERRADURA, R_HERRADURA, H_RDC, 56, 1, true, ARC_INI, ARC_LEN)),
-    matVidrio,
-    0.3,
-    H_RDC / 2,
-    1.0,
-    [{ step: 1, delta: up(LIFT) }],
-  );
-  // montantes verticales cada ~1.4 m de arco, HIJOS del vidrio (heredan el lift)
+  /*
+    La herradura va en DOS tramos porque lleva PUERTA: sin el hueco, el
+    vestíbulo es una vitrina cerrada y la promenade entra atravesando el
+    vidrio — que es exactamente lo que pasaba. Los ángulos salen de ./planta.
+  */
+  const { r: R_HERRADURA, arcIni, arcLen, puerta } = HERRADURA;
+  const tramos: Array<[number, number]> = [
+    [arcIni, puerta[0]],
+    [puerta[1], arcIni + arcLen],
+  ];
   const montGeo = box(0.07, H_RDC, 0.12);
-  const N_MONT = Math.round((R_HERRADURA * ARC_LEN) / 1.4);
-  for (let k = 0; k <= N_MONT; k++) {
-    const th = ARC_INI + (ARC_LEN * k) / N_MONT;
-    const mont = new THREE.Mesh(montGeo, matVerde);
-    mont.position.set(R_HERRADURA * Math.sin(th), 0, R_HERRADURA * Math.cos(th));
-    mont.rotation.y = th;
-    mont.castShadow = true;
-    mont.receiveShadow = true;
-    rdc.add(mont);
+  for (const [tIni, tFin] of tramos) {
+    const largo = tFin - tIni;
+    if (largo <= 0.01) continue;
+    const tramo = mesh(
+      g(new THREE.CylinderGeometry(R_HERRADURA, R_HERRADURA, H_RDC, 48, 1, true, tIni, largo)),
+      matVidrio,
+      HERRADURA.cx,
+      H_RDC / 2,
+      HERRADURA.cz,
+      [{ step: 1, delta: up(LIFT) }],
+    );
+    const n = Math.max(1, Math.round((R_HERRADURA * largo) / 1.4));
+    for (let k = 0; k <= n; k++) {
+      const th = tIni + (largo * k) / n;
+      const mont = new THREE.Mesh(montGeo, matVerde);
+      mont.position.set(R_HERRADURA * Math.sin(th), 0, R_HERRADURA * Math.cos(th));
+      mont.rotation.y = th;
+      mont.castShadow = true;
+      tramo.add(mont);
+    }
+    add(tramo, 1);
   }
-  add(rdc, 1);
 
   /*
     El bloque de servicio: lingerie, dos dormitorios y el wc. En el plano es
@@ -509,15 +517,6 @@ export function buildVilla(): VillaBuild {
   void VIDE_CHICO;
   void HUECO_RAMPA; // documentan los huecos; los paneles de abajo los rodean
 
-  const LOSA: Array<[number, number, number, number]> = [
-    // [x0, x1, z0, z1]
-    [-9.5, -1.5, -10.625, -4.57], // norte-oeste
-    [0.1, 9.5, -10.625, -4.57], // norte-este
-    [-1.5, 0.1, -10.625, -7.0], // norte-centro (deja el hueco de la rampa)
-    [-9.5, 9.5, 4.67, 10.625], // sur, sobre la salle y la cocina
-    [-9.5, 1.4, -4.57, 2.4], // centro-oeste
-    [-6.35, 1.4, 2.4, 4.67], // centro-oeste-norte, al lado del vacío chico
-  ];
   for (const [x0, x1, z0, z1] of LOSA)
     techoPanel(x1 - x0, z1 - z0, (x0 + x1) / 2, (z0 + z1) / 2);
 
