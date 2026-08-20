@@ -37,9 +37,20 @@ const VERDE_RDC = 0x3f5c48; // el verde real de la planta baja de la Savoye
 const VIDRIO = 0x2e3d3a;
 const SUELO = 0xdcddcc; // salvia claro: separa la casa blanca sin robar protagonismo
 
-// Volumen principal (piano nobile)
-const W = 20; // x
-const D = 20; // z
+/*
+  Volumen principal (piano nobile) — HUELLA REAL, ver PLANTA.md §1.
+
+  La casa NO es un cuadrado. Es un rectangulo de 19.0 x 21.25: una trama de
+  4x4 vanos de 4.75 m (sistema Dom-ino) con voladizos de 1.125 m en el eje Z.
+  Hasta el 20-ago esto era un cuadrado de 20x20 estilizado "a ojo", y toda la
+  planta que se le retrofiteo encima heredaba el error.
+
+  El origen sigue en el centro: X va de -9.5 a +9.5, Z de -10.625 a +10.625.
+*/
+const CRUJIA = 4.75;
+const VOLADIZO = 1.125;
+const W = CRUJIA * 4; // 19.0 en x
+const D = CRUJIA * 4 + VOLADIZO * 2; // 21.25 en z
 const H_PILOTIS = 3.3;
 const H_BANDA_INF = 0.55;
 const H_VENTANA = 1.2;
