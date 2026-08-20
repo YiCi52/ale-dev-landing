@@ -421,6 +421,31 @@ export function buildVilla(): VillaBuild {
   const yMuro = yLosaPiso + 0.15 + H_MURO / 2;
   const montCintaGeo = box(0.06, H_VENTANA, 0.1); // montante de carpintería (vidriera Y cinta)
 
+  /*
+    JAMBAS. Un hueco sin marco se lee como un agujero en un muro, no como una
+    puerta — Alejandro reportó "sigue sin haber puertas" mirando el render, y
+    tenía razón: los vanos existían pero nada los dibujaba. Dos pilastras de
+    carpintería a cada lado y un dintel arriba bastan para que el ojo los lea.
+  */
+  const jambaGeo = box(T_TABIQUE * 1.25, H_MURO, 0.11);
+  const dintelGeo = box(T_TABIQUE * 1.25, 0.1, 0.95);
+  for (const t of TABIQUES) {
+    for (const [p0, p1] of t.puertas ?? []) {
+      for (const borde of [p0, p1]) {
+        const [jx, jz] = t.eje === "x" ? [t.v, borde] : [borde, t.v];
+        const j = mesh(jambaGeo, matCarpinteria, jx, yMuro, jz, losaOffsets);
+        j.rotation.y = t.eje === "x" ? 0 : Math.PI / 2;
+        add(j, 3);
+      }
+      const centro = (p0 + p1) / 2;
+      const [dx2, dz2] = t.eje === "x" ? [t.v, centro] : [centro, t.v];
+      const dintel = mesh(dintelGeo, matCarpinteria, dx2, yMuro + H_MURO / 2 - 0.05, dz2, losaOffsets);
+      dintel.rotation.y = t.eje === "x" ? 0 : Math.PI / 2;
+      dintel.scale.z = (p1 - p0) / 0.95;
+      add(dintel, 3);
+    }
+  }
+
   for (const t of TABIQUES) {
     for (const [u, w] of tramosSolidos(t.a, t.b, t.puertas)) {
       const largo = w - u;
@@ -478,27 +503,42 @@ export function buildVilla(): VillaBuild {
     const bs = mesh(bandaSupGeo, matBlanco, lado.dx, yBandaSup, lado.dz, liftear([{ step: 5, delta: fan }]));
     bs.rotation.y = lado.rotY;
     add(bs, 5);
-    // 4b (obs. de Alejandro): en la Savoye real la cinta de los lados de la
-    // TERRAZA es ABERTURA sin vidrio — aquí +z (frente) y +x (derecha).
-    // Solo −x y −z (el salón, las cintas que el tour recorre por dentro)
-    // llevan vidrio: de noche brillan ESAS y las de la terraza no.
-    const esTerraza = lado.dz > 0 || lado.dx > 0;
-    if (!esTerraza) {
-      const ventanaGeo = box(lado.largo - 0.5, H_VENTANA, T_MURO * 0.5);
-      const v = mesh(ventanaGeo, matVidrio, lado.dx, yVentana, lado.dz, liftear([{ step: 4, delta: float }]));
-      v.rotation.y = lado.rotY;
-      // carpintería café oscuro con montantes regulares (ref savoye-01):
-      // hijos del vidrio — flotan con la cinta en el paso 4
-      const nMont = Math.floor((lado.largo - 0.5) / 1.15);
-      for (let k = 0; k <= nMont; k++) {
-        const mx = -(lado.largo - 0.5) / 2 + ((lado.largo - 0.5) * k) / nMont;
-        const mont = new THREE.Mesh(montCintaGeo, matCarpinteria);
-        mont.position.set(mx, 0, 0);
-        mont.castShadow = true;
-        v.add(mont);
-      }
-      add(v, 4);
+    /*
+      LA CINTA DA LA VUELTA COMPLETA. Antes solo dos fachadas llevaban vidrio:
+      una condición vieja excluía el frente y el lado derecho, de cuando la
+      terraza estaba ahí. Con la planta nueva la terraza es interior, y el
+      resultado era que desde medio ángulo NO SE VEÍA NINGUNA VENTANA — lo
+      reportó Alejandro mirando el render de noche.
+
+      La fenêtre en longueur es el punto 4 de Le Corbusier: su gracia es que
+      es CONTINUA, corre de esquina a esquina y no se interrumpe. Sin eso, el
+      punto no se lee.
+    */
+    const largoCinta = lado.largo - 0.5;
+    const v = mesh(box(largoCinta, H_VENTANA, T_MURO * 0.5), matVidrio, lado.dx, yVentana, lado.dz, liftear([{ step: 4, delta: float }]));
+    v.rotation.y = lado.rotY;
+
+    /*
+      El MARCO — lo que hace que se lea como ventana y no como una lámina de
+      color flotando. Dos travesaños de carpintería, arriba y abajo, más los
+      montantes verticales. De noche, sin esto, la cinta es una banda naranja
+      sin dibujo.
+    */
+    const travGeo = box(largoCinta, 0.09, T_MURO * 0.62);
+    for (const sy of [-1, 1]) {
+      const trav = new THREE.Mesh(travGeo, matCarpinteria);
+      trav.position.set(0, (sy * (H_VENTANA - 0.09)) / 2, 0);
+      trav.castShadow = true;
+      v.add(trav);
     }
+    const nMont = Math.floor(largoCinta / 1.15);
+    for (let k = 0; k <= nMont; k++) {
+      const mont = new THREE.Mesh(montCintaGeo, matCarpinteria);
+      mont.position.set(-largoCinta / 2 + (largoCinta * k) / nMont, 0, 0);
+      mont.castShadow = true;
+      v.add(mont);
+    }
+    add(v, 4);
   }
 
   // ── Capa 2 · CUBIERTA-JARDÍN: losa de techo + antepechos + solárium curvo

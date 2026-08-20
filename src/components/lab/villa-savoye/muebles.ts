@@ -36,31 +36,41 @@ type Pieza = { archivo: string; x: number; y: number; z: number; rotY: number; o
 // Amoblado por HABITACIÓN sobre la planta real, minimalista (un objeto por
 // superficie). El salón vive al oeste de la vidriera; la terraza abierta al
 // cielo recibe el estar exterior y las jardineras — como en la casa real.
+/*
+  PURGA DE TIPOLOGÍA (20-ago). Alejandro, viendo el render: "objetos genéricos
+  como esa maceta horrible de madera en vez de hacerlo fiel". Tenía razón y el
+  análisis por ambientes ya lo había medido:
+
+  · planter_box_02 (×4) — cajones de huerta de madera envejecida, de una
+    colección de galpón. En una casa de Le Corbusier las jardineras son de
+    HORMIGÓN BLANCO EMPOTRADO (verificado en las fotos del jardín suspendido).
+  · potted_plant_04 (×3) — mide 17 × 27 cm REALES. Es una macetita de
+    escritorio suelta en un salón de 14 × 6 m: no lee como planta, lee como
+    basura fuera de escala. Es lo que se veía "flotando".
+  · dining_table + dining_chair_02 (×3) — la mesa trae un MANTEL A CUADROS en
+    una sola malla texturizada, imposible de quitar, y las sillas son de cuero
+    capitoneado. Nada que ver con esta casa.
+  · outdoor_table_chair_set_01 — además de ajeno, la cámara lo atravesaba con
+    holgura NEGATIVA de −0.89 m.
+  · brass_vase_02 — la cámara le pasaba por el centro (holgura 0.00).
+  · modern_coffee_table_01 — redundante con la 02, que es la cuadrada.
+
+  Lo que queda es lo defendible mientras conseguimos las piezas reales: LC2 y
+  LC4 de Le Corbusier/Perriand, que son las que muestran las fotos. Prefiero
+  un salón con tres piezas correctas que uno lleno de objetos de catálogo.
+*/
 const PIEZAS: Pieza[] = [
   // ── SALÓN · grupo de estar contra la cinta oeste
   { archivo: "mid_century_lounge_chair", x: -8.3, y: Y_NOBILE, z: 1.2, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
   { archivo: "mid_century_lounge_chair", x: -8.3, y: Y_NOBILE, z: -1.4, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
-  { archivo: "modern_coffee_table_01", x: -6.9, y: Y_NOBILE, z: -0.1, rotY: 0, offsets: OFFSETS_NOBILE },
   { archivo: "wooden_bowl_01", x: -6.7, y: Y_NOBILE + 0.45, z: -0.45, rotY: 0.7, offsets: OFFSETS_NOBILE },
   { archivo: "modern_arm_chair_01", x: -6.2, y: Y_NOBILE, z: 2.4, rotY: -Math.PI * 0.78, offsets: OFFSETS_NOBILE },
   { archivo: "modern_coffee_table_02", x: -5.6, y: Y_NOBILE, z: 3.35, rotY: 0.4, offsets: OFFSETS_NOBILE },
-  { archivo: "brass_vase_02", x: -9.0, y: Y_NOBILE, z: 3.4, rotY: 0, offsets: OFFSETS_NOBILE },
-  { archivo: "potted_plant_04", x: -8.9, y: Y_NOBILE, z: 7.6, rotY: 0.4, offsets: OFFSETS_NOBILE },
   // ── SALÓN · comedor al noreste, junto a la puerta de la franja norte
-  { archivo: "dining_table", x: -2.4, y: Y_NOBILE, z: -1.6, rotY: 0, offsets: OFFSETS_NOBILE },
-  { archivo: "dining_chair_02", x: -1.5, y: Y_NOBILE, z: -0.9, rotY: -Math.PI * 0.7, offsets: OFFSETS_NOBILE },
-  { archivo: "dining_chair_02", x: -3.3, y: Y_NOBILE, z: -0.9, rotY: Math.PI * 0.7, offsets: OFFSETS_NOBILE },
-  { archivo: "dining_chair_02", x: -2.4, y: Y_NOBILE, z: -2.7, rotY: 0, offsets: OFFSETS_NOBILE },
   { archivo: "ceramic_vase_01", x: -2.4, y: Y_NOBILE + 0.75, z: -1.6, rotY: 0, offsets: OFFSETS_NOBILE },
   // ── TERRAZA (abierta al cielo, misma losa del nobile: viaja en el cajón)
-  { archivo: "outdoor_table_chair_set_01", x: 6.4, y: Y_NOBILE, z: 4.4, rotY: -0.4, offsets: OFFSETS_NOBILE },
-  { archivo: "planter_box_02", x: 8.6, y: Y_NOBILE, z: 8.3, rotY: Math.PI / 2, offsets: OFFSETS_NOBILE },
-  { archivo: "planter_box_02", x: 4.6, y: Y_NOBILE, z: 8.9, rotY: 0, offsets: OFFSETS_NOBILE },
   // ── TOIT-JARDIN: jardinera + verde junto al solárium
-  { archivo: "planter_box_02", x: -7.5, y: Y_TECHO, z: 8.6, rotY: 0, offsets: OFFSETS_TECHO },
-  { archivo: "potted_plant_04", x: -3.0, y: Y_TECHO, z: 1.5, rotY: 1.2, offsets: OFFSETS_TECHO },
   // ── PLANTA BAJA: una maceta en la explanada
-  { archivo: "potted_plant_04", x: -7.0, y: Y_SUELO, z: 6.0, rotY: 2.1, offsets: SIN_OFFSETS },
 ];
 
 export type Muebles = { dispose: () => void };
