@@ -149,6 +149,15 @@ export function buildVilla(): VillaBuild {
   matVidrio.transparent = true;
   matVidrio.opacity = 0.42;
   matVidrio.side = THREE.DoubleSide;
+  /*
+    POLYCHROMIE ARCHITECTURALE — la casa NO es blanca por dentro. Las fotos
+    del salón muestran un paño entero en rosa terracota y otro en azul junto
+    a la vidriera (ver PLANTA.md, "MATERIA Y COLOR"). El modelo era hueso en
+    todo, y de noche eso da un vacío gris uniforme: es lo que se ve en el
+    video del 20-ago. Dos materiales, cero coste de assets.
+  */
+  const matRosa = std(0xc4705a, 0.92);
+  const matAzul = std(0x4a6b7c, 0.92);
   const matVerde = std(VERDE_RDC, 0.8);
   matVerde.side = THREE.DoubleSide;
   const matSuelo = std(SUELO, 1);
@@ -418,7 +427,13 @@ export function buildVilla(): VillaBuild {
       const centro = (u + w) / 2;
       const [dx, dz] = t.eje === "x" ? [t.v, centro] : [centro, t.v];
       const geo = t.eje === "x" ? box(T_TABIQUE, H_MURO, largo) : box(largo, H_MURO, T_TABIQUE);
-      const m = mesh(geo, t.vidrio ? matVidrio : matBlanco, dx, yMuro, dz, losaOffsets);
+      const pintura =
+        t.nombre === "cuisine ↔ salle"
+          ? matRosa // el paño rosa del salón: es el muro que se ve de frente al entrar
+          : t.nombre === "muro sur del corredor"
+            ? matAzul // el azul, junto al plano de la vidriera
+            : matBlanco;
+      const m = mesh(geo, t.vidrio ? matVidrio : pintura, dx, yMuro, dz, losaOffsets);
       m.name = t.nombre;
       if (t.vidrio) {
         // montantes de carpintería cada ~1.1 m, hijos del vidrio

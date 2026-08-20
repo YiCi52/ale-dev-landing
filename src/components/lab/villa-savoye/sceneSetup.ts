@@ -274,6 +274,25 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0xdcd8cd, 0.55);
   scene.add(hemi);
+  /*
+    Luces interiores — solo de noche. El modo noche se pensó para el desarme
+    visto desde afuera (la casa como lámpara) y adentro no había NINGUNA
+    fuente: la promenade recorría un vacío gris uniforme. Se ven en el video
+    del 20-ago. Son tres puntos cálidos baratos, sin sombras, colocados por
+    recinto según PLANTA.md §2: salle, terraza y la llegada de la rampa.
+  */
+  const LUCES_INTERIOR: Array<[number, number, number]> = [
+    [2.5, 5.6, 7.6], // salle
+    [5.0, 5.6, 0.5], // terraza / jardín suspendido
+    [-0.7, 5.6, 2.0], // llegada de la rampa
+  ];
+  const lamparas = LUCES_INTERIOR.map(([x, y, z]) => {
+    const l = new THREE.PointLight(0xffc98a, 0, 16, 2);
+    l.position.set(x, y, z);
+    scene.add(l);
+    return l;
+  });
+
   const sol = new THREE.DirectionalLight(0xfff4e4, 2.4);
   sol.position.set(26, 34, 16);
   sol.castShadow = true;
@@ -518,7 +537,16 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
   // ÚNICO AgX del composer reproduce exacto el cielo de la ronda 1b:
   // AgX(exp·2.5·stored) == AgX(exp·hdr) para hdr<2.5. Noche: 2.5·0.03.
   const DIA = { exp: 1.4, bg: 2.5, env: 0.85, solC: new THREE.Color(0xfff4e4), solI: 2.4, hemiI: 0.55, emC: new THREE.Color(0x000000), emI: 0, op: 0.42 };
-  const NOCHE = { exp: 1.15, bg: 0.075, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 1.15, op: 0.85 };
+  /*
+  emI baja de 1.15 a 0.35 y op de 0.85 a 0.55 (20-ago, tras revisar el video
+  fotograma por fotograma con Alejandro). El vidrio hacía DOS trabajos con un
+  solo material: desde afuera la lámina emisiva naranja es el efecto "la casa
+  como lámpara", que funciona; desde adentro, a un metro, se leía como cartón
+  opaco iluminado y llenaba media pantalla. Gana el interior: el efecto de
+  lámpara sigue leyéndose de lejos con la mitad de emisivo, y de cerca el
+  vidrio vuelve a ser vidrio.
+*/
+const NOCHE = { exp: 1.15, bg: 0.075, env: 0.12, solC: new THREE.Color(0x9db4e0), solI: 0.5, hemiI: 0.1, emC: new THREE.Color(0xffb163), emI: 0.35, op: 0.55 };
   const OCASO = new THREE.Color(0xff9e5e); // el sol pasa por naranja a mitad de camino
   const BLANCO = new THREE.Color(0xffffff);
   const NOCHE_ARBOLES = new THREE.Color(0x1c2333);
@@ -536,6 +564,9 @@ export function createVillaStage(host: HTMLElement, fov = 34, onDirty?: () => vo
     sol.color.copy(tmpC);
     sol.intensity = L(DIA.solI, NOCHE.solI, t);
     hemi.intensity = L(DIA.hemiI, NOCHE.hemiI, t);
+    // las lámparas solo aportan de noche, y entran tarde en la transición
+    const luzInt = 9 * THREE.MathUtils.smoothstep(t, 0.45, 1);
+    for (const l of lamparas) l.intensity = luzInt;
     const v = villa.materials.vidrio;
     v.emissive.lerpColors(DIA.emC, NOCHE.emC, t);
     // la cinta se enciende tarde (t>0.55): primero oscurece, luego la lámpara
