@@ -60,16 +60,6 @@ const casos: ReadonlyArray<Caso> = [
     img: "/casos/mhinterior/shot-1-hero.png",
     alt: "Hero del sitio MH Interior Design con carrusel de proyectos",
   },
-  {
-    slug: "macrolift",
-    eyebrow: "Capacidad técnica previa",
-    titulo: "MacroLift",
-    resultado:
-      "Aplicación de cálculo nutricional: lógica, estado y despliegue propios.",
-    meta: "Proyecto propio · 2025",
-    img: "/casos/macrolift/shot-1.png",
-    alt: "Interfaz de la aplicación MacroLift",
-  },
 ];
 
 export function BarajaCasos() {

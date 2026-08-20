@@ -13,7 +13,6 @@ respaldo. Eso se entrega de serie, no como extra.
 - [Inicio](/): qué hace el estudio y para quién
 - [Sobre mí](/sobre-mi): una persona, no una agencia — proceso, criterios y forma de acompañar
 - [MH Interior Design](/trabajo/mh-interior): caso de cliente entregado y en producción
-- [MacroLift](/trabajo/macrolift): pieza propia
 - [Privacidad](/privacidad): tratamiento de datos (Ley 1581 de Colombia)
 
 ## Trabajo verificable

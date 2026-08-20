@@ -7,7 +7,7 @@ import ScrollFloat from "@/components/ScrollFloat";
   Caso #1 del nicho — MH Interior Design (Maria Hernández, Bogotá).
   Sitio de portafolio bilingüe para diseñadora de interiores, entregado
   y en producción 2026-07. Reemplaza el placeholder "en construcción"
-  que vivía en CasoMacroLift.
+  que vivía en el caso anterior.
 */
 
 const decisiones = [

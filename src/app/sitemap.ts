@@ -29,7 +29,6 @@ const ROUTES: readonly Entry[] = [
   { path: "", lastModified: "2026-08-03", changeFrequency: "monthly", priority: 1 },
   // Los casos llevan la prueba de trabajo: prioridad alta, después de la home.
   { path: "/trabajo/mh-interior", lastModified: "2026-08-02", changeFrequency: "monthly", priority: 0.9 },
-  { path: "/trabajo/macrolift", lastModified: "2026-08-02", changeFrequency: "monthly", priority: 0.8 },
   { path: "/sobre-mi", lastModified: "2026-08-02", changeFrequency: "monthly", priority: 0.7 },
   { path: "/privacidad", lastModified: "2026-06-19", changeFrequency: "yearly", priority: 0.3 },
   /*
