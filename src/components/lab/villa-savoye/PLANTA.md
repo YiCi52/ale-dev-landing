@@ -170,24 +170,27 @@ libre hecha visible, y hoy no lo tenemos.
 ~37% de la banda — coincide con la proporción medida en la elevación FLC 19704.
 (Corrige un dato erróneo que circuló en el análisis del 19-ago, donde se dijo 0.30 m.)
 
-## La planta baja NO es un cilindro (corrección de Alejandro, 20-ago)
+## La planta baja: cilindro Y plano, no uno u otro (precisado 20-ago)
 
-Nuestro `villaModel.ts` la arma como un **tambor cilíndrico de radio 4.3** con 16 montantes
-en arco. Las fotos de aproximación (Antoine Gravier / Unsplash, vía ArchEyes) muestran otra
-cosa:
+⚠️ **Corrección de una corrección.** Primero escribí "no es un cilindro" y era demasiado
+absoluto — Alejandro lo frenó con la foto de la entrada, donde el **vidrio curvo con
+montantes verticales** envolviendo el vestíbulo se ve sin lugar a dudas.
 
-- La **fachada de llegada es RECTA**, con una **persiana de lamas horizontales** ocupando
-  el centro. Un plano, no una curva.
-- El **verde solo se curva en los EXTREMOS**, envolviendo las esquinas y perdiéndose hacia
-  atrás.
-- La curva grande vive en el **lado de la entrada** (la que sigue el radio de giro del auto),
-  no en el que se ve al llegar.
+La forma real del volumen bajo tiene **las dos cosas**:
 
-⇒ La forma correcta en planta es un **rectángulo con un lado curvo**, no un cilindro. Desde
-la fachada de llegada tiene que leerse plano.
+- **Lado de la ENTRADA: CURVO Y ACRISTALADO.** El tambor de vidrio con montantes
+  verticales, siguiendo el radio de giro del automóvil. Es el gesto que da origen a toda
+  la planta baja. **Esto el modelo ya lo tiene y NO se toca.**
+- **Lado de LLEGADA (el que se ve al aproximarse): RECTO.** Un plano con una **persiana de
+  lamas horizontales** ocupando el centro, y el verde curvándose solo al doblar las
+  esquinas. **Esto es lo que falta.**
+
+⇒ En planta: **un cuerpo con un lado curvo acristalado y el opuesto recto con persiana.**
+El error del modelo no es tener cilindro; es que el cilindro se lo come todo y no existe
+la cara recta.
 
 **Lo que SÍ está bien** y conviene no tocar: el verde del volumen bajo (`VERDE_RDC`
-0x3f5c48) y la carpintería café de la cinta. Se verificaron contra las mismas fotos.
+0x3f5c48), la carpintería café de la cinta, y el tambor de vidrio con sus montantes.
 
 ## 7. Verificación contra fotos — paso formal, no opcional
 
