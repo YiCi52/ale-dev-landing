@@ -8,6 +8,7 @@ import { FluidCursor } from "@/components/ui/FluidCursor";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 /*
   Castillo v2: Geist único (display+body) + Geist Mono (labels/índices).
@@ -89,6 +90,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        {/*
+          Analítica. Iba faltando desde el día 1 y se notó el 23-ago: el
+          formulario llevaba dos meses sin guardar un lead y no había forma
+          de saber cuánta gente lo intentó — sin analítica no existe la
+          pregunta "¿cuántos llegaron?", solo "¿cuántos escribieron?".
+
+          Vercel y no Google Analytics: sin cookies (no exige banner bajo la
+          Ley 1581), ~1 kB en vez de ~50, y el script y el beacon salen del
+          mismo origen (/_vercel/insights) así que el CSP los cubre con
+          'self' sin abrir un dominio nuevo a script-src ni a connect-src.
+        */}
+        <Analytics />
       </body>
     </html>
   );
