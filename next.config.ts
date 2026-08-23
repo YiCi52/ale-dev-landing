@@ -53,6 +53,17 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  /*
+    Inlinea el CSS crítico en el HTML en vez de servirlo como <link> que
+    bloquea el render. Medido el 22-ago-2026: eran dos hojas (12.8 kB + 2.6 kB)
+    costando 160ms y 310ms de render-blocking, y con el LCP ya arreglado eran
+    lo único que separaba del objetivo de Lighthouse ≥95.
+    El CSP de arriba ya contempla `style-src 'unsafe-inline'`, así que esto no
+    abre superficie nueva.
+  */
+  experimental: {
+    inlineCss: true,
+  },
   async headers() {
     return [
       {

@@ -1,11 +1,20 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { motion } from 'motion/react';
-import type { HTMLMotionProps } from 'motion/react';
+import type { HTMLAttributes } from 'react';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
-interface DecryptedTextProps extends HTMLMotionProps<'span'> {
+/*
+  Este componente NO usa una librería de motion, y es deliberado.
+  El efecto es un <span> + setInterval que reescribe caracteres: el wrapper de
+  `motion` no aportaba nada más que su peso. Como DecryptedText se usa en 6
+  componentes, esa librería (39.3 kB gz) viajaba en TODAS las rutas públicas
+  con el 78% del chunk sin ejecutar, mientras gsap ya se carga global vía
+  SmoothScroll — dos motores de animación en paralelo para esto.
+  Medido y confirmado el 22-ago-2026. No volver a meter esa librería acá.
+*/
+
+interface DecryptedTextProps extends HTMLAttributes<HTMLSpanElement> {
   text: string;
   speed?: number;
   maxIterations?: number;
@@ -369,7 +378,7 @@ export default function DecryptedText({
         : {};
 
   return (
-    <motion.span
+    <span
       ref={containerRef}
       className={`inline-block whitespace-pre-wrap ${parentClassName}`}
       {...animateProps}
@@ -388,6 +397,6 @@ export default function DecryptedText({
           );
         })}
       </span>
-    </motion.span>
+    </span>
   );
 }

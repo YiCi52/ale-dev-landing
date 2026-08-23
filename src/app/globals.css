@@ -146,20 +146,46 @@ html.lenis body {
   transition: outline-offset 150ms var(--ease-out-quart);
 }
 
-/* Hero entrance — fade-up secuencial al cargar */
+/* Hero entrance — slide-up secuencial al cargar.
+
+   ⚠️ El texto NO anima `opacity`, y es a propósito. Un elemento en
+   `opacity: 0` no cuenta como pintado para LCP: el párrafo del hero es el
+   nth-child(4), o sea 290ms de delay + 720ms de animación, y eso retenía el
+   Largest Contentful Paint ~2s en la primera visita — la única que mide
+   Lighthouse. Medido el 22-ago-2026: mobile 67/100 con
+   `elementRenderDelay = 2065ms de 2106ms` señalando exactamente este párrafo.
+
+   El movimiento vive solo en `transform`, que es compositor-friendly, no
+   dispara layout y no bloquea la métrica. El sello (primer hijo, decorativo
+   y demasiado pequeño para ser candidato a LCP) sí conserva su fade abajo.
+   Si alguien vuelve a meter `opacity` en este keyframe, el LCP se cae otra
+   vez — ver `_system/notas-sesion/2026-08-22`. */
 @keyframes hero-enter {
   from {
-    opacity: 0;
     transform: translateY(14px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes hero-enter-veil {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
 .hero-enter > * {
   animation: hero-enter 720ms var(--ease-out-expo) backwards;
+}
+/* Solo el sello: es decorativo y no compite por el LCP. */
+.hero-enter > *:first-child {
+  animation:
+    hero-enter 720ms var(--ease-out-expo) backwards,
+    hero-enter-veil 720ms var(--ease-out-expo) backwards;
 }
 .hero-enter > *:nth-child(1) { animation-delay: 0ms; }
 .hero-enter > *:nth-child(2) { animation-delay: 110ms; }
