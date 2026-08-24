@@ -19,8 +19,10 @@ import { useEffect, useRef } from "react";
     la página, no solo durante la narrativa).
 */
 
-const POOL = 12;
-const PASO_ONDA = 64;
+const POOL = 14;
+const PASO_ONDA = 48;
+/* fracción inferior del viewport que es agua en la narrativa; con --post
+   el agua crece, así que la zona interactiva también (se lee del wrapper) */
 const ZONA_AGUA = 0.3;
 
 function useOndas() {
@@ -43,7 +45,14 @@ function useOndas() {
     let ultimaY = -1;
 
     const onMove = (e: PointerEvent) => {
-      if (e.clientY < window.innerHeight * (1 - ZONA_AGUA)) return;
+      /* la línea de agua baja/sube con --post: tras la narrativa TODO es mar
+         y las ondas nacen en cualquier parte del viewport */
+      const post = parseFloat(
+        getComputedStyle(contenedor.closest(".luna") ?? document.body)
+          .getPropertyValue("--post") || "0",
+      );
+      const zona = ZONA_AGUA + (1 - ZONA_AGUA) * post;
+      if (e.clientY < window.innerHeight * (1 - zona)) return;
       if (Math.hypot(e.clientX - ultimaX, e.clientY - ultimaY) < PASO_ONDA) return;
       ultimaX = e.clientX;
       ultimaY = e.clientY;
@@ -74,7 +83,7 @@ export function LunaMar() {
       {/* estrellas tenues de página completa (más calladas que las del hero) */}
       <div className="luna-mar__estrellas" />
 
-      {/* la banda de agua respira con la marea */}
+      {/* la banda de agua — crece con --post hasta tragarse el fondo entero */}
       <div className="luna-mar__agua">
         <div className="luna-mar__marea">
           <Image
@@ -84,7 +93,22 @@ export function LunaMar() {
             sizes="100vw"
             className="luna-mar__base object-cover"
           />
-          {/* el reflejo LITERAL: la luna invertida, tenue, con su fase */}
+          {/* segunda capa a contracorriente: el agua se VE moverse */}
+          <div className="luna-mar__corriente">
+            <Image
+              src="/luna/agua-textura.jpg"
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+          </div>
+          {/*
+            el reflejo LITERAL de la luna — no una calcomanía: el disco
+            invertido se ROMPE en bandas horizontales (las franjas pintan
+            agua encima), los bordes se disuelven con máscara radial y todo
+            tiembla. Comparte fase (--sombra) y posición (--astro-x).
+          */}
           <div className="luna-mar__luna">
             <Image
               src="/luna/luna-llena.jpg"
@@ -94,8 +118,9 @@ export function LunaMar() {
               className="luna-astro__img object-cover"
             />
             <div className="luna-astro__sombra" />
+            <div className="luna-mar__rotura" />
           </div>
-          {/* el camino de luz se enciende con la historia */}
+          {/* el camino de luz se enciende con la historia y tiembla */}
           <div className="luna-reflejo">
             <Image
               src="/luna/reflejo-camino.jpg"

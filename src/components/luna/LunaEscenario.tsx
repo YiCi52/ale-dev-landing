@@ -45,6 +45,15 @@ export function LunaEscenario() {
     const medir = () => {
       pedido = false;
       setBeat(Math.round(progresoDe(escenario) * (BEATS.length - 1)));
+      /*
+        --post: cuánto se ha scrolleado MÁS ALLÁ de la narrativa (0..1 en
+        ~un viewport). El mar lo usa para tragarse el cielo: al salir de la
+        historia el agua crece hasta ocupar el fondo entero de la página.
+      */
+      const rect = escenario.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      const post = Math.min(1, Math.max(0, (-rect.top - total) / (window.innerHeight * 0.9)));
+      escenario.closest<HTMLElement>(".luna")?.style.setProperty("--post", post.toFixed(3));
     };
     const onScroll = () => {
       if (pedido) return;
@@ -116,14 +125,17 @@ export function LunaEscenario() {
             CASTILLO
           </p>
         </div>
-        <div className="luna-hero-capa absolute top-[18svh] inset-x-4 sm:inset-x-12">
+        {/* El titular es SOPORTE, no protagonista: bloque compacto arriba a
+            la izquierda (patrón StringTune "Master Your Skills") — el drama
+            del hero lo ponen la luna, el mar y el wordmark. */}
+        <div className="luna-hero-capa absolute top-[16svh] left-4 sm:left-12">
           <p className="luna-label mb-4">Castillo Studio — Bogotá</p>
-          {/* el ancho de medida va en el h1 (ch del display), no en el
-              contenedor: un ch del div base mide ~9px y encajona una
-              palabra por línea */}
-          <h1 className="luna-display max-w-[13ch]">
+          <h1 className="luna-hero-titulo max-w-[19ch]">
             Sitios que capturan clientes para estudios con criterio visual.
           </h1>
+          <p className="luna-label mt-5" style={{ color: "var(--luna-accent)" }}>
+            Scrollea — la luna cuenta el resto
+          </p>
         </div>
 
         {/* Texto del beat activo (re-montado por key = re-anima el revelado) */}

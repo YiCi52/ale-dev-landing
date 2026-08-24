@@ -43,17 +43,30 @@
     var(--luna-void-deep) 100%
   );
 }
+/* velo de lectura: cuando el agua ya es todo el fondo (--post), un velo de
+   vacío la asienta para que el contenido flote LEGIBLE encima — el mar se
+   sigue viendo, pero deja de competir con el texto */
+.luna-mar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--luna-void);
+  opacity: calc(0.48 * var(--post, 0));
+}
 .luna-mar__estrellas {
   position: absolute;
   inset: 0;
   background: url("/luna/estrellas.jpg") center / cover no-repeat;
-  opacity: 0.35;
+  /* el cielo se apaga a medida que el agua se traga el fondo (--post) */
+  opacity: calc(0.35 * (1 - var(--post, 0)));
 }
 .luna-mar__agua {
   position: absolute;
   inset-inline: 0;
   bottom: 0;
-  height: 30svh;
+  /* 30svh durante la narrativa → 100svh después: al salir de la historia
+     TODO el fondo de la página se convierte en agua (pedido 24-ago) */
+  height: calc(30svh + 72svh * var(--post, 0));
 }
 /* velo superior: funde el borde del agua con el vacío */
 .luna-mar__agua::after {
@@ -69,41 +82,83 @@
    para que el bob no descubra los bordes */
 .luna-mar__marea {
   position: absolute;
-  inset: -3% 0 -3% 0;
-  animation: luna-marea 8s ease-in-out infinite alternate;
+  inset: -22px 0;
+  animation: luna-marea 5.5s ease-in-out infinite alternate;
 }
 @keyframes luna-marea {
-  from { transform: translateY(0); }
-  to { transform: translateY(-8px); }
+  from { transform: translateY(0) scaleY(1); }
+  to { transform: translateY(-15px) scaleY(1.015); }
 }
 .luna-mar__base {
   mix-blend-mode: screen;
   opacity: 0.55;
 }
-/* el reflejo LITERAL de la luna: la misma foto, invertida y aplastada,
-   tenue y ondulada. Comparte --sombra (su fase) y --astro-x (su posición)
-   con la luna del cielo vía el wrapper. */
+/* segunda capa espejada a contracorriente: dos texturas cruzándose es lo
+   que hace que el agua se VEA viva, no solo que lo esté */
+.luna-mar__corriente {
+  position: absolute;
+  inset: 0 -6%;
+  mix-blend-mode: screen;
+  opacity: 0.3;
+  transform: scaleX(-1);
+  animation: luna-corriente 22s ease-in-out infinite alternate;
+}
+@keyframes luna-corriente {
+  from { transform: scaleX(-1) translateX(-2.5%); }
+  to { transform: scaleX(-1) translateX(2.5%); }
+}
+/* el reflejo LITERAL de la luna — la crítica del 24-ago fue "parece un png
+   puesto": la respuesta es que un reflejo real no es un disco limpio. El
+   disco invertido se aplasta fuerte, sus bordes se DISUELVEN con máscara
+   radial (adiós anillo duro) y las franjas de .luna-mar__rotura pintan agua
+   encima, rompiéndolo en bandas que tiemblan. Comparte fase (--sombra) y
+   posición (--astro-x) con la luna del cielo vía el wrapper. */
 .luna-mar__luna {
   position: absolute;
-  top: -4%;
+  top: 0;
   left: var(--astro-x, 50%);
   width: clamp(150px, 25vw, 320px);
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 50%;
-  transform: translateX(calc(-50% + var(--mx, 0) * 10px)) scale(1, -0.72);
-  opacity: 0.32;
-  filter: blur(2.5px);
+  transform: translateX(calc(-50% + var(--mx, 0) * 10px)) translateY(-16%)
+    scale(1, -0.55);
+  opacity: 0.38;
+  filter: blur(2px);
   mix-blend-mode: screen;
+  mask-image: radial-gradient(closest-side, #000 42%, transparent 74%);
   transition: left 1.8s cubic-bezier(0.45, 0, 0.2, 1);
+}
+/* las franjas que rompen el disco en agua: color del vacío sobre el blend
+   screen = franjas que APAGAN, y el desplazamiento vertical las hace nadar */
+.luna-mar__rotura {
+  position: absolute;
+  inset: -40px 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 5px,
+    var(--luna-void-deep) 5px 9px,
+    transparent 9px 17px,
+    var(--luna-void-deep) 17px 20px
+  );
+  animation: luna-rotura 6s linear infinite;
+}
+@keyframes luna-rotura {
+  to { transform: translateY(40px); }
 }
 
 .luna-reflejo {
   position: absolute;
   inset: 0;
   mix-blend-mode: screen;
-  opacity: var(--reflejo, 0.05);
+  /* pleno al cierre de la historia; se atenúa cuando hay contenido encima */
+  opacity: calc(var(--reflejo, 0.05) * (1 - 0.45 * var(--post, 0)));
   transition: opacity 1.6s ease;
+  animation: luna-camino-tiembla 4.5s ease-in-out infinite alternate;
+}
+@keyframes luna-camino-tiembla {
+  from { transform: translateY(0) scaleX(1); }
+  to { transform: translateY(-5px) scaleX(1.01); }
 }
 
 /* ————— Tipografía: masa por escala, no por bold (lección StringTune) ————— */
@@ -113,6 +168,19 @@
   font-size: clamp(2.6rem, 1.4rem + 6vw, 6.5rem);
   line-height: 0.95;
   letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* Titular del hero: compacto y arriba a la izquierda — la crítica del
+   24-ago ("horrible esa dirección de texto") era el display gigante de 4
+   líneas peleando con la escena. El titular acompaña; la luna, el mar y el
+   wordmark son el hero. */
+.luna-hero-titulo {
+  font-family: var(--font-geist), sans-serif;
+  font-weight: 300;
+  font-size: clamp(1.7rem, 1rem + 2.2vw, 3.1rem);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
 
@@ -322,26 +390,43 @@
    acá solo vive su aspecto. */
 .luna-onda {
   position: absolute;
-  width: 22px;
-  height: 22px;
-  margin: -11px 0 0 -11px;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--luna-halo) 55%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--luna-halo) 85%, transparent);
   opacity: 0;
   pointer-events: none;
-  transform: scale(0.3) scaleY(0.32);
+  transform: scale(0.3) scaleY(0.3);
+}
+/* doble anillo + destello central: el idioma inequívoco del agua (el humo
+   del fluido se retiró de /luna — veredicto de Alejandro: "es eso, humo") */
+.luna-onda::after {
+  content: "";
+  position: absolute;
+  inset: 24%;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--luna-halo) 50%, transparent);
+}
+.luna-onda::before {
+  content: "";
+  position: absolute;
+  inset: 44%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--luna-glow) 80%, transparent);
+  filter: blur(1px);
 }
 .luna-onda.is-viva {
-  animation: luna-onda-vida 1.5s cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
+  animation: luna-onda-vida 1.6s cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
 }
 @keyframes luna-onda-vida {
   0% {
-    opacity: 0.75;
-    transform: scale(0.3) scaleY(0.32);
+    opacity: 0.9;
+    transform: scale(0.3) scaleY(0.3);
   }
   100% {
     opacity: 0;
-    transform: scale(4.2) scaleY(0.32);
+    transform: scale(4.6) scaleY(0.3);
   }
 }
 /* la cola siempre viva — reutiliza el path .cat-tail del CatMascot */
@@ -456,6 +541,9 @@ html[data-luna-loader="play"] .luna-loader {
   .luna-nubes,
   .luna-onda.is-viva,
   .luna-mar__marea,
+  .luna-mar__corriente,
+  .luna-mar__rotura,
+  .luna-reflejo,
   .luna-gato.is-caminando > svg,
   .luna-gato .cat-tail {
     animation: none;
@@ -477,10 +565,7 @@ html[data-luna-loader="play"] .luna-loader {
   }
 }
 
-/* ————— La estela de agua del cursor (FluidCursor re-teñido) —————
-   En /luna la simulación de fluidos global se tiñe de luz lunar y se
-   ENMASCARA a la banda de agua: la ola luminosa solo existe donde hay mar.
-   El atributo lo pone FluidCursor.tsx cuando la ruta es /luna. */
-[data-fluido-luna] {
-  mask-image: linear-gradient(to bottom, transparent 55%, #000 76%);
-}
+/* (El experimento de re-teñir el FluidCursor como estela de agua se probó
+   y se descartó el mismo 24-ago: "era el mismo efecto anterior de humo, y
+   es eso, humo". En /luna el fluido está APAGADO; el agua habla con los
+   anillos y con su propio movimiento.) */
