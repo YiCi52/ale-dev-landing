@@ -5,43 +5,67 @@ import { useEffect, useRef, useState } from "react";
 import { CatMascot } from "@/components/ui";
 import { BEATS } from "./beats";
 import { useLunaCursor } from "./useLunaCursor";
+import { useGatoScrub, progresoDe } from "./useGatoScrub";
 
 /*
-  LunaEscenario — el corazón del rediseño (BRIEF §2 y §5).
+  LunaEscenario — el primer acto del rediseño (BRIEF §2 y §5).
 
-  Escenario sticky de pantalla completa + centinelas invisibles de 100svh:
-  el IO con banda central decide el beat activo y lo escribe como UN atributo
-  (data-beat). Todo lo visual —fase de la luna, halo, reflejo, posición del
-  gato— lo deriva el CSS de ese atributo. React solo mira el scroll.
+  Escenario sticky de pantalla completa + tramos de 100svh que dan la
+  altura: el beat activo sale del PROGRESO continuo del scroll y se escribe
+  como UN atributo data-beat — en el WRAPPER .luna, no acá: el mar es una
+  capa fija hermana (LunaMar) y necesita heredar el mismo estado para
+  encender el reflejo y mover la fase de la luna reflejada. React solo mira
+  el scroll; todo lo visual lo deriva el CSS del atributo. Scroll nativo
+  intacto — nada secuestra la rueda.
 
-  Mecánica calcada de RecorridoV2 (lab de Mari, verificada en Playwright):
-  threshold 0 + rootMargin -45%/-45% = el beat activo es el del tramo que
-  cruza el centro de la pantalla. Scroll nativo intacto.
+  El agua NO vive acá: es fondo fijo de toda la página (LunaMar). El cielo
+  del escenario se desvanece hacia abajo para que el mar se vea a través.
 */
 export function LunaEscenario() {
   const [beat, setBeat] = useState(0);
-  const centinelasRef = useRef<HTMLDivElement>(null);
   const escenarioRef = useRef<HTMLElement>(null);
-  const ondasRef = useLunaCursor(escenarioRef);
+  const gatoRef = useRef<HTMLDivElement>(null);
+  useLunaCursor(escenarioRef);
+  useGatoScrub(escenarioRef, gatoRef);
 
+  /*
+    El beat se deriva del PROGRESO continuo del escenario, no de un IO con
+    banda central: un salto de scroll (restauración, anchor, scrollTo) se
+    brincaba la banda sin disparar el callback y el estado quedaba viejo —
+    el mismo bug que RevealV2 ya pagó. round(prog × N) es el equivalente
+    exacto de la banda central, y es una función del scroll actual: no hay
+    evento que perderse.
+  */
   useEffect(() => {
-    const cont = centinelasRef.current;
-    if (!cont || typeof IntersectionObserver === "undefined") return;
+    const escenario = escenarioRef.current;
+    if (!escenario) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const idx = Number((entry.target as HTMLElement).dataset.idx);
-            if (!Number.isNaN(idx)) setBeat(idx);
-          }
-        }
-      },
-      { threshold: 0, rootMargin: "-45% 0px -45% 0px" },
-    );
-    for (const c of cont.children) observer.observe(c);
-    return () => observer.disconnect();
+    let rafId = 0;
+    let pedido = false;
+    const medir = () => {
+      pedido = false;
+      setBeat(Math.round(progresoDe(escenario) * (BEATS.length - 1)));
+    };
+    const onScroll = () => {
+      if (pedido) return;
+      pedido = true;
+      rafId = requestAnimationFrame(medir);
+    };
+
+    medir();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
+
+  /* el estado del mundo vive en el wrapper: escenario Y mar lo heredan */
+  useEffect(() => {
+    escenarioRef.current
+      ?.closest(".luna")
+      ?.setAttribute("data-beat", String(beat));
+  }, [beat]);
 
   const activo = BEATS[beat];
 
@@ -49,14 +73,13 @@ export function LunaEscenario() {
     <section
       ref={escenarioRef}
       className="luna-escenario relative"
-      data-beat={beat}
       aria-label="Cómo trabaja Castillo Studio, contado con la luna"
     >
-      {/* Escenario pegado: cielo, luna, agua, gato y texto */}
+      {/* Escenario pegado: cielo, luna, gato y texto — el mar es de la página */}
       <div className="luna-cielo sticky top-0 h-svh overflow-hidden">
         <div className="luna-estrellas" aria-hidden />
 
-        {/* Nubes: una capa a deriva lenta (blend screen sobre el vacío) */}
+        {/* Nubes: deriva lentísima en blend screen */}
         <div className="luna-nubes" aria-hidden>
           <Image src="/luna/nubes-1.jpg" alt="" fill sizes="100vw" className="object-cover" />
         </div>
@@ -78,32 +101,13 @@ export function LunaEscenario() {
           <div className="luna-astro__sombra" />
         </div>
 
-        {/* El agua: textura base siempre + camino de reflejo que se enciende */}
-        <div className="luna-agua" aria-hidden>
-          <Image
-            src="/luna/agua-textura.jpg"
-            alt=""
-            fill
-            sizes="100vw"
-            className="luna-agua__base object-cover"
-          />
-          <div className="luna-reflejo">
-            <Image
-              src="/luna/reflejo-camino.jpg"
-              alt=""
-              fill
-              sizes="100vw"
-              className="object-cover object-top"
-            />
-          </div>
-        </div>
-
-        {/* Las ondas del dedo en el agua (pool imperativo del hook) */}
-        <div ref={ondasRef} className="absolute inset-0 pointer-events-none" aria-hidden />
-
-        {/* El gato — la silueta propia, caminando la orilla */}
-        <div className="luna-gato" aria-hidden>
+        {/* El gato — la silueta propia. La posición la escribe useGatoScrub
+            (camina CON el scroll); su reflejo viaja con él por herencia. */}
+        <div ref={gatoRef} className="luna-gato" aria-hidden>
           <CatMascot className="h-auto w-full" />
+          <div className="luna-gato__reflejo">
+            <CatMascot className="h-auto w-full" />
+          </div>
         </div>
 
         {/* Capa hero (solo beat 0): wordmark cortado abajo */}
@@ -156,10 +160,11 @@ export function LunaEscenario() {
         </div>
       </div>
 
-      {/* Centinelas: un tramo de 100svh por beat, metidos bajo el escenario */}
-      <div ref={centinelasRef} className="-mt-[100svh]" aria-hidden>
-        {BEATS.map((b, i) => (
-          <div key={b.titulo} data-idx={i} className="h-svh" />
+      {/* Tramos de scroll: 100svh por beat, metidos bajo el escenario. Ya no
+          se observan (el beat sale del progreso) — solo dan la altura. */}
+      <div className="-mt-[100svh]" aria-hidden>
+        {BEATS.map((b) => (
+          <div key={b.titulo} className="h-svh" />
         ))}
       </div>
     </section>

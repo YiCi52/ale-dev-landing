@@ -21,8 +21,89 @@
   --luna-muted: #8b819f;
   --luna-line: rgba(207, 195, 255, 0.14);
 
-  background: var(--luna-void);
+  /* el fondo NO lo pinta el wrapper: lo pinta la capa fija del mar
+     (.luna-mar), para que el agua viva detrás de TODA la página */
+  background: transparent;
   color: var(--luna-glow);
+}
+
+/* ————— El mar de página completa —————
+   Capa fija detrás de todo (z -20; el FluidCursor global va en -10, o sea
+   ENCIMA del agua y DEBAJO del contenido: su estela luminosa se lee como
+   luz sobre la superficie). */
+.luna-mar {
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--luna-void) 0%,
+    var(--luna-void) 55%,
+    var(--luna-void-deep) 100%
+  );
+}
+.luna-mar__estrellas {
+  position: absolute;
+  inset: 0;
+  background: url("/luna/estrellas.jpg") center / cover no-repeat;
+  opacity: 0.35;
+}
+.luna-mar__agua {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 30svh;
+}
+/* velo superior: funde el borde del agua con el vacío */
+.luna-mar__agua::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 30%;
+  background: linear-gradient(to bottom, var(--luna-void), transparent);
+  z-index: 1;
+}
+/* la marea: toda el agua respira junta — solo transform, con sobrescan
+   para que el bob no descubra los bordes */
+.luna-mar__marea {
+  position: absolute;
+  inset: -3% 0 -3% 0;
+  animation: luna-marea 8s ease-in-out infinite alternate;
+}
+@keyframes luna-marea {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
+}
+.luna-mar__base {
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+/* el reflejo LITERAL de la luna: la misma foto, invertida y aplastada,
+   tenue y ondulada. Comparte --sombra (su fase) y --astro-x (su posición)
+   con la luna del cielo vía el wrapper. */
+.luna-mar__luna {
+  position: absolute;
+  top: -4%;
+  left: var(--astro-x, 50%);
+  width: clamp(150px, 25vw, 320px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  transform: translateX(calc(-50% + var(--mx, 0) * 10px)) scale(1, -0.72);
+  opacity: 0.32;
+  filter: blur(2.5px);
+  mix-blend-mode: screen;
+  transition: left 1.8s cubic-bezier(0.45, 0, 0.2, 1);
+}
+
+.luna-reflejo {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: var(--reflejo, 0.05);
+  transition: opacity 1.6s ease;
 }
 
 /* ————— Tipografía: masa por escala, no por bold (lección StringTune) ————— */
@@ -118,7 +199,7 @@
     translateY(calc(var(--my, 0) * 9px));
   transition: left 1.8s cubic-bezier(0.45, 0, 0.2, 1);
 }
-.luna-escenario[data-beat="0"] { --astro-x: 72%; }
+.luna[data-beat="0"] { --astro-x: 72%; }
 
 /* La foto se funde con el cielo: blend screen borra su fondo negro y deja
    respirar el halo real de la imagen. */
@@ -157,23 +238,26 @@
 /* Fase por beat: la sombra se retira (en % de su propio ancho) en 5 pasos.
    El halo y el reflejo acompañan. Los valores viven acá y no en JS: el
    estado del escenario es UN atributo (data-beat) y el CSS deriva el resto. */
-.luna-escenario[data-beat="0"] { --sombra: 9%; --halo: 0.12; --reflejo: 0.05; }
-.luna-escenario[data-beat="1"] { --sombra: 24%; --halo: 0.2; --reflejo: 0.12; }
-.luna-escenario[data-beat="2"] { --sombra: 44%; --halo: 0.32; --reflejo: 0.24; }
-.luna-escenario[data-beat="3"] { --sombra: 62%; --halo: 0.45; --reflejo: 0.42; }
-.luna-escenario[data-beat="4"] { --sombra: 80%; --halo: 0.6; --reflejo: 0.62; }
-.luna-escenario[data-beat="5"] { --sombra: 130%; --halo: 0.85; --reflejo: 1; }
+.luna[data-beat="0"] { --sombra: 9%; --halo: 0.12; --reflejo: 0.05; }
+.luna[data-beat="1"] { --sombra: 24%; --halo: 0.2; --reflejo: 0.12; }
+.luna[data-beat="2"] { --sombra: 44%; --halo: 0.32; --reflejo: 0.24; }
+.luna[data-beat="3"] { --sombra: 62%; --halo: 0.45; --reflejo: 0.42; }
+.luna[data-beat="4"] { --sombra: 80%; --halo: 0.6; --reflejo: 0.62; }
+.luna[data-beat="5"] { --sombra: 130%; --halo: 0.85; --reflejo: 1; }
 
 /* ————— El agua: banda inferior + camino de reflejo —————
    Placeholder CSS mientras llegan las imágenes de Gemini: gradiente de
    horizonte + columna de reflejo con shimmer. La imagen real reemplaza el
    fondo de .luna-reflejo sin tocar la mecánica. */
-/* El cielo de fondo: la foto de estrellas cubre el escenario entero y las
-   estrellas CSS titilan encima para darle vida a la imagen fija. */
-.luna-cielo {
-  background:
-    url("/luna/estrellas.jpg") center / cover no-repeat,
-    var(--luna-void);
+/* El cielo del escenario es TRANSPARENTE (el mar fijo se ve a través); la
+   riqueza del cielo — foto de estrellas y nubes — se desvanece hacia abajo
+   con máscara para no tapar el agua. La máscara va en las CAPAS de imagen y
+   no en el contenedor: el texto y el wordmark no se difuminan. */
+.luna-cielo .luna-estrellas {
+  background-image: url("/luna/estrellas.jpg");
+  background-size: cover;
+  background-position: center;
+  mask-image: linear-gradient(to bottom, #000 62%, transparent 84%);
 }
 
 /* Nubes: deriva lentísima, apenas presentes. blend screen sobre el cielo. */
@@ -184,73 +268,52 @@
   opacity: 0.3;
   animation: luna-deriva 140s linear infinite alternate;
   pointer-events: none;
+  mask-image: linear-gradient(to bottom, #000 58%, transparent 80%);
 }
 @keyframes luna-deriva {
   from { transform: translateX(-2.5%); }
   to { transform: translateX(2.5%); }
 }
 
-/* El agua: la textura fotográfica es la base permanente; el camino de
-   reflejo (foto) se enciende encima según el beat. Ambas en blend screen —
-   el negro de las fotos desaparece contra el vacío. */
-.luna-agua {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  height: 34svh;
-  overflow: hidden;
-}
-.luna-agua__base {
-  mix-blend-mode: screen;
-  opacity: 0.55;
-}
-/* velo superior: funde el borde de las fotos de agua con el cielo */
-.luna-agua::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: 26%;
-  background: linear-gradient(to bottom, var(--luna-void), transparent);
-  z-index: 1;
-}
-
-.luna-reflejo {
-  position: absolute;
-  inset: 0;
-  mix-blend-mode: screen;
-  opacity: var(--reflejo, 0.05);
-  transition: opacity 1.6s ease;
-}
-
 /* ————— El gato: silueta propia (CatMascot), NUNCA generado por IA —————
    Camina por la orilla beat a beat (left interpola), y en la entrega pisa el
    reflejo y se aleja hacia la luna (sube y encoge = profundidad). El borde
    de luz lo despega del fondo oscuro. */
+/* La posición, escala y dirección del gato las escribe useGatoScrub CADA
+   frame de scroll (left/bottom/transform inline) — sin transiciones acá:
+   pelearían con el scrub. El CSS pone lo que no cambia: tamaño, color,
+   borde de luz, y las dos animaciones de vida (pasos y cola). */
 .luna-gato {
   position: absolute;
   bottom: 29svh;
-  left: var(--gato-x, 12%);
+  left: 14%;
   width: clamp(50px, 6.5vw, 84px);
   color: #322a4d;
   filter: drop-shadow(0 0 10px color-mix(in srgb, var(--luna-halo) 65%, transparent));
-  transition:
-    left 1.8s cubic-bezier(0.45, 0, 0.2, 1),
-    transform 1.8s cubic-bezier(0.45, 0, 0.2, 1);
-  transform: translateX(-50%) scale(var(--gato-s, 1));
+  transform: translateX(-50%);
 }
-.luna-escenario[data-beat="0"] { --gato-x: 14%; --gato-s: 1; }
-.luna-escenario[data-beat="1"] { --gato-x: 26%; --gato-s: 1; }
-.luna-escenario[data-beat="2"] { --gato-x: 38%; --gato-s: 0.96; }
-.luna-escenario[data-beat="3"] { --gato-x: 58%; --gato-s: 0.93; }
-.luna-escenario[data-beat="4"] { --gato-x: 70%; --gato-s: 0.9; }
-/* beat 5: entra al reflejo y camina hacia la luna */
-.luna-escenario[data-beat="5"] {
-  --gato-x: 50%;
-  --gato-s: 0.62;
+/* la caminata: bob de pasos con squash al pisar — va en el SVG interno
+   porque el transform del contenedor lo escribe el scrub */
+.luna-gato.is-caminando > svg {
+  animation: luna-pasos 0.42s ease-in-out infinite;
 }
-.luna-escenario[data-beat="5"] .luna-gato {
-  bottom: 20svh;
+@keyframes luna-pasos {
+  0%, 100% { transform: translateY(0) scaleY(0.97); }
+  25% { transform: translateY(-6%) scaleY(1.02) rotate(1.5deg); }
+  50% { transform: translateY(0) scaleY(0.97); }
+  75% { transform: translateY(-6%) scaleY(1.02) rotate(-1.5deg); }
+}
+/* su reflejo en el agua: viaja con él gratis (está adentro), invertido,
+   tenue y sin el borde de luz */
+.luna-gato__reflejo {
+  position: absolute;
+  top: 96%;
+  inset-inline: 0;
+  transform: scaleY(-0.85);
+  transform-origin: top center;
+  opacity: 0.22;
+  color: #4a3f6e;
+  filter: blur(1.5px);
 }
 
 /* ————— Las ondas del dedo en el agua —————
@@ -315,7 +378,9 @@
 .luna-hero-capa {
   transition: opacity 1s ease, transform 1s ease;
 }
-.luna-escenario:not([data-beat="0"]) .luna-hero-capa {
+/* [data-beat] presente Y distinto de 0: antes de que el JS escriba el
+   atributo (SSR, no-JS) el hero se queda visible, que es el estado legible */
+.luna[data-beat]:not([data-beat="0"]) .luna-hero-capa {
   opacity: 0;
   transform: translateY(4svh);
   pointer-events: none;
@@ -390,13 +455,15 @@ html[data-luna-loader="play"] .luna-loader {
   .luna-estrellas::after,
   .luna-nubes,
   .luna-onda.is-viva,
+  .luna-mar__marea,
+  .luna-gato.is-caminando > svg,
   .luna-gato .cat-tail {
     animation: none;
   }
   .luna-astro,
   .luna-astro::before,
   .luna-astro__sombra,
-  .luna-gato,
+  .luna-mar__luna,
   .luna-reflejo,
   .luna-hero-capa,
   .luna-progreso__fill {
@@ -408,4 +475,12 @@ html[data-luna-loader="play"] .luna-loader {
   .luna-loader {
     display: none !important;
   }
+}
+
+/* ————— La estela de agua del cursor (FluidCursor re-teñido) —————
+   En /luna la simulación de fluidos global se tiñe de luz lunar y se
+   ENMASCARA a la banda de agua: la ola luminosa solo existe donde hay mar.
+   El atributo lo pone FluidCursor.tsx cuando la ruta es /luna. */
+[data-fluido-luna] {
+  mask-image: linear-gradient(to bottom, transparent 55%, #000 76%);
 }

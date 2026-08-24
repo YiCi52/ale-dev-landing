@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LunaLoader } from "@/components/luna/LunaLoader";
+import { LunaMar } from "@/components/luna/LunaMar";
 import { LunaEscenario } from "@/components/luna/LunaEscenario";
 import { BarajaCasos } from "@/components/casos/BarajaCasos";
 import { Testimonio } from "@/components/casos/Testimonio";
@@ -39,6 +40,8 @@ export default function LunaPage() {
         }}
       />
       <LunaLoader />
+      {/* el mar es el fondo fijo de TODA la página, no solo del escenario */}
+      <LunaMar />
       <LunaEscenario />
 
       {/* Aterrizaje: el contenido real del sitio, intacto (BRIEF §8) */}

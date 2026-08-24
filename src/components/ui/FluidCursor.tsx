@@ -52,6 +52,15 @@ export function FluidCursor() {
   // /lab monta sus propias escenas WebGL: dos contextos a resolución retina en
   // la misma página compiten por GPU y producen tirones al scrollear.
   const isLabRoute = pathname?.startsWith("/lab") ?? false;
+  /*
+    /luna: la MISMA simulación deja de ser neblina y se vuelve el agua del
+    mundo — tinte de luz lunar, algo más presente, y con dos restricciones
+    que la convierten en "pasar un dedo por el agua": el contenedor lleva
+    una máscara CSS que la recorta a la banda del mar (luna.css,
+    [data-fluido-luna]) y los splats solo se inyectan cuando el puntero
+    está en esa banda.
+  */
+  const isLunaRoute = pathname?.startsWith("/luna") ?? false;
 
   useEffect(() => {
     if (isLabRoute) return;
@@ -105,8 +114,11 @@ export function FluidCursor() {
         colorful: false,
         // "Mar negro" (la versión que Alejandro prefirió): azules profundos
         // desaturados + un guiño violeta. Sin bloom = sin brillo de humo.
-        colorPalette: ["#4a5d85", "#56497f", "#3a5570", "#5d6a94"],
-        brightness: 0.34, // bajo: atmósfera de fondo, no protagonista brillante
+        // En /luna: luz de luna sobre el agua — la paleta del rediseño.
+        colorPalette: isLunaRoute
+          ? ["#cfc3ff", "#9f86ff", "#f5f2ff", "#b9a8ff"]
+          : ["#4a5d85", "#56497f", "#3a5570", "#5d6a94"],
+        brightness: isLunaRoute ? 0.5 : 0.34, // la estela en el agua sí se ve
         bloom: false, // el bloom era lo que lo hacía brillante/"humo azul"
         sunrays: false,
         shading: true,
@@ -130,6 +142,9 @@ export function FluidCursor() {
     const onMove = (e: PointerEvent) => {
       if (!sim) return;
       if (Math.abs(e.movementX) + Math.abs(e.movementY) < 1) return;
+      // en /luna la ola solo nace en el agua (banda inferior del viewport);
+      // la máscara CSS ya recorta lo visible, esto ahorra el splat inútil
+      if (isLunaRoute && e.clientY < window.innerHeight * 0.62) return;
       despertar();
       reprogramarSiesta();
       const canvas = container.querySelector("canvas");
@@ -141,6 +156,8 @@ export function FluidCursor() {
       sim.splatAtLocation(e.clientX * scaleX, e.clientY, dx, dy);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
+    if (isLunaRoute) container.dataset.fluidoLuna = "1";
+    else delete container.dataset.fluidoLuna;
 
     return () => {
       cancelled = true;
@@ -151,7 +168,7 @@ export function FluidCursor() {
       // Limpia el canvas que el sim inyecta (evita duplicados con StrictMode).
       container.replaceChildren();
     };
-  }, [isLabRoute]);
+  }, [isLabRoute, isLunaRoute]);
 
   return (
     <div
