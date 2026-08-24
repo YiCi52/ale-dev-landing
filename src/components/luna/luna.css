@@ -325,9 +325,11 @@
 .luna-progreso {
   background: var(--luna-line);
 }
+/* el llenado es scaleX y no width: mismo dibujo, cero layout por beat */
 .luna-progreso__fill {
   background: linear-gradient(to right, var(--luna-accent), var(--luna-halo));
-  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: left center;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ————— Loader: el sello como pantalla de carga (BRIEF §2b) —————

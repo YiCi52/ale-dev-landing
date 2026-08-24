@@ -149,8 +149,8 @@ export function LunaEscenario() {
           </p>
           <div className="luna-progreso h-px w-28 sm:w-40">
             <div
-              className="luna-progreso__fill h-full"
-              style={{ width: `${(beat / (BEATS.length - 1)) * 100}%` }}
+              className="luna-progreso__fill h-full w-full"
+              style={{ transform: `scaleX(${beat / (BEATS.length - 1)})` }}
             />
           </div>
         </div>
