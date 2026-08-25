@@ -709,19 +709,22 @@ body:has(.luna) > header a:hover {
 .luna-indice__num {
   margin-right: 0.7em;
 }
-/* el guion que señala la fase activa: crece desde la derecha del número */
+/* el guion que señala la fase activa: crece desde su lado izquierdo. Ancho
+   FIJO + scaleX en vez de animar width — mismo gesto, cero reflow. */
 .luna-indice li::after {
   content: "";
   display: inline-block;
-  width: 0;
+  width: 1.6rem;
   height: 1px;
   margin-left: 0.7em;
   vertical-align: middle;
   background: var(--luna-accent);
-  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .luna-indice li[data-activa="true"]::after {
-  width: 1.6rem;
+  transform: scaleX(1);
 }
 
 /* ————— El horizonte: la costura sky/agua declarada, no escondida —————
