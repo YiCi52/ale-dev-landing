@@ -86,11 +86,16 @@ export function LunaMar() {
       {/* la banda de agua — crece con --post hasta tragarse el fondo entero */}
       <div className="luna-mar__agua">
         <div className="luna-mar__marea">
+          {/* priority ACÁ y no en el camino: Next detecta ESTA textura como
+              LCP (el camino arranca casi apagado, --reflejo 0.05 — la capa
+              grande y visible del primer pintado es el agua). El warning de
+              la ronda 2 era exactamente ese priority mal puesto. */}
           <Image
             src="/luna/agua-textura.jpg"
             alt=""
             fill
             sizes="100vw"
+            priority
             className="luna-mar__base object-cover"
           />
           {/* segunda capa a contracorriente: el agua se VE moverse */}
@@ -118,9 +123,19 @@ export function LunaMar() {
               className="luna-astro__img object-cover"
             />
             <div className="luna-astro__sombra" />
+            {/* dos capas de rotura con periodos primos (23/13px): su
+                interferencia es lo que hace que las bandas no se lean como
+                escanlíneas mecánicas */}
             <div className="luna-mar__rotura" />
+            <div className="luna-mar__rotura luna-mar__rotura--fina" />
           </div>
-          {/* el camino de luz se enciende con la historia y tiembla */}
+          {/* la estela ancla el disco al camino: sin ella el reflejo
+              flotaba desconectado del brillo que arranca más abajo */}
+          <div className="luna-mar__estela" />
+          {/* el camino de luz se enciende con la historia y tiembla. Sin
+              priority: a la carga está casi apagado (--reflejo 0.05) y
+              precargarlo eran 98KB robándole el ancho de banda al LCP real
+              (el agua, arriba). */}
           <div className="luna-reflejo">
             <Image
               src="/luna/reflejo-camino.jpg"

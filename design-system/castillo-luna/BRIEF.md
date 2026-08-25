@@ -1,133 +1,138 @@
-# BRIEF — "El gato y la luna" (rediseño narrativo del portafolio)
+# BRIEF v2 — "El gato y la luna" (CONTRATO MAESTRO)
 
-> Estado: **PENDIENTE DE APROBACIÓN de Alejandro** (L-025).
-> Referencia estructural elegida por Alejandro: StringTune (string-tune.fiddle.digital,
-> teardown 24-ago en el banco de referencias). Se copia la ESTRUCTURA, no el disfraz.
-> Sucede a `castillo-v2/MASTER.md` en dirección visual del home; los tokens de las
-> páginas interiores siguen bajo castillo-v2 hasta migrarlas.
+> Fuente de verdad: las 27 diapositivas de Alejandro (24-ago-2026, exportadas de Canva,
+> copia local en el scratchpad de sesión) + el video de referencia de @seanaiux
+> ("Animations to make a 30k website": Object Reveal, Portal, Space Transition,
+> 3D Gallery, 4th Wall). Este archivo las destila; ante duda, mandan las slides.
+> Método acordado: SECCIÓN POR SECCIÓN, cada una aprobada por Alejandro antes de seguir.
+> Referencias de craft: StringTune (sobriedad en los bordes, elegante y tech) y
+> Zentro (minimalismo, jerarquía tipográfica, espacio negativo — NO su composición
+> ni branding).
 
-## 1. El concepto en una frase
+## 1. Paleta v2 (slide 14 — EXACTA, sustituye a la v1)
 
-El logo animado que ya existe (luna → gato → C → nombre, `SelloCastillo`) deja de ser
-un sello y se convierte en LA PÁGINA: el gato de Castillo camina un paisaje nocturno
-mientras el scroll avanza, y **la luna crece en fases con el progreso** — luna nueva
-al arrancar (la idea), luna llena al final (la entrega). El fondo es el vacío del
-espacio en morado profundo; abajo, agua negra con el reflejo de la luna temblando.
-
-Regla de estilo de mezcla: **gato = silueta vectorial plana** (el CatMascot que ya
-existe, currentColor) sobre **atmósfera fotográfica** (luna/agua/nubes generadas con
-nanobanana). El contraste silueta-contra-cielo es la firma visual.
-
-## 2. Los beats (aprobados por Alejandro, 24-ago)
-
-Escenario fijo (sticky stage) + scroll como timeline, técnica StringTune/RecorridoV2.
-Fase lunar = fase del proceso:
-
-| Beat | Fase lunar | Qué pasa en pantalla |
+| Rol | Hex | Uso |
 |---|---|---|
-| 0 · Hero | Luna nueva (halo apenas) | Vacío morado + agua quieta. Wordmark CASTILLO gigante cortado abajo (patrón Zentro/StringTune). El gato entra caminando (su animación del sello, ampliada). |
-| 1 · Idea | Creciente fina | "La idea" — texto con unblur letra a letra. El gato se sienta a mirar la luna. |
-| 2 · Estructura | Cuarto | "La estructura" — retícula fina se dibuja en el cielo (líneas hairline). |
-| 3 · Diseño | Gibosa | "El diseño" — el reflejo en el agua se enciende y ondula. |
-| 4 · Experiencia | Casi llena | "La experiencia" — micro-interacciones demo (lo que sé hacer, mostrado no contado). |
-| 5 · Entrega | **Luna llena** | Reflejo pleno como camino de luz. El gato camina sobre el reflejo hacia la luna → CTA. |
+| `--luna-void` (fondo) | `#030305` | Negro noche abisal con 2% de tinta violeta |
+| `--luna-glow` (texto y luz) | `#F4F4F8` | Blanco frío/luna: títulos y brillo principal |
+| `--luna-accent` (glow violeta) | `#7A66FF` (alt `#8B78FF`) | Tags, hover de links, crestas de luz del agua |
+| `--luna-muted` (secundario) | `#71717A` | Menú superior y subtítulos |
 
-Después del acto narrativo, la página aterriza en contenido normal (scroll nativo):
-**baraja de proyectos** (BarajaCasos, se conserva) → **servicios/proceso** →
-**constelación de 14 capas** (se conserva, como CIERRE antes del form) → form → footer.
+Reglas de luz (slides 13/15): la luna NO quemada — glow integrado con blend screen +
+atmósfera radial, nunca "parche recortado". Luz FOCALIZADA (foco fino), no regada.
+Nav: rgba(255,255,255,0.7) → hover 1.0 con toque violeta. ESPACIO NEGATIVO: el centro
+respira; "la luna y el título son los únicos reyes de la sección" — menos estrellas
+brillantes en el centro.
 
-## 2b. Pantalla de carga (pedida por Alejandro, 24-ago — aprobado el concepto general)
+## 2. Correcciones de HERO (slide 1)
 
-El loader ES el sello: la animación luna → gato → C de `SelloCastillo` a una pasada
-sobre el vacío morado, con etiqueta Geist Mono (`CASTILLO — BOGOTÁ ©2026`) y hairline
-de progreso. Al salir, la luna del loader VIAJA a su posición en el hero (continuidad
-espacial — el loader se convierte en la página, no desaparece).
+- Header: PONER EL LOGO (el sello) + "CASTILLO STUDIO" más a la IZQUIERDA.
+- Wordmark CASTILLO: pegado al borde inferior CON un poco de margen (ya no cortado)
+  y CON GLASMORFISMO.
+- Lo demás del hero v2 (titular compacto izq., luna derecha) le gustó en las slides.
 
-Reglas duras: tope 1.2s aunque la carga real siga · solo primera visita de la sesión
-(sessionStorage) · reduced-motion lo elimina · costo asumido: 2-3 pts de LCP solo en
-primera visita.
+## 3. La transición cielo→mar (slide 6 — reemplaza el mecanismo --post actual)
 
-## 3. Paleta — "Luna sobre el vacío"
+Scroll-driven en 2 etapas, tipo cámara:
+1. Arriba: luna llena/protagónica ALTA en el cielo.
+2. Al bajar: LA LUNA SALE DEL VIEWPORT POR ARRIBA mientras la "cámara" desciende
+   hacia la superficie del agua.
+3. Estado final: la luna física YA NO se ve; el agua ocupa TODO y solo queda el
+   camino de luz vertical proyectado desde el horizonte, con destellos vibrantes.
+El agua-total coincide con la llegada a PROYECTOS. "Mala transición del cielo al
+mar" (slide 5) = la costura actual; debe ser continua, sin banda dura.
 
-Evolución de "Lila sobre carbón" (el lila madura a luz de luna). NO amarillo: la luna
-es fría, alineada al blanco. Tokens propuestos:
+## 4. El agua y el cursor (slides 3-4 — spec de 4 fotogramas)
 
-| Token | Hex | Papel |
-|---|---|---|
-| `--luna-void` | `#0B0713` | Fondo base: morado-negro, el vacío |
-| `--luna-void-deep` | `#060409` | Agua / zonas hundidas |
-| `--luna-space` | `#171027` | Superficies elevadas, cards |
-| `--luna-glow` | `#F5F2FF` | La luz de la luna: blanco-violeta. Texto principal |
-| `--luna-halo` | `#CFC3FF` | Halo, acentos suaves, hover |
-| `--luna-accent` | `#9F86FF` | Interactivo: links, CTA, focus ring (heredero del lila) |
-| `--luna-muted` | `#8B819F` | Texto secundario (AA sobre void: ~7:1) |
-| `--luna-line` | `rgba(207,195,255,0.14)` | Hairlines, bordes |
+La pantalla es una piscina en calma; el cursor es la punta del dedo índice sumergida
+1 cm:
+- F1 Reposo: superficie oscura profunda, calma absoluta, luz estelar fría. SIN distorsión.
+- F2 Contacto: al mover, UN anillo concéntrico perfecto donde está el cursor, sutil y
+  brillante, refractando la luz fría.
+- F3 Movimiento rápido: estela caótica de ondas entrelazadas; la luz se refracta en
+  las crestas (patrones brillantes); el fondo se distorsiona agresivamente.
+- F4 Desvanecimiento: damping — ondas bajas y anchas expandiéndose, el brillo muere,
+  vuelta a la calma.
+⇒ Es un simulador de ondas con DISTORSIÓN real de la superficie (height-field /
+refracción), no anillos pintados ni humo. Guiño extra (slide 3): "cursor reactivo con
+píxeles" — el glitch pixelado de StringTune le gusta como acento.
 
-Contrastes verificados: glow/void ≈ 17:1 · accent/void ≈ 8:1 · muted/void ≈ 6.5:1.
+## 5. El gato (slide 2 — REDISEÑO COMPLETO)
 
-## 4. Tipografía
+- "El gato toca rediseñarlo por completo": la silueta actual no va.
+- Su papel = el equivalente de la KATANA: el gato CAMINA POR LOS BORDES de la página
+  (cruza/recorre los márgenes como la katana cruza StringTune), no plantado en la orilla.
+- Sigue siendo dibujo propio (nunca IA), pero hay que rehacer el asset (SVG con poses/
+  frames de caminata reales).
 
-**Se mantiene Geist + Geist Mono** (ya cargadas, cero bytes nuevos). La lección
-StringTune/THEFIRSTTHELAST aplica: la masa viene de la ESCALA a peso normal, no del bold.
-- Display: Geist 300–400, `clamp(3.5rem, 2rem + 10vw, 11rem)`, lh 0.92, tracking -0.02em
-- Wordmark fantasma: Geist 400 a ~22vw, color `--luna-line`
-- Etiquetas/beats: Geist Mono 0.72rem, uppercase, tracking 0.22em (la voz mono de StringTune)
+## 6. El reflejo de la luna (slides 5-7)
 
-## 5. Mecánica (sin WebGL — decisión aprobada: pre-render/CSS)
+"El reflejo debe mejorar" / "se ve pero no como quiero" / "ni se ve" (según ronda):
+el reflejo vive DENTRO del agua como luz que la superficie rompe — con la transición
+de cámara (punto 3), el reflejo/camino se convierte en EL protagonista del fondo
+cuando la luna ya salió de cuadro. Nada de discos calcados.
 
-- **Escenario**: sticky top-0 h-svh + centinelas invisibles (patrón RecorridoV2, ya
-  verificado en Playwright). Scroll nativo intacto. Barra de progreso hairline arriba.
-- **La luna y sus fases**: UNA imagen de luna (nanobanana) + `mask-image` radial animada
-  por CSS según el beat — las 6 fases salen de un solo asset, cero JS de render.
-- **El reflejo**: imagen del camino de luz + shimmer con gradiente animado
-  (`mask` + `translate` en loop lento). Compositor-friendly.
-- **El gato**: CatMascot SVG (ya existe) — poses por beat vía CSS transforms +
-  la caminata del sello reutilizada. NUNCA generado por IA (consistencia = vector propio).
-- **Texto**: unblur letra a letra al estilo React Bits "Scroll Reveal" — implementación
-  propia CSS-only (~30 líneas), sin traer gsap/motion de vuelta.
-- **Suavizado**: Lenis (~4KB) — ÚNICA dependencia nueva propuesta. Alternativa: nada,
-  scroll crudo (decisión de Alejandro).
-- **reduced-motion**: la historia degrada a secciones estáticas con la luna llena fija.
+## 7. La constelación (slides 8-9 — REDISEÑO)
 
-## 6. Assets a generar (nanobanana / Google AI Studio — NO Higgsfield)
+- "La constelación se pierde la idea" sobre el agua.
+- Nueva forma: BENTO GRID estilo demos de StringTune (tarjetas con micro-demos /
+  contenido vivo adentro), manteniendo el concepto 14 capas. Referencia visual:
+  la grilla de features de string-tune (slide 9).
 
-Todos sobre **fondo negro puro** para componer con `mix-blend-mode: screen` (sin
-necesidad de transparencia). Prompts exactos en la sección 9 del mensaje de sesión
-y duplicados aquí abajo. Lista:
+## 8. Sistema de interacción por contenido (slides 19-27 + video)
 
-1. `luna-llena.png` — 1:1, 2048px. La luna: blanco frío violeta, cráteres sutiles.
-2. `reflejo-camino.png` — 9:16. Camino de luz de luna sobre agua negra, hacia el horizonte.
-3. `agua-textura.png` — 16:9. Superficie de agua nocturna casi negra, ondas mínimas.
-4. `nubes-1.png` / `nubes-2.png` — 21:9. Jirones de nubes nocturnas finas (2 capas parallax).
-5. `estrellas.png` — 16:9. Campo de estrellas escaso, agrupación natural.
-6. (opcional) `horizonte.png` — 21:9. Silueta de horizonte/colinas negro sobre morado.
+"El tipo de contenido determina el tipo de interacción" — NUNCA efectos porque sí:
 
-## 7. Librerías evaluadas (propuesta a Alejandro)
+| Contenido | Interacción (del video) |
+|---|---|
+| Hero | Hero Reveal (presentación inicial) |
+| Entrada a proyecto | Portal (el proyecto aparece y ocupa la pantalla) |
+| Fotografía | 4th Wall (profundidad + responde al cursor) |
+| Galería | 3D Gallery (explorar imágenes en el espacio) |
+| Información conceptual | Motion editorial (transición minimalista) |
+| Detalles/materiales | Object Reveal (hover: posición+escala+perspectiva+iluminación, 600-900ms, ease-out, "emerge físicamente") |
+| Cambio de proyecto / final | Space Transition (vuelves a la navegación) |
 
-| Pieza | Fuente | Veredicto |
-|---|---|---|
-| Scroll Reveal (unblur) | React Bits | Replicar CSS-only — el componente oficial trae dependencia de animación que acabamos de sacar del bundle |
-| Split Text | React Bits | Ídem — CSS + spans, ya tenemos patrón propio |
-| Staggered Menu | React Bits | CANDIDATO real vía CLI (`-JS-CSS` variant) para el menú overlay |
-| Accordion Gallery | React Bits | Ya cubierto por BarajaCasos propia |
-| Lenis | lenis (npm, ~4KB) | ÚNICA dep nueva propuesta — el suavizado del timeline |
-| gsap / motion | — | NO vuelven. CSS-first (el propio lema de StringTune) |
-| Backgrounds WebGL (Silk, Ripple…) | React Bits | Descartados: presupuesto de rendimiento (Lighthouse 92) |
+PORTAFOLIO ESCALABLE (slides 22, 25): funciona con 1 proyecto o con 20. Con UN
+proyecto se le saca PROFUNDIDAD (Akanti/MacroLift como experiencia completa:
+PORTFOLIO → HERO/IDENTITY → PROJECT 01 → ramas OVERVIEW(concept/materials/process)
+y VISUAL(gallery/details/spatial) → PROJECT END → ABOUT/CONTACT), jamás tarjetas
+vacías para aparentar volumen. Content-driven: los efectos no inventan contenido.
 
-## 8. Lo que se conserva del sitio actual
+## 9. Motion language (slide 18) — toda animación cumple:
 
-- **BarajaCasos** (la baraja, aunque haya 1 proyecto) — acto 2.
-- **Constelación 14 capas** — cierre pre-form.
-- **Las pestañas** (confirmado por Alejandro 24-ago): las secciones **Sobre mí ·
-  Proyectos · Contacto** como navegación siempre visible en el header (chips estilo
-  StringTune "Dev Guides / Skill Hub"). Saltan directo a su destino sin obligar a
-  recorrer la historia; la historia es el home, no una cárcel.
-- Form + Supabase + Make + analítica: intocables.
-- SEO: la narrativa vive en el home; las rutas interiores no cambian.
+estado inicial → trigger → transformación → transición → estado final → respuesta.
+Principios: 01 Depth (posicionado en un espacio, no en superficie plana) · 02
+Continuity (conectar estados, no aparecer/desaparecer) · 03 Responsiveness (mouse,
+scroll y navegación afectan la composición) · 04 Restraint (sofisticado, no excesivo)
+· 05 Purpose (comunica o mejora la exploración).
 
-## 9. Presupuesto de rendimiento
+## 10. Reglas de implementación y Definition of Done (slides 21, 23)
 
-- Lighthouse mobile ≥ 92 (no regresión vs hoy).
-- JS nuevo: ≤ 8KB (Lenis + timeline propio). Cero WebGL, cero gsap/motion.
-- Imágenes: AVIF/WebP, luna precargada (es el LCP), resto lazy. Total assets ≤ 2.5MB.
-- Todo el motion en transform/opacity/mask. reduced-motion completo.
+BEFORE: analizar repo/framework/estilos/componentes/assets, correr la página,
+identificar qué ya funciona, no reemplazar arquitectura sin necesidad.
+DURING: UNA interacción a la vez · componentes reutilizables · GPU-friendly
+transforms (nada de top/left/width/height animados) · responsive · reduced-motion ·
+cero dependencias innecesarias.
+AFTER cada interacción: test desktop + mobile + hover/scroll/touch, consola limpia,
+rendimiento, COMPARAR CONTRA LA REFERENCIA.
+DONE = dirección del movimiento coincide con la referencia · profundidad se percibe ·
+timing natural · easing no mecánico · trigger correcto · entrada/salida coherentes ·
+sin estados muertos · no rompe responsive · sin errores · buen rendimiento · ayuda a
+explorar · no distrae · se siente parte del diseño.
+
+## 11. Criterios de éxito (slide 17)
+
+Visual premium comparable a las referencias · jerarquía clara · animación con
+propósito · cursor reactivo sin estorbar · scroll cinematográfico natural ·
+experiencia equivalente en móvil · sin caídas de FPS · contraste/navegación
+accesibles · código componentizado · el usuario siempre entiende dónde está.
+
+## 12. Prioridades de trabajo (slide 16) y orden por secciones
+
+Prioridad: 1 Identidad visual (composición/tipo/color/jerarquía/imágenes) → 2 UX
+(nav/scroll/hover/responsive) → 3 Motion (parallax/transiciones/cursor/partículas/
+atmósfera) → 4 Detalles (micro/iluminación/blur/secundarios).
+Secciones acordadas: S1 hero → S-agua (cámara + ripple) → S-gato → S-proyectos
+(portal/experiencia) → S-constelación (bento) → resto. Cada una con visto bueno de
+Alejandro antes de avanzar.

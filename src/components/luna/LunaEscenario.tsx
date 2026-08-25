@@ -99,15 +99,20 @@ export function LunaEscenario() {
           circular color vacío que se retira hacia la derecha beat a beat.
         */}
         <div className="luna-astro" aria-hidden>
-          <Image
-            src="/luna/luna-llena.jpg"
-            alt=""
-            fill
-            sizes="(max-width: 640px) 60vw, 30vw"
-            priority
-            className="luna-astro__img object-cover"
-          />
-          <div className="luna-astro__sombra" />
+          {/* el disco va en un wrapper recortado; el halo (::before del
+              astro) queda FUERA del recorte — si no, el glow se corta al
+              círculo y vuelve el "parche" que diagnosticó el brief */}
+          <div className="luna-astro__disco">
+            <Image
+              src="/luna/luna-llena.jpg"
+              alt=""
+              fill
+              sizes="(max-width: 640px) 60vw, 30vw"
+              priority
+              className="luna-astro__img object-cover"
+            />
+            <div className="luna-astro__sombra" />
+          </div>
         </div>
 
         {/* El gato — la silueta propia. La posición la escribe useGatoScrub
@@ -119,8 +124,9 @@ export function LunaEscenario() {
           </div>
         </div>
 
-        {/* Capa hero (solo beat 0): wordmark cortado abajo */}
-        <div className="luna-hero-capa absolute inset-x-0 bottom-[-0.12em] text-center">
+        {/* Capa hero (solo beat 0): wordmark de vidrio pegado abajo CON
+            margen (slide 1) — completo, sobre el agua, glasmorfismo */}
+        <div className="luna-hero-capa absolute inset-x-0 bottom-[3.5svh] text-center">
           <p className="luna-wordmark" aria-hidden>
             CASTILLO
           </p>
@@ -137,6 +143,33 @@ export function LunaEscenario() {
             Scrollea — la luna cuenta el resto
           </p>
         </div>
+
+        {/* La orilla marcada: hairline + coordenada de Bogotá donde el cielo
+            toca el agua. Textura funcional para el cielo vacío de viewports
+            altos; se retira con el resto de la capa hero. */}
+        <div
+          className="luna-hero-capa luna-horizonte absolute inset-x-0"
+          aria-hidden
+        >
+          <p className="luna-label" style={{ fontSize: "0.6rem" }}>
+            4°36′N · 74°05′W — la orilla
+          </p>
+        </div>
+
+        {/* Índice de la historia: las seis fases en voz mono, la activa
+            encendida. Llena el centro-derecha (viewports altos incluidos) y
+            sirve de tabla de capítulos durante toda la narrativa. El estado
+            accesible ya lo da el contador aria-live de abajo. */}
+        <ol className="luna-indice" aria-hidden>
+          {BEATS.map((b, i) => (
+            <li key={b.titulo} data-activa={i === beat}>
+              <span className="luna-indice__num">
+                {String(i).padStart(2, "0")}
+              </span>
+              {b.titulo}
+            </li>
+          ))}
+        </ol>
 
         {/* Texto del beat activo (re-montado por key = re-anima el revelado) */}
         {beat > 0 && (

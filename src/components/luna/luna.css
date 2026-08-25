@@ -12,19 +12,63 @@
 */
 
 .luna {
-  --luna-void: #0b0713;
-  --luna-void-deep: #060409;
-  --luna-space: #171027;
-  --luna-glow: #f5f2ff;
-  --luna-halo: #cfc3ff;
-  --luna-accent: #9f86ff;
-  --luna-muted: #8b819f;
-  --luna-line: rgba(207, 195, 255, 0.14);
+  /* Paleta v2 — slide 14 del brief de Alejandro (24-ago), EXACTA:
+     negro noche abisal con 2% de violeta + blanco frío + violeta astral
+     eléctrico + gris neutro frío. Los referentes (Zentro/StringTune) usan
+     fondo casi puro negro para que cualquier luz "explote" limpia. */
+  --luna-void: #030305;
+  --luna-void-deep: #010102;
+  --luna-space: #101014;
+  --luna-glow: #f4f4f8;
+  --luna-halo: #b9aaff;
+  --luna-accent: #7a66ff;
+  --luna-accent-alt: #8b78ff;
+  --luna-muted: #71717a;
+  --luna-line: rgba(185, 170, 255, 0.14);
 
   /* el fondo NO lo pinta el wrapper: lo pinta la capa fija del mar
      (.luna-mar), para que el agua viva detrás de TODA la página */
   background: transparent;
   color: var(--luna-glow);
+}
+
+/* El header global sobre /luna: su fondo sólido + borde cortaba el glow de
+   la luna llena en una línea dura a la altura del nav (QA 24-ago, beat 5).
+   Sobre la escena el header no puede ser una franja: es un fade del vacío
+   que sostiene la legibilidad de los enlaces sin dibujar borde. Scoped con
+   :has(.luna) porque el header vive FUERA del wrapper (layout raíz). */
+body:has(.luna) > header {
+  /* FIXED y no sticky: sticky deja el header EN EL FLUJO y empuja el
+     escenario 65px — la escena entera quedaba corrida y el wordmark se
+     desbordaba por abajo (bug cazado midiendo: cieloTop=65). Flotando, el
+     escenario arranca en y=0 y el header vive encima, como en Zentro. */
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  background: linear-gradient(to bottom, rgba(3, 3, 5, 0.85), transparent);
+  border-color: transparent;
+  backdrop-filter: none;
+}
+/* Contraste del nav (slide 15): blanco al 70% que sube a 1.0 con brillo
+   violeta al hover — hoy los links "se pierden casi por completo". */
+body:has(.luna) > header a {
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.2s ease, text-shadow 0.2s ease, opacity 0.2s ease;
+}
+body:has(.luna) > header a:hover {
+  color: rgba(255, 255, 255, 1);
+  opacity: 1;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--luna-accent, #7a66ff) 75%, transparent);
+}
+
+/* Mismo principio que el header, para los separadores de sección: el
+   border-t de Testimonio/Servicios/Constelación/Contacto viene del diseño
+   de fondo sólido, donde una hairline separa superficies. Sobre el mar
+   transparente no hay superficies que separar — la línea cruzaba el agua de
+   lado a lado y se leía como costura/glitch (QA ronda 2, y≈172 en 1680).
+   Se apaga SOLO dentro de .luna: el home actual conserva sus separadores. */
+.luna .border-t {
+  border-top-color: transparent;
 }
 
 /* ————— El mar de página completa —————
@@ -51,7 +95,9 @@
   position: absolute;
   inset: 0;
   background: var(--luna-void);
-  opacity: calc(0.48 * var(--post, 0));
+  /* 0.58 y no 0.48: con el camino de luz encendido a pleno, el body copy de
+     #servicios quedaba sobre glitter blanco animado (QA 24-ago) */
+  opacity: calc(0.58 * var(--post, 0));
 }
 .luna-mar__estrellas {
   position: absolute;
@@ -74,7 +120,10 @@
   position: absolute;
   inset-inline: 0;
   top: 0;
-  height: 30%;
+  /* 20% y no 30%: el velo alto apagaba el arranque del reflejo de la luna y
+     lo despegaba del horizonte (ronda 2); al 14% la costura del agua se veía
+     como banda brillante con borde (ronda 3) */
+  height: 20%;
   background: linear-gradient(to bottom, var(--luna-void), transparent);
   z-index: 1;
 }
@@ -117,42 +166,120 @@
   position: absolute;
   top: 0;
   left: var(--astro-x, 50%);
-  width: clamp(150px, 25vw, 320px);
+  /* más chico que la luna del cielo: la ronda 1 con 25vw daba una mancha
+     gris del tamaño del agua entera */
+  width: clamp(120px, 17vw, 250px);
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 50%;
+  /* el reflejo se ESTIRA hacia el espectador (scaleY alto), no es un disco
+     aplastado — un círculo limpio invertido leía como marca de agua */
+  /* aplastado, no círculo perfecto: la superficie del agua se ve en escorzo
+     — un disco redondo leía como spotlight (ronda 2) */
   transform: translateX(calc(-50% + var(--mx, 0) * 10px)) translateY(-16%)
-    scale(1, -0.55);
-  opacity: 0.38;
-  filter: blur(2px);
+    scale(1.2, -0.78);
+  opacity: 0.6;
+  /* brightness+contrast: sin ellos los grises de la foto en blend screen se
+     leían como niebla gris, no como LUZ reflejada */
+  filter: blur(1.5px) brightness(1.5) contrast(1.25);
   mix-blend-mode: screen;
-  mask-image: radial-gradient(closest-side, #000 42%, transparent 74%);
+  /* máscara apretada: el brillo muere rápido — lo que sigue hacia abajo lo
+     recoge la estela, no un halo gris gigante */
+  mask-image: radial-gradient(60% 56% at 50% 46%, #000 40%, transparent 72%);
   transition: left 1.8s cubic-bezier(0.45, 0, 0.2, 1);
 }
 /* las franjas que rompen el disco en agua: color del vacío sobre el blend
-   screen = franjas que APAGAN, y el desplazamiento vertical las hace nadar */
+   screen = franjas que APAGAN. La crítica de QA: UNA repeating-gradient es
+   una escanlínea mecánica. Por eso son DOS capas con periodos primos entre
+   sí (23px y 13px): su interferencia solo se repite cada ~300px — al ojo,
+   agua desordenada. Cada una nada a su velocidad y la fina además serpentea
+   en X; el blur les quita el borde de sierra. */
 .luna-mar__rotura {
   position: absolute;
-  inset: -40px 0;
+  inset: -54px 0;
+  /* franjas ANCHAS y desiguales, con más luz que sombra: cortes de ola, no
+     escanlíneas. El periodo 27 y el 13 de la fina son primos entre sí — su
+     interferencia solo se repite cada ~350px */
   background: repeating-linear-gradient(
     to bottom,
-    transparent 0 5px,
-    var(--luna-void-deep) 5px 9px,
-    transparent 9px 17px,
-    var(--luna-void-deep) 17px 20px
+    transparent 0 9px,
+    color-mix(in srgb, var(--luna-void-deep) 62%, transparent) 11px 15px,
+    transparent 17px 24px,
+    color-mix(in srgb, var(--luna-void-deep) 38%, transparent) 25px 27px
   );
-  animation: luna-rotura 6s linear infinite;
+  /* blur alto a propósito: las franjas MODULAN el brillo, no lo cortan —
+     con más contraste el disco se leía como persiana (ronda 4) */
+  filter: blur(3px);
+  animation: luna-rotura 9s linear infinite;
 }
 @keyframes luna-rotura {
-  to { transform: translateY(40px); }
+  to { transform: translateY(54px); }
+}
+.luna-mar__rotura--fina {
+  inset: -26px -8%;
+  /* ladeada 2°: dos tramas perfectamente horizontales suman persiana; el
+     cruce leve es lo que el ojo acepta como agua desordenada */
+  background: repeating-linear-gradient(
+    178deg,
+    transparent 0 6px,
+    color-mix(in srgb, var(--luna-void-deep) 46%, transparent) 7px 9px,
+    transparent 10px 13px
+  );
+  filter: blur(1.8px);
+  animation: luna-rotura-fina 5.2s ease-in-out infinite alternate;
+}
+@keyframes luna-rotura-fina {
+  from { transform: translateY(0) translateX(-2.5%); }
+  to { transform: translateY(-26px) translateX(2.5%); }
+}
+/* la estela: columna de luz que ancla el disco al camino — sin ella el
+   reflejo flotaba desconectado del brillo que arranca más abajo (QA 24-ago) */
+.luna-mar__estela {
+  position: absolute;
+  top: 6%;
+  left: var(--astro-x, 50%);
+  width: clamp(80px, 12vw, 165px);
+  /* llega hasta donde arranca el brillo del camino: en la ronda 2 moría a
+     mitad de agua y quedaba una banda oscura entre disco y camino */
+  height: 92%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--luna-halo) 32%, transparent) 0%,
+    color-mix(in srgb, var(--luna-halo) 20%, transparent) 55%,
+    color-mix(in srgb, var(--luna-halo) 10%, transparent) 82%,
+    transparent 100%
+  );
+  /* caída lateral: sin la máscara el gradiente era un rectángulo de bordes
+     verticales duros — una "puerta de luz" en vez de estela (ronda 3) */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 38% 62%,
+    transparent 100%
+  );
+  filter: blur(9px);
+  mix-blend-mode: screen;
+  /* respira con la fase igual que el camino, y se apaga bajo el contenido */
+  opacity: calc(
+    (0.25 + 0.75 * var(--reflejo, 0.05)) * (1 - 0.68 * var(--post, 0)) * 0.8
+  );
+  transition: opacity 1.6s ease, left 1.8s cubic-bezier(0.45, 0, 0.2, 1);
+  animation: luna-estela-tiembla 3.8s ease-in-out infinite alternate;
+}
+@keyframes luna-estela-tiembla {
+  from { transform: translateX(-50%) scaleX(1); }
+  to { transform: translateX(-50%) scaleX(1.12); }
 }
 
 .luna-reflejo {
   position: absolute;
   inset: 0;
   mix-blend-mode: screen;
-  /* pleno al cierre de la historia; se atenúa cuando hay contenido encima */
-  opacity: calc(var(--reflejo, 0.05) * (1 - 0.45 * var(--post, 0)));
+  /* pleno al cierre de la historia; con contenido encima cae a ~un tercio:
+     con 0.45 el glitter a brillo pleno pasaba justo detrás de la columna de
+     texto de #servicios y el body copy no se leía (QA 24-ago) */
+  opacity: calc(var(--reflejo, 0.05) * (1 - 0.68 * var(--post, 0)));
   transition: opacity 1.6s ease;
   animation: luna-camino-tiembla 4.5s ease-in-out infinite alternate;
 }
@@ -193,15 +320,33 @@
   color: var(--luna-muted);
 }
 
-/* Wordmark gigante del hero, cortado por el borde inferior (patrón Zentro) */
+/* Wordmark gigante del hero — corrección slide 1: ya NO cortado por el
+   borde; pegado abajo CON un poco de margen y CON GLASMORFISMO. El vidrio
+   es una placa esmerilada que deja ver el agua borrosa a través, y las
+   letras van semitranslúcidas para que la luz del mar las atraviese. */
 .luna-wordmark {
+  display: inline-block;
   font-family: var(--font-geist), sans-serif;
   font-weight: 400;
-  font-size: clamp(5rem, 19vw, 19rem);
-  line-height: 0.78;
-  letter-spacing: -0.03em;
-  color: var(--luna-glow);
+  font-size: clamp(3.4rem, 12.5vw, 12.5rem);
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  color: rgba(244, 244, 248, 0.88);
   user-select: none;
+  padding: 0.05em 0.18em 0.09em;
+  border-radius: 14px;
+  /* vidrio FINO: en la ronda 1 la placa parecía un botón gigante — menos
+     relleno, borde apenas insinuado, sin sombra pesada; el efecto lo
+     carga el blur del agua a través, no la caja */
+  background: linear-gradient(
+    to bottom,
+    rgba(244, 244, 248, 0.045),
+    rgba(244, 244, 248, 0.015)
+  );
+  -webkit-backdrop-filter: blur(9px) saturate(1.2);
+  backdrop-filter: blur(9px) saturate(1.2);
+  border: 1px solid rgba(244, 244, 248, 0.09);
+  box-shadow: inset 0 1px 0 rgba(244, 244, 248, 0.1);
 }
 
 /* ————— El cielo: estrellas CSS de placeholder (imagen real después) —————
@@ -259,21 +404,29 @@
   left: var(--astro-x, 50%);
   width: clamp(180px, 30vw, 380px);
   aspect-ratio: 1;
-  /* redondo + oculto: la sombra de fase que viaja se recorta al disco y no
-     pasea un borrón oscuro por encima de las estrellas */
-  overflow: hidden;
-  border-radius: 50%;
   transform: translateX(calc(-50% + var(--mx, 0) * 16px))
     translateY(calc(var(--my, 0) * 9px));
   transition: left 1.8s cubic-bezier(0.45, 0, 0.2, 1);
 }
+/* el recorte circular vive en el DISCO (adentro), no en el astro: así la
+   sombra de fase que viaja no pasea un borrón por las estrellas, y el halo
+   del astro respira SIN recortarse */
+.luna-astro__disco {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+}
 .luna[data-beat="0"] { --astro-x: 72%; }
 
 /* La foto se funde con el cielo: blend screen borra su fondo negro y deja
-   respirar el halo real de la imagen. */
+   respirar el halo real de la imagen. brightness<1: el diagnóstico de las
+   slides — "blanco frío deslumbrante (muy quemado)" — se corrige bajando
+   la exposición del disco y dejando que el GLOW lo ponga la atmósfera. */
 .luna-astro__img {
   mix-blend-mode: screen;
   border-radius: 50%;
+  filter: brightness(0.86) contrast(0.97);
 }
 
 /* La fase: sombra circular color vacío que se retira a la derecha. Borde
@@ -289,15 +442,18 @@
 }
 
 /* Halo: crece con la fase. Va en un div detrás del SVG. */
+/* Atmósfera (slide 15: "glow en lugar de parche"): degradado radial ancho
+   y suave alrededor del disco — la luz focalizada, no regada. */
 .luna-astro::before {
   content: "";
   position: absolute;
-  inset: -55%;
+  inset: -70%;
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--luna-halo) 26%, transparent) 0%,
-    transparent 62%
+    color-mix(in srgb, var(--luna-glow) 22%, transparent) 0%,
+    color-mix(in srgb, var(--luna-halo) 12%, transparent) 34%,
+    transparent 64%
   );
   opacity: var(--halo, 0.1);
   transition: opacity 1.4s ease;
@@ -325,7 +481,14 @@
   background-image: url("/luna/estrellas.jpg");
   background-size: cover;
   background-position: center;
-  mask-image: linear-gradient(to bottom, #000 62%, transparent 84%);
+  /* Espacio negativo (slide 15): "no llenes la pantalla de estrellas
+     brillantes en el centro; la luna y el título son los únicos reyes".
+     Además del fade hacia el agua, un hueco radial calla las estrellas en
+     la zona del titular y el paso de la luna. */
+  mask-image:
+    linear-gradient(to bottom, #000 62%, transparent 84%),
+    radial-gradient(58% 50% at 45% 36%, rgba(0, 0, 0, 0.25) 25%, #000 78%);
+  mask-composite: intersect;
 }
 
 /* Nubes: deriva lentísima, apenas presentes. blend screen sobre el cielo. */
@@ -355,10 +518,36 @@
   position: absolute;
   bottom: 29svh;
   left: 14%;
-  width: clamp(50px, 6.5vw, 84px);
-  color: #322a4d;
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--luna-halo) 65%, transparent));
+  /* más grande que antes: a 50-84px las orejas y la cola no alcanzaban a
+     leerse y el conjunto era una mancha (QA ronda 2) */
+  width: clamp(62px, 8vw, 106px);
+  /* la crítica de la ronda 2: "blob morado difuso con glow". El problema era
+     el cuerpo claro (#322a4d) + glow de 7px: sobre cielo oscuro, un cuerpo a
+     medio camino con halo difuso ES una mancha. La solución es la del beat 5
+     (que sí se lee): silueta OSCURA y el contorno lo dibuja la LUZ, no el
+     cuerpo. El rim de arriba es un drop-shadow SIN blur desplazado -1.2px:
+     una arista nítida de luz de luna sobre orejas, lomo y cola — el perfil
+     del gato aparece dibujado a línea. El segundo shadow es un ambiente
+     mínimo para que no se vea recortado con tijera. */
+  color: #191330;
+  filter: drop-shadow(0 -1.2px 0 color-mix(in srgb, var(--luna-halo) 85%, transparent))
+    drop-shadow(0 0 12px color-mix(in srgb, var(--luna-halo) 14%, transparent));
   transform: translateX(-50%);
+  transition: color 0.9s ease, filter 0.9s ease;
+}
+/* Beat 5: el gato PISA el camino de luz. Contra fondo brillante el borde de
+   luz lo convertía en "blob neón flotando" (QA 24-ago) — sobre luz, el gato
+   es CONTRALUZ: silueta hundida, sombra de contacto hacia abajo en vez de
+   glow. La firma del BRIEF (silueta contra atmósfera) se mantiene: solo
+   cambia contra QUÉ contrasta. */
+.luna[data-beat="5"] .luna-gato {
+  color: #171126;
+  filter: drop-shadow(0 3px 7px rgba(4, 2, 8, 0.65));
+}
+/* y su reflejo se vuelve sombra recortada en el agua iluminada */
+.luna[data-beat="5"] .luna-gato__reflejo {
+  color: #0d0a16;
+  opacity: 0.4;
 }
 /* la caminata: bob de pasos con squash al pisar — va en el SVG interno
    porque el transform del contenedor lo escribe el scrub */
@@ -459,9 +648,12 @@
   }
 }
 
-/* El wordmark del hero se retira al entrar la historia */
+/* El wordmark del hero se retira al entrar la historia. 0.45s y no 1s: con
+   scroll rápido el titular quedaba translúcido ENCIMA de "La idea" hasta un
+   segundo entero (QA 24-ago) — la salida debe perder la carrera contra el
+   revelado del beat (0.9s), no ganársela. */
 .luna-hero-capa {
-  transition: opacity 1s ease, transform 1s ease;
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 /* [data-beat] presente Y distinto de 0: antes de que el JS escriba el
    atributo (SSR, no-JS) el hero se queda visible, que es el estado legible */
@@ -469,6 +661,110 @@
   opacity: 0;
   transform: translateY(4svh);
   pointer-events: none;
+}
+
+/* ————— Índice de fases: la columna mono de la derecha —————
+   Nació de la crítica de la ronda 2: en viewports ALTOS el tercio central
+   del hero quedaba en cielo negro vacío entre el titular y el agua. La vara
+   (StringTune llena el frame con textura FUNCIONAL, no con relleno) pide
+   contenido real ahí: este es el índice de la historia — las seis fases,
+   con la activa encendida. Llena el centro-derecha en el hero Y acompaña
+   toda la narrativa como tabla de capítulos. */
+.luna-indice {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  flex-direction: column;
+  gap: 1.05rem;
+  align-items: flex-end;
+  text-align: right;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--luna-muted);
+  list-style: none;
+}
+/* solo desde sm: en móvil el centro lo ocupa el propio texto del beat */
+@media (min-width: 640px) {
+  .luna-indice {
+    display: flex;
+    right: 3rem;
+  }
+}
+.luna-indice li {
+  opacity: 0.42;
+  transition: opacity 0.5s ease, color 0.5s ease;
+}
+.luna-indice li[data-activa="true"] {
+  opacity: 1;
+  color: var(--luna-glow);
+}
+.luna-indice li[data-activa="true"] .luna-indice__num {
+  color: var(--luna-accent);
+}
+.luna-indice__num {
+  margin-right: 0.7em;
+}
+/* el guion que señala la fase activa: crece desde la derecha del número */
+.luna-indice li::after {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 1px;
+  margin-left: 0.7em;
+  vertical-align: middle;
+  background: var(--luna-accent);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.luna-indice li[data-activa="true"]::after {
+  width: 1.6rem;
+}
+
+/* ————— El horizonte: la costura sky/agua declarada, no escondida —————
+   Segunda mitad del mismo fix: en pantallas altas la línea de agua quedaba
+   perdida en el vacío. Un hairline que muere en los bordes + la coordenada
+   de Bogotá en voz mono marcan DÓNDE está la orilla — textura editorial al
+   estilo StringTune, y funcional: es el suelo que pisa el gato. Vive en la
+   capa hero (se retira con la historia: durante los beats la orilla ya la
+   cuenta el agua misma). */
+.luna-horizonte {
+  bottom: calc(30svh + 0.6rem);
+  padding: 0 1rem 0.7rem;
+  /* la coordenada va a la DERECHA: el gato arranca parado a la izquierda de
+     la orilla y el rótulo le pasaba por encima (visto en 1680, ronda 3) */
+  text-align: right;
+}
+@media (min-width: 640px) {
+  .luna-horizonte {
+    padding-inline: 3rem;
+  }
+}
+.luna-horizonte::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--luna-line) 14% 86%,
+    transparent
+  );
+}
+
+/* En viewport ALTO (retrato o casi), la luna crece con la ALTURA: el 30vw
+   pensado para panorámico dejaba un disco chico flotando en un cielo enorme
+   (la zona muerta de la ronda 2). Media query por aspecto y no por ancho:
+   un desktop angosto y alto es exactamente el caso reportado (1280×1500). */
+@media (max-aspect-ratio: 19/20) {
+  .luna-astro {
+    width: clamp(180px, 40svh, 520px);
+  }
 }
 
 /* Progreso: hairline que se llena (halo sobre línea tenue) */
@@ -543,6 +839,8 @@ html[data-luna-loader="play"] .luna-loader {
   .luna-mar__marea,
   .luna-mar__corriente,
   .luna-mar__rotura,
+  .luna-mar__rotura--fina,
+  .luna-mar__estela,
   .luna-reflejo,
   .luna-gato.is-caminando > svg,
   .luna-gato .cat-tail {
@@ -552,8 +850,12 @@ html[data-luna-loader="play"] .luna-loader {
   .luna-astro::before,
   .luna-astro__sombra,
   .luna-mar__luna,
+  .luna-mar__estela,
   .luna-reflejo,
   .luna-hero-capa,
+  .luna-gato,
+  .luna-indice li,
+  .luna-indice li::after,
   .luna-progreso__fill {
     transition: none;
   }
