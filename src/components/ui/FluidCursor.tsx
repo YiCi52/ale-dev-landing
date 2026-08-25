@@ -52,16 +52,9 @@ export function FluidCursor() {
   // /lab monta sus propias escenas WebGL: dos contextos a resolución retina en
   // la misma página compiten por GPU y producen tirones al scrollear.
   const isLabRoute = pathname?.startsWith("/lab") ?? false;
-  /*
-    /luna: APAGADO. Se probó re-teñirlo como estela de agua (24-ago) y el
-    veredicto de Alejandro fue exacto: "es eso, humo" — un splat luminoso
-    difuso lee como neblina sin importar el tinte. El agua de /luna habla
-    con sus anillos y su propia marea.
-  */
-  const isLunaRoute = pathname?.startsWith("/luna") ?? false;
 
   useEffect(() => {
-    if (isLabRoute || isLunaRoute) return;
+    if (isLabRoute) return;
 
     const container = ref.current;
     if (!container) return;
@@ -158,7 +151,7 @@ export function FluidCursor() {
       // Limpia el canvas que el sim inyecta (evita duplicados con StrictMode).
       container.replaceChildren();
     };
-  }, [isLabRoute, isLunaRoute]);
+  }, [isLabRoute]);
 
   return (
     <div

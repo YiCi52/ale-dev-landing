@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CatMascot } from "@/components/ui";
+import { Container } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
 /*
@@ -46,21 +46,12 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-[color:var(--color-border)] bg-[color:var(--color-bg)]/80 backdrop-blur-md">
-      {/* Full-bleed con padding propio, no Container centrado: la marca se
-          pega al borde izquierdo (brief 24-ago) — el patrón de los
-          referentes (Zentro ancla su ✳ y su [Menu] a las esquinas). */}
-      <div className="px-5 sm:px-10">
+      <Container size="wide">
         <div className="flex h-16 items-center justify-between gap-6">
-          {/* La marca lleva el LOGO (el gato del sello) — pedido del brief
-              24-ago: "falta el logo, y pegar castillo studio más a la
-              izquierda". El corrimiento lo da el Container wide + -ml. */}
           <Link
             href="/"
-            className="-ml-1 flex items-center gap-2.5 font-mono text-xs uppercase tracking-[0.22em] text-foreground transition-opacity hover:opacity-70"
+            className="font-mono text-xs uppercase tracking-[0.22em] text-foreground transition-opacity hover:opacity-70"
           >
-            <span className="block h-6 w-6 shrink-0" aria-hidden>
-              <CatMascot className="h-full w-full" />
-            </span>
             Castillo Studio
           </Link>
 
@@ -124,7 +115,7 @@ export function Header() {
             </ul>
           </nav>
         ) : null}
-      </div>
+      </Container>
     </header>
   );
 }
