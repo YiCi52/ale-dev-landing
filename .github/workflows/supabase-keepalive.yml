@@ -8,10 +8,15 @@ name: Supabase keepalive
 #   · los backups automáticos de Supabase (los hace la plataforma, no cuentan como actividad)
 #   · el CI (solo corre en push)
 #   · los escenarios de Make disparados por webhook (solo corren si YA llegó un lead)
+#   · las peticiones RECHAZADAS (401). Hasta el 16-sep-2026 esto pedía la raíz
+#     `/rest/v1/`, que con la llave publicable responde 401: falló en cada corrida
+#     desde el 28-ago y aceptaba 404 como éxito.
 #
-# Esto toca la API cada 3 días — la mitad del umbral, para aguantar un fallo suelto.
-# Es la capa 13 (backup/recuperación) de la constelación: un sitio que se apaga
-# solo a los 7 días no está entregado.
+# Ahora lee la fila única de `public.latido`, que anon sí puede leer. Solo un 200
+# con la fila cuenta como éxito.
+#
+# Corre cada 3 días, la mitad del umbral, para aguantar un fallo suelto. Es respaldo
+# del cron diario de Vercel (/api/keepalive), que lee la misma tabla.
 
 on:
   schedule:
@@ -23,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Tocar la API de Supabase
+      - name: Leer el latido de Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -33,21 +38,19 @@ jobs:
             exit 1
           fi
 
-          # GET a la raíz del REST API: cuenta como actividad y no lee ni escribe datos.
           code=$(curl -s -o /tmp/out.txt -w "%{http_code}" --max-time 30 \
-            "${SUPABASE_URL}/rest/v1/" \
+            "${SUPABASE_URL}/rest/v1/latido?select=id&limit=1" \
             -H "apikey: ${SUPABASE_ANON_KEY}")
 
           echo "HTTP $code"
 
-          # 200 y 404 son respuestas válidas: el proyecto está despierto y respondiendo.
-          if [ "$code" = "200" ] || [ "$code" = "404" ]; then
-            echo "✅ Proyecto activo"
+          if [ "$code" = "200" ] && grep -q '"id"' /tmp/out.txt; then
+            echo "✅ Latido leído: el proyecto está activo y la petición cuenta"
             exit 0
           fi
 
-          # 503/540 = pausado o arrancando. Falla ruidosamente: el correo de
-          # GitHub Actions ES la alerta. Un keepalive que falla en silencio no sirve.
-          echo "::error::Supabase respondió $code — el proyecto puede estar PAUSADO. Revisar el dashboard."
+          # 401 = llave vieja o sin permiso · 503/540 = pausado o arrancando.
+          # Falla ruidosamente: el correo de GitHub Actions ES la alerta.
+          echo "::error::Supabase respondió $code sin el latido — revisar la llave del secret o si el proyecto está PAUSADO."
           head -c 400 /tmp/out.txt
           exit 1
