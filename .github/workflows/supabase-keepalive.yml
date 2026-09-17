@@ -1,6 +1,8 @@
 name: Supabase keepalive
 
-# Supabase pausa los proyectos del plan gratuito tras 7 DÍAS SIN ACTIVIDAD.
+# Supabase pausa los proyectos del plan gratuito por inactividad (7 días). Su doc
+# (docs/guides/platform/free-project-pausing) pide "a few user requests to the
+# database each day" y no garantiza que una lectura diaria alcance.
 # Un proyecto pausado deja de aceptar escrituras: el formulario de leads falla
 # y ese lead se pierde sin que nadie se entere.
 #
@@ -8,49 +10,81 @@ name: Supabase keepalive
 #   · los backups automáticos de Supabase (los hace la plataforma, no cuentan como actividad)
 #   · el CI (solo corre en push)
 #   · los escenarios de Make disparados por webhook (solo corren si YA llegó un lead)
-#   · las peticiones RECHAZADAS (401). Hasta el 16-sep-2026 esto pedía la raíz
-#     `/rest/v1/`, que con la llave publicable responde 401: falló en cada corrida
-#     desde el 28-ago y aceptaba 404 como éxito.
+#   · pegarle a la raíz `/rest/v1/` o a `/auth/v1/health`: no consultan la base
 #
-# Ahora lee la fila única de `public.latido`, que anon sí puede leer. Solo un 200
-# con la fila cuenta como éxito.
+# ⚠️ 13-ago → 16-sep-2026: este workflow falló sus 13 corridas porque el repo NO
+# tenía los secrets SUPABASE_URL / SUPABASE_ANON_KEY. Nunca llegó a Supabase y
+# nadie lo vio. Sin esos secrets (Settings → Secrets and variables → Actions),
+# esto no protege nada.
 #
-# Corre cada 3 días, la mitad del umbral, para aguantar un fallo suelto. Es respaldo
-# del cron diario de Vercel (/api/keepalive), que lee la misma tabla.
+# Qué hace, cada 6 horas:
+#   1. Lee la fila de `public.latido` (anon solo puede leerla): actividad real.
+#   2. Revisa `visto_at`, la hora que marca el cron diario de Vercel
+#      (/api/keepalive). Si tiene más de 30 h, el cron no está corriendo: FALLA.
+#      El correo de "Run failed" de GitHub ES la alerta.
 
 on:
   schedule:
-    - cron: "17 8 */3 * *" # cada 3 días, 08:17 UTC (3:17am Colombia)
+    - cron: "23 */6 * * *" # 00:23, 06:23, 12:23 y 18:23 UTC
   workflow_dispatch: {} # para poder dispararlo a mano y comprobar que sirve
 
 jobs:
-  ping:
+  latido:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Leer el latido de Supabase
+      - name: Leer el latido y vigilar el cron de Vercel
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          MAX_HORAS: "30"
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
-            echo "::error::Faltan los secrets SUPABASE_URL y/o SUPABASE_ANON_KEY en el repo."
+            echo "::error::Faltan los secrets SUPABASE_URL y/o SUPABASE_ANON_KEY en el repo (Settings → Secrets and variables → Actions)."
             exit 1
           fi
 
-          code=$(curl -s -o /tmp/out.txt -w "%{http_code}" --max-time 30 \
-            "${SUPABASE_URL}/rest/v1/latido?select=id&limit=1" \
-            -H "apikey: ${SUPABASE_ANON_KEY}")
+          salida=$(mktemp)
+          # `|| true`: sin red, curl sale con 7 y bash -e cortaría antes del ::error::.
+          code=$(curl -s -o "$salida" -w "%{http_code}" --max-time 30 \
+            "${SUPABASE_URL%/}/rest/v1/latido?select=id,visto_at&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" || true)
 
           echo "HTTP $code"
 
-          if [ "$code" = "200" ] && grep -q '"id"' /tmp/out.txt; then
-            echo "✅ Latido leído: el proyecto está activo y la petición cuenta"
-            exit 0
+          if [ "$code" != "200" ] || ! jq -e '.[0].id' "$salida" >/dev/null 2>&1; then
+            # 401 = llave vieja o sin permiso · 503/540 = pausado o arrancando · 000 = sin red.
+            echo "::error::Supabase respondió $code sin el latido — revisar la llave del secret o si el proyecto está PAUSADO."
+            head -c 400 "$salida"
+            exit 1
+          fi
+          echo "✅ Latido leído"
+
+          visto=$(jq -r '.[0].visto_at // empty' "$salida")
+          if [ -z "$visto" ]; then
+            echo "::error::latido.visto_at está vacío: el cron de Vercel nunca marcó la hora."
+            exit 1
           fi
 
-          # 401 = llave vieja o sin permiso · 503/540 = pausado o arrancando.
-          # Falla ruidosamente: el correo de GitHub Actions ES la alerta.
-          echo "::error::Supabase respondió $code sin el latido — revisar la llave del secret o si el proyecto está PAUSADO."
-          head -c 400 /tmp/out.txt
-          exit 1
+          # Edad en segundos con jq (igual en Linux y macOS). Postgres entrega
+          # "2026-09-17T09:06:50.123456+00:00"; fromdateiso8601 solo acepta
+          # "…:SSZ", así que se quitan los decimales y el +00:00. Si el formato
+          # cambia, jq falla y esto sale en ROJO: nunca un verde sin calcular.
+          edad=$(jq -er '.[0].visto_at | sub("\\.[0-9]+"; "") | sub("\\+00:00$"; "Z") | now - fromdateiso8601 | floor' "$salida" 2>/dev/null || true)
+          if ! [[ "$edad" =~ ^-?[0-9]+$ ]]; then
+            echo "::error::No pude calcular la edad del latido (visto_at='$visto'). Revisar el formato."
+            exit 1
+          fi
+
+          if [ "$edad" -lt -300 ]; then
+            echo "::error::latido.visto_at está en el futuro ('$visto'): alguien escribió la hora a mano, no el cron."
+            exit 1
+          fi
+
+          horas=$(( edad / 3600 ))
+          echo "Último latido del cron: $visto (hace ${horas} h)"
+          if [ "$edad" -gt $(( MAX_HORAS * 3600 )) ]; then
+            echo "::error::El cron de Vercel no marca el latido hace ${horas} h (máximo ${MAX_HORAS}). Revisar Vercel → castillostudio → Cron Jobs y los logs de /api/keepalive."
+            exit 1
+          fi
+          echo "✅ El cron de Vercel está latiendo"

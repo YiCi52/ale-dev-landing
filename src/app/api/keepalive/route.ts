@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 /*
   Keepalive — Supabase free tier PAUSA proyectos tras ~7 días sin actividad.
   Vercel Cron (vercel.json) pega acá una vez al día y la GitHub Action
-  `supabase-keepalive.yml` toca la misma tabla cada 3 días, por si Vercel falla.
+  `supabase-keepalive.yml` lee la misma tabla cada 6 horas, por si Vercel falla.
 
   ⚠️ POR QUÉ LEE `latido` Y NO `leads` (16-sep-2026):
   antes leía `leads`, pero anon no tiene SELECT sobre esa tabla. PostgREST
@@ -13,6 +13,14 @@ import { supabase } from "@/lib/supabase";
   Supabase mandó igual el aviso de pausa. `latido` tiene una sola fila
   constante que anon puede leer, así que el keepalive recibe un 200 real.
   `leads` sigue cerrada. Cualquier error, o que falte la fila, es un FALLO.
+
+  ⚠️ POR QUÉ ESCRIBE Y NO SOLO LEE (17-sep-2026):
+  la doc de Supabase pide "a few user requests to the database each day" y no
+  garantiza que una lectura diaria alcance (hay reportes de sep-2026 de avisos
+  de pausa con un SELECT diario). Cada corrida hace UPDATE de `visto_at`, la
+  única columna que anon puede tocar; un trigger fuerza now(). Esa hora es
+  además la PRUEBA de que el cron corrió: la Action y `verificar_salud.py`
+  avisan si se vence (~30 h).
 
   ⚠️ POR QUÉ DISTINGUE 503 DE 401 (9-sep-2026):
   la versión anterior devolvía 401 tanto si el secreto FALTABA como si estaba
@@ -55,7 +63,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { data, error } = await supabase.from("latido").select("id").limit(1);
+    const { data, error } = await supabase
+      .from("latido")
+      .update({ visto_at: new Date().toISOString() })
+      .eq("id", 1)
+      .select("id, visto_at");
 
     if (error) {
       return fallo(
@@ -63,12 +75,13 @@ export async function GET(request: NextRequest) {
         502,
       );
     }
-    if (!data || data.length === 0) {
-      return fallo("La tabla latido respondió sin su fila única — revisar la migración", 502);
+    // Si RLS bloquea el UPDATE, PostgREST no da error: devuelve 0 filas.
+    const marca = data?.[0]?.visto_at;
+    if (!marca) {
+      return fallo("La fila única de latido no quedó marcada (0 filas o sin visto_at) — revisar la migración y la política de UPDATE", 502);
     }
+    return NextResponse.json({ ok: true, visto_at: marca });
   } catch (e) {
     return fallo(`Supabase no respondió: ${e instanceof Error ? e.message : String(e)}`, 502);
   }
-
-  return NextResponse.json({ ok: true });
 }
