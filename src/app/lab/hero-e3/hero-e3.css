@@ -1,0 +1,86 @@
+/* E3 · UMBRAL (prueba de lab) — solo lo que agrega esta prueba sobre hero.css */
+
+/* La sala de prueba vive en la capa del siguiente espacio: DEBAJO del iris
+   (.he-cristalx, z 3). El JS la recorta a la pupila del cuadro dibujado. */
+.he-espacio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   EL REMATE DE p=1 — 17-sep-2026.
+
+   Aqui habia un `display: none` sobre .he-siguiente__marca y .he-rotulo, con su
+   razon escrita: "El texto del placeholder no participa en la prueba del
+   mecanismo". Era correcto mientras la pregunta era solo si cruzar la pupila se
+   siente como ENTRAR. Cerrando el hero deja de serlo: medido, en p=1 no quedaba
+   nada en pantalla, y eso era TODO lo que pasaba — en la escena base los dos
+   textos caen dentro del viewport a 1920x1080, 1440x900, 1280x720 y 1440x700,
+   asi que no habia ningun recorte que arreglar.
+
+   Al reactivarlos salieron los dos problemas de composicion que si eran reales:
+
+   1. CAPA. .he-siguiente__marca vivia en z2, debajo de .he-cristalx (z3), y
+      desde p=0.94 el umbral dibuja sala+iris a cuadro completo en esa capa. La
+      marca esta programada para entrar entre 0.955 y 0.985: justo dentro del
+      tramo en que queda tapada. No es que se leyera mal — no podia verse nunca.
+      Se arregla en el TSX, moviendola a la capa del texto (z6), que es donde le
+      toca por ser texto. El FONDO de .he-siguiente se queda en z2 a proposito:
+      la sala tiene que seguir viendose POR la pupila, no encima del iris.
+
+   2. CONTRASTE. El color del texto daba por supuesta una sala oscura
+      (.he-siguiente es un degradado #17142a -> #0b0a16), pero la sala de E3 es
+      de hormigon claro: en la banda del rotulo la luminancia media es 94 y el
+      maximo 255. Texto casi blanco (#e8e6f2) sobre suelo claro.
+      Se resuelve con un velo y NO cambiandole el color: un color acertaria con
+      esta sala y volveria a fallar con la siguiente, y la sala es placeholder.
+
+   No se toca el contenido, ni el timing, ni la sala.
+   PARA VOLVER ATRAS: borrar este bloque (y la linea del TSX que mueve la marca).
+--------------------------------------------------------------------------- */
+
+/* La marca pasa a la capa del texto, pero FUERA DEL FLUJO. Es imprescindible:
+   metida en el flujo de .he-texto el bloque crecia 149px, y .he-rotulo cuelga de
+   el con `bottom: -30svh`, asi que el rotulo se iba 5px por debajo del borde en
+   1440x900 — el mismo defecto que se venia a arreglar. Fuera del flujo, .he-texto
+   conserva su alto y el rotulo se queda donde estaba (811-830).
+   El centrado vertical usa `translate` y no `transform` porque el JS le escribe
+   `transform: scale(...)` cada fotograma y se pisarian. */
+.he-e3 .he-siguiente__marca {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  translate: 0 -50%;
+  margin-inline: auto;
+}
+
+/* velo de legibilidad. No es decoracion: es lo que permite leer un texto sobre
+   una sala cuyo brillo no controlamos. Va detras de cada texto y solo lo que
+   ocupa el texto, no una banda a todo el ancho. */
+.he-e3 .he-siguiente__marca,
+.he-e3 .he-rotulo {
+  isolation: isolate;
+}
+.he-e3 .he-siguiente__marca::before,
+.he-e3 .he-rotulo::before {
+  content: "";
+  position: absolute;
+  inset: -0.75em -1.5em;
+  z-index: -1;
+  border-radius: 999px;
+  /* medido: sin velo el remate da 3.3 de ratio WCAG sobre esta sala (falla AA);
+     con el, 9.9. Sobra margen, asi que el pico se baja y la caida se alarga para
+     que el velo no se lea como un parche con borde. */
+  background: radial-gradient(
+    62% 135% at 50% 50%,
+    rgba(7, 6, 12, 0.72),
+    rgba(7, 6, 12, 0.38) 46%,
+    rgba(7, 6, 12, 0.12) 68%,
+    rgba(7, 6, 12, 0) 86%
+  );
+  pointer-events: none;
+}

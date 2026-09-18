@@ -1,0 +1,110 @@
+/* Lámina de comparación — etapa 0.5. Fondo carbón del MASTER, sin adornos:
+   lo único que se juzga acá es el personaje contra el cristal. */
+
+.gc-lamina {
+  min-height: 100svh;
+  background: #0a0a0c;
+  color: #f2efea;
+  padding: 6svh 4vw 12svh;
+  font-family: var(--font-grotesk), system-ui, sans-serif;
+}
+
+.gc-titulo {
+  margin: 0 0 1svh;
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  letter-spacing: -0.02em;
+}
+
+.gc-bajada {
+  margin: 0 0 6svh;
+  max-width: 62ch;
+  color: #98959e;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.gc-fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 3vw;
+  align-items: end;
+  margin-bottom: 8svh;
+}
+
+.gc-celda {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4svh;
+}
+
+.gc-rotulo {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #98959e;
+}
+
+.gc-caja {
+  position: relative;
+  min-height: 240px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border: 1px dashed rgba(167, 139, 250, 0.18);
+  border-radius: 3px;
+  padding: 20px;
+}
+
+/* la silueta pura necesita ayuda para no desaparecer sobre carbón */
+.gc-silueta { color: #0b0b0f; filter: drop-shadow(0 0 1px rgba(203, 188, 255, 0.55)); }
+.gc-svg { display: block; width: 100%; height: auto; }
+
+/* juntos: aquí se decide si compiten */
+.gc-juntos {
+  position: relative;
+  height: 62svh;
+  border: 1px dashed rgba(167, 139, 250, 0.18);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gc-juntos__gato {
+  position: absolute;
+  left: 8%;
+  bottom: 12%;
+  width: 200px;
+  z-index: 2;
+}
+
+.gc-suelo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(167, 139, 250, 0.3), transparent);
+}
+
+/* escalera de lectura del §7 */
+.gc-escalera {
+  display: flex;
+  align-items: flex-end;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+
+.gc-escalon { text-align: center; color: #98959e; font-size: 10px; }
+.gc-escalon svg { display: block; margin-bottom: 6px; color: #0b0b0f; filter: drop-shadow(0 0 1px rgba(203,188,255,0.5)); }
+
+/* Render 3D del GATO C con alfa, montado junto al cristal REAL del hero.
+   Es la única forma de comparar los dos materiales de verdad: el cristal vive
+   en R3F en el navegador, no en Blender. */
+.gc-juntos__gato3d {
+  position: absolute;
+  left: 4%;
+  bottom: 4%;
+  width: 46%;
+  height: auto;
+  z-index: 2;
+  pointer-events: none;
+}

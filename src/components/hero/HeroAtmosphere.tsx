@@ -3,11 +3,19 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Atmósfera líquida del hero — "mar negro" iridiscente que reacciona al cursor.
- * Blobs oscuros con matices iridiscentes (crystal: cálido + violeta + teal) que
- * fluyen hacia el puntero con lag, dando sensación de líquido. La máscara inferior
- * funde el efecto al negro para que no haya corte con la siguiente sección.
- * Canvas 2D, cero deps. Reduced-motion: queda estático y sin reacción al cursor.
+ * Atmósfera del hero — profundidad de fondo, no espectáculo.
+ * Blobs muy tenues que derivan lento y ceden levemente hacia el puntero. La
+ * máscara inferior funde el efecto al negro para que no haya corte con la
+ * siguiente sección. Canvas 2D, cero deps. Reduced-motion: estático y sin
+ * reacción al cursor.
+ *
+ * 2026-08-26 — dos correcciones:
+ * 1. PALETA. Tenía ámbar, teal y magenta hardcodeados, contra el MASTER, que
+ *    fija Lila como ÚNICO acento ("el color vive en el cristal 3D y en
+ *    chips/eyebrows/hovers"). Ahora los cuatro tonos son escalones del mismo
+ *    eje lila: Lila Ion → Violeta Profundo → abisal.
+ * 2. PESO. Opacidad, deriva, atracción y pulso bajados ~50%: la atmósfera
+ *    competía con el cristal por ser el objeto protagonista. Es el fondo.
  */
 export function HeroAtmosphere() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,12 +30,12 @@ export function HeroAtmosphere() {
     let w = 0;
     let h = 0;
 
-    // Paleta "mar negro" + iridiscencia crystal
+    // Eje lila del sistema (MASTER → "Lila sobre carbón"). Nada fuera de él.
     const cols: Array<[number, number, number]> = [
-      [206, 150, 96], // ámbar cálido
-      [150, 120, 210], // violeta iridiscente
-      [96, 170, 185], // teal frío
-      [188, 120, 155], // magenta apagado
+      [167, 139, 250], // Lila Ion        #A78BFA — el acento del sistema
+      [128, 105, 195], // paso intermedio
+      [91, 74, 150], //  Violeta Profundo #5B4A96 — solo superficies
+      [62, 52, 105], //  Violeta abisal   — casi fundido con el carbón
     ];
 
     const blobs = Array.from({ length: 5 }, (_, i) => ({
@@ -36,10 +44,10 @@ export function HeroAtmosphere() {
       bx: Math.random(),
       by: Math.random(),
       r: 0.32 + Math.random() * 0.3,
-      dx: (Math.random() - 0.5) * 0.00005,
-      dy: (Math.random() - 0.5) * 0.00005,
+      dx: (Math.random() - 0.5) * 0.00003,
+      dy: (Math.random() - 0.5) * 0.00003,
       c: cols[i % cols.length],
-      a: 0.16 + Math.random() * 0.1,
+      a: 0.07 + Math.random() * 0.045,
       ph: Math.random() * 6.28,
     }));
 
@@ -81,14 +89,14 @@ export function HeroAtmosphere() {
         const ddx = pointer.x - b.bx;
         const ddy = pointer.y - b.by;
         const dist = Math.hypot(ddx, ddy);
-        const pull = pointer.active ? Math.max(0, 1 - dist / 0.65) * 0.14 : 0;
+        const pull = pointer.active ? Math.max(0, 1 - dist / 0.65) * 0.08 : 0;
         const targetX = b.bx + ddx * pull;
         const targetY = b.by + ddy * pull;
 
         b.x += (targetX - b.x) * 0.05;
         b.y += (targetY - b.y) * 0.05;
 
-        const pulse = 0.85 + Math.sin(t * 0.0002 + b.ph) * 0.15;
+        const pulse = 0.92 + Math.sin(t * 0.00012 + b.ph) * 0.08;
         const px = b.x * w;
         const py = b.y * h;
         const rad = b.r * Math.max(w, h) * pulse;

@@ -3,18 +3,23 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
+import type { HeroCrystalProps } from "./HeroCrystal";
+
 /**
  * Monta la figura hero SOLO en desktop con puntero fino, gateada por JS (no solo
  * CSS): así Three.js ni se descarga ni renderiza en mobile → protege Lighthouse.
  * Cristal R3F en vivo (Alejandro prefirió esta figura al arco, más translúcida).
  * Carga diferida (ssr:false) → three fuera del bundle inicial.
+ *
+ * Las props son opcionales y se pasan tal cual: sin ellas —como la llama
+ * producción— el cristal queda exactamente donde estaba.
  */
 const HeroCrystal = dynamic(
   () => import("./HeroCrystal").then((m) => m.HeroCrystal),
   { ssr: false },
 );
 
-export function HeroCrystalMount() {
+export function HeroCrystalMount(props: HeroCrystalProps = {}) {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -29,5 +34,5 @@ export function HeroCrystalMount() {
     };
   }, []);
 
-  return enabled ? <HeroCrystal /> : null;
+  return enabled ? <HeroCrystal {...props} /> : null;
 }

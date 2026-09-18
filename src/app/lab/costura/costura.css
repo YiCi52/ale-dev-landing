@@ -1,0 +1,183 @@
+/*
+  ETAPA 0 — costura abstracta. Todo se deriva de --p (0..1), publicado por
+  useProgresoEscena en .cos-escena. Ningún subsistema tiene su propia duración:
+  esa es la diferencia entre "una escena" y "siete animaciones".
+
+  Tramos normalizados (storyboard de SPEC-hero-escena.md):
+    --pg  gato:     0 → 0.42   (camina y se detiene en el contacto)
+    --pc  cristal:  0 → 0.68   (crece hasta volverse superficie)
+    --pp  portal:   0.68 → 0.88 (la máscara se abre)
+    --pf  costura:  0.88 → 1    (FLIP a la primera carta)
+*/
+
+.cos-escena {
+  --p: 0;
+  --pg: clamp(0, calc(var(--p) / 0.42), 1);
+  --pc: clamp(0, calc(var(--p) / 0.68), 1);
+  --pp: clamp(0, calc((var(--p) - 0.68) / 0.2), 1);
+  --pf: clamp(0, calc((var(--p) - 0.88) / 0.12), 1);
+
+  /* 2,5 alturas de viewport — decisión de Alejandro (30-ago) */
+  height: 250svh;
+  position: relative;
+  background: var(--color-bg, #0a0a0c);
+}
+
+.cos-escenario {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* suelo implícito: una línea que se insinúa, no un escenario */
+.cos-suelo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 26svh;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in oklch, var(--color-accent, #a78bfa) 35%, transparent),
+    transparent
+  );
+  opacity: calc(0.9 - 0.9 * var(--pp));
+}
+
+/* CRISTAL — placeholder. Crece y se centra: de objeto a superficie. */
+.cos-cristal {
+  position: absolute;
+  left: 50%;
+  bottom: 26svh;
+  width: 22svh;
+  height: 22svh;
+  translate: -50% 50%;
+  rotate: 45deg;
+  scale: calc(0.34 + 1.5 * var(--pc));
+  background: linear-gradient(140deg, #cdbcff, #5b4a96);
+  opacity: calc(1 - var(--pp));
+  transition: none;
+}
+
+/* GATO — silueta pura (etapa 0.5). Camina sobre el suelo con el progreso. */
+.cos-gato {
+  position: absolute;
+  bottom: 26svh;
+  left: calc(14% + 32% * var(--pg));
+  width: 168px;
+  translate: -50% 0;
+  opacity: calc(1 - var(--pp));
+  color: #0b0b0f;
+  /* separación mínima del fondo: sin esto la silueta negra sobre carbón
+     desaparece. NO es rim light de diseño, es legibilidad de la prueba. */
+  filter: drop-shadow(0 0 1px rgba(203, 188, 255, 0.55));
+}
+
+.cos-gato__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* PORTAL — la máscara se abre desde la silueta del cristal (su centro).
+   Es clip-path: compositor puro, sin WebGL, idéntico en móvil. */
+.cos-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  clip-path: circle(calc(var(--pp) * 88%) at 50% calc(100svh - 26svh));
+  pointer-events: none;
+}
+
+/* PROYECTO — el MISMO elemento que será la primera carta.
+   Vive en la geometría de destino y se transforma para ocupar el viewport;
+   al avanzar --pf vuelve a su geometría real. Solo transform: cero reflow. */
+.cos-proyecto {
+  position: fixed;
+  left: var(--dx, 0px);
+  top: var(--dy, 0px);
+  width: var(--dw, 100vw);
+  height: var(--dh, 100svh);
+  transform-origin: top left;
+  transform:
+    translate(
+      calc(var(--dx, 0px) * -1 * (1 - var(--pf))),
+      calc(var(--dy, 0px) * -1 * (1 - var(--pf)))
+    )
+    scale(
+      calc(1 + (100vw / var(--dw, 100vw) - 1) * (1 - var(--pf))),
+      calc(1 + (100svh / var(--dh, 100svh) - 1) * (1 - var(--pf)))
+    );
+  display: grid;
+  place-items: center;
+  background: linear-gradient(150deg, #2a2340, #6b5aa8);
+  color: #f2efea;
+  font-family: var(--font-grotesk), system-ui, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.cos-titular {
+  position: absolute;
+  left: 5vw;
+  top: 14svh;
+  margin: 0;
+  max-width: 12ch;
+  font-family: var(--font-grotesk), system-ui, sans-serif;
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--color-fg, #f2efea);
+  opacity: calc(1 - clamp(0, calc(var(--p) / 0.22), 1));
+}
+
+.cos-marcador {
+  position: absolute;
+  right: 2vw;
+  bottom: 2svh;
+  margin: 0;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: color-mix(in oklch, var(--color-fg, #f2efea) 45%, transparent);
+}
+
+/* Maqueta del acordeón. Solo importa la geometría de la primera carta. */
+.cos-acordeon {
+  position: relative;
+  z-index: 1;
+  padding: 0 5vw 30svh;
+  background: var(--color-bg, #0a0a0c);
+  display: grid;
+  gap: 12px;
+}
+
+.cos-carta {
+  height: 46svh;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklch, var(--color-fg, #f2efea) 8%, transparent);
+  color: color-mix(in oklch, var(--color-fg, #f2efea) 70%, transparent);
+  font-family: var(--font-grotesk), system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* La primera carta es solo el HUECO: el contenido lo pone el elemento que
+   viene del portal. Por eso queda vacía visualmente. */
+.cos-carta--primera {
+  background: transparent;
+  outline: 1px dashed color-mix(in oklch, var(--color-accent, #a78bfa) 30%, transparent);
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cos-escena { height: 100svh; }
+  .cos-gato, .cos-cristal, .cos-suelo { display: none; }
+  .cos-portal { clip-path: none; position: relative; }
+}

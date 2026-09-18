@@ -1,0 +1,18 @@
+{
+ "frames": 60,
+ "reversible": true,
+ "seg_estados": 28.662,
+ "ortho": 6.599999904632568,
+ "resolucion": 1200,
+ "contacto_px": [
+  301.4,
+  539.2
+ ],
+ "contacto_frac": [
+  0.2512,
+  0.4493
+ ],
+ "diametro_cristal_px": 356.4,
+ "q_fractura": 0.62,
+ "q_relevo": 0.55
+}
