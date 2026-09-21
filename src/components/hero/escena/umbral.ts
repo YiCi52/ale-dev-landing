@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------
-   E3 · UMBRAL — PRUEBA DE LAB (13-sep-2026). No es contenido ni produccion.
+   E3 · UMBRAL — la version APROBADA (E3-v5.1, congelada el 16-sep-2026).
 
    El espacio siguiente es una sala abstracta renderizada en Blender cuya camara
    sale de la propia pagina: en cada p, la escala y el sitio del iris dibujado
@@ -7,27 +7,22 @@
    gatoC/lookdev/2026-09-13-e3-umbral/scripts/umbral_e3.py). Por eso la sala esta
    DETRAS del iris y no encima: se ve solo por la pupila, con su paralaje real.
 
-   Versiones para comparar (?v=1 | 2 | 3 | 4 | 5 | 51):
-     v1  sala de 24 R, recorte limpio de la pupila, derrame calido fijo
-     v2  sala de 8.9 R (mas paralaje) + BORDE: refraccion en el canto, sangrado
-         de luz hacia dentro y hacia fuera, y el color lo pone la propia sala
-     v4  ATRAVESAR EL ESPESOR: desde p 0.94 el iris ya no es una imagen que escala.
-         Blender lo rinde como PLANO REAL (con el cuadro aprobado de E2-B4) en la misma
-         escena que la sala, con el espesor de la pupila detras, y la camara CRUZA el
-         plano. La pagina solo compone dos pasadas: sala (es4s) + iris y espesor (es4i).
-     v5  EL CRUCE VISIBLE: mismo mecanismo que v4, con la cara del iris 1,8 R por delante
-         de la sala (el espesor pasa a ~2 R) y la camara en tramos parejos: delante ·
-         aproximacion · en la cara · dentro del espesor · detras · dentro de la sala.
-     v51 (v5.1) misma arquitectura que v5; solo el aspecto de las paredes del espesor
-         (fibras mas cortas, menos brillo hacia la salida, destellos al tono de la fibra,
-         salida algo mas estrecha para que el borde del iris dure un poco mas).
-     v3  misma sala que v2. BORDE FISICO: lo que se ve de la sala lo decide el alfa
-         REAL del iris (no una elipse), refraccion mas sutil, espesor con sombra
-         apenas violeta, y la luz de la sala pasa ENTRE LAS FIBRAS del iris (modulada
-         por su propia luminancia, sin cambiar su textura)
+   Dos tramos, los dos horneados:
+     sala    antes del umbral: la sala de la v3 recortada por la pupila, con el
+             BORDE FISICO (el alfa real del iris decide lo que se ve, refraccion
+             sutil, espesor apenas violeta)
+     umbral  desde P_UMBRAL la escena 3D de la v5.1: Blender rinde el iris como
+             plano real con su espesor y la camara lo CRUZA; la pagina solo
+             compone dos pasadas (sala es51s + iris y espesor es51i)
+
+   En el lab habia cinco versiones para comparar (?v=1..5, 51). Se cerro la v5.1
+   y aqui solo vive esa: las demas quedaron en la historia de git (commit 100035c).
+   Los cuadros se sirven desde public/hero/escena/{sala,umbral}.
 --------------------------------------------------------------------------- */
 
-export const E3_RECURSOS = "/lab/hero-e3/recursos";
+/** donde viven los cuadros de cada tramo (estaticos, en public/) */
+const SALA = "/hero/escena/sala";
+const UMBRAL = "/hero/escena/umbral";
 
 /** mismas constantes que el horneado del cristal (relevo_e2B4.py) */
 const K = 2.05 / 6.6;
@@ -35,15 +30,11 @@ const PUPILA_EN_CUADRO: readonly [number, number] = [0.5354, 0.5];
 
 /** la luz de la sala sobre el borde de la pupila (B) */
 const LUZ_BORDE = { maximo: 0.5, alcance: 0.38, p0: 0.895, p1: 0.955 };
-/** v2 · el canto del umbral: refraccion y sangrado (ninguno deforma el iris) */
-const CANTO = { refraccion: 1.1, anillo0: 0.8, anillo1: 0.99, peso: 0.7, dentro: 0.3, maximoBorde: 0.72 };
-/** v3 · borde fisico */
-const CANTO3 = {
+/** el borde fisico del umbral. Son los valores CONGELADOS de E3-v5.1: no tocar. */
+const CANTO = {
   refraccion: 1.05, anillo0: 0.86, anillo1: 1.0, peso: 0.45, dentro: 0.22,
   mascara: 1.35,                       // la elipse solo acota; el borde lo pone el alfa del iris
   espesor: { desde: 0.88, rgba: "34,26,64", alfa: 0.38 },   // sombra del canto, apenas violeta
-  fibras: { hasta: 1.14, fuerza: 0.28, contraste: 1.8 },  // la luz de la sala entre las fibras
-  maximoBorde: 0.5,
 };
 
 const suave = (x: number): number => {
@@ -54,15 +45,14 @@ const suave = (x: number): number => {
 export type Rect = { x: number; y: number; lado: number };
 export type Pupila = { cx: number; cy: number; ax: number; ay: number; apertura: number };
 export type Espacio = {
-  version: number; ps: number[];
+  ps: number[];
   imgs: (HTMLImageElement | null)[];
   colores: (string | null)[];
   /** VENTANA: los nombres se guardan y las imagenes se piden despues, por tramo */
   archivos: string[];
 };
-const INDICE: Record<number, string> = { 1: "indice.json", 2: "indice2.json", 3: "indice3.json" };
 
-/** v4 · desde aqui manda la escena 3D del umbral (en 0.94 coincide con el iris 2D) */
+/** desde aqui manda la escena 3D del umbral (en 0.94 coincide con el iris 2D) */
 export const P_UMBRAL = 0.94;
 export type Umbral = {
   ps: number[];
@@ -71,13 +61,13 @@ export type Umbral = {
   archSala: string[]; archIris: string[];
 };
 
-/** v4 · lee el INDICE de las dos pasadas del umbral (sala + iris con su espesor).
+/** lee el INDICE de las dos pasadas del umbral (sala + iris con su espesor).
     Ya no baja las imagenes: 86 cuadros de 1440x900 son 1.063 MB decodificados y
     solo se dibuja uno. Los pide la ventana (ver ventana.ts) por tramo de p. */
-export async function cargarUmbral(destino: Umbral, archivo = "indice4.json"): Promise<void> {
+export async function cargarUmbral(destino: Umbral): Promise<void> {
   let indice: { cuadros: { p: number; sala: string; iris: string }[] };
   try {
-    const res = await fetch(`${E3_RECURSOS}/${archivo}`, { cache: "no-store" });
+    const res = await fetch(`${UMBRAL}/indice.json`, { cache: "no-store" });
     if (!res.ok) return;
     indice = await res.json();
   } catch {
@@ -86,11 +76,11 @@ export async function cargarUmbral(destino: Umbral, archivo = "indice4.json"): P
   destino.ps = indice.cuadros.map((c) => c.p);
   destino.sala = indice.cuadros.map(() => null);
   destino.iris = indice.cuadros.map(() => null);
-  destino.archSala = indice.cuadros.map((c) => `${E3_RECURSOS}/${c.sala}`);
-  destino.archIris = indice.cuadros.map((c) => `${E3_RECURSOS}/${c.iris}`);
+  destino.archSala = indice.cuadros.map((c) => `${UMBRAL}/${c.sala}`);
+  destino.archIris = indice.cuadros.map((c) => `${UMBRAL}/${c.iris}`);
 }
 
-/** v4 · el cuadro del umbral mas cercano a p con sus dos pasadas ya cargadas */
+/** el cuadro del umbral mas cercano a p con sus dos pasadas ya cargadas */
 export function cuadroUmbral(u: Umbral, p: number): { sala: HTMLImageElement; iris: HTMLImageElement } | null {
   let mejor = -1;
   let dist = Infinity;
@@ -142,10 +132,9 @@ export function colorMedio(im: HTMLImageElement): string {
 /** lee el INDICE de la secuencia del espacio. Las imagenes las pide la ventana:
     son 36 cuadros de 1440x900 (178 MB) para un tramo de p de 0.07 de largo. */
 export async function cargarEspacio(destino: Espacio): Promise<void> {
-  const archivo = INDICE[destino.version] ?? "indice.json";
   let indice: { cuadros: { p: number; archivo: string }[] };
   try {
-    const res = await fetch(`${E3_RECURSOS}/${archivo}`, { cache: "no-store" });
+    const res = await fetch(`${SALA}/indice.json`, { cache: "no-store" });
     if (!res.ok) return;                       // la sala aun no esta renderizada
     indice = await res.json();
   } catch {
@@ -154,7 +143,7 @@ export async function cargarEspacio(destino: Espacio): Promise<void> {
   destino.ps = indice.cuadros.map((c) => c.p);
   destino.imgs = indice.cuadros.map(() => null);
   destino.colores = indice.cuadros.map(() => "255,236,210");
-  destino.archivos = indice.cuadros.map((c) => `${E3_RECURSOS}/${c.archivo}`);
+  destino.archivos = indice.cuadros.map((c) => `${SALA}/${c.archivo}`);
 }
 
 /** el cuadro del espacio mas cercano a p que ya bajo; null antes de que se abra la pupila */
@@ -176,12 +165,12 @@ function caminoPupila(g: CanvasRenderingContext2D, pup: Pupila, escala: number):
   g.ellipse(pup.cx, pup.cy, pup.ax * escala + 2, pup.ay * escala + 2, 0, 0, Math.PI * 2);
 }
 
-/** v2 · el canto: un anillo con la sala comprimida (refraccion) + sangrado hacia dentro */
+/** el canto: un anillo con la sala comprimida (refraccion) + sangrado hacia dentro */
 function pintarCanto(
   g: CanvasRenderingContext2D, aux: HTMLCanvasElement, im: HTMLImageElement,
-  W: number, H: number, pup: Pupila, color: string, dpr: number, version: number,
+  W: number, H: number, pup: Pupila, color: string, dpr: number,
 ): void {
-  const c = version === 3 ? CANTO3 : CANTO;
+  const c = CANTO;
   const o = aux.getContext("2d");
   if (!o || pup.ax < 6) return;
   o.setTransform(1, 0, 0, 1, 0, 0);
@@ -209,25 +198,23 @@ function pintarCanto(
   o.fill();
   o.restore();
   g.save();
-  caminoPupila(g, pup, version === 3 ? CANTO3.mascara : 1.03);
+  caminoPupila(g, pup, CANTO.mascara);
   g.clip();
   g.drawImage(aux, 0, 0, aux.width / dpr, aux.height / dpr);
-  if (version === 3) {
-    // espesor: el canto interior del vano se oscurece hacia el filo, con el violeta del iris
-    g.save();
-    g.globalCompositeOperation = "source-atop";
-    g.translate(pup.cx, pup.cy);
-    g.scale(Math.max(pup.ax, 1), Math.max(pup.ay, 1));
-    const e = CANTO3.espesor;
-    const sombra = g.createRadialGradient(0, 0, e.desde, 0, 0, 1.0);
-    sombra.addColorStop(0, `rgba(${e.rgba},0)`);
-    sombra.addColorStop(1, `rgba(${e.rgba},${e.alfa})`);
-    g.fillStyle = sombra;
-    g.beginPath();
-    g.arc(0, 0, 1.0, 0, Math.PI * 2);
-    g.fill();
-    g.restore();
-  }
+  // espesor: el canto interior del vano se oscurece hacia el filo, con el violeta del iris
+  g.save();
+  g.globalCompositeOperation = "source-atop";
+  g.translate(pup.cx, pup.cy);
+  g.scale(Math.max(pup.ax, 1), Math.max(pup.ay, 1));
+  const e = CANTO.espesor;
+  const sombra = g.createRadialGradient(0, 0, e.desde, 0, 0, 1.0);
+  sombra.addColorStop(0, `rgba(${e.rgba},0)`);
+  sombra.addColorStop(1, `rgba(${e.rgba},${e.alfa})`);
+  g.fillStyle = sombra;
+  g.beginPath();
+  g.arc(0, 0, 1.0, 0, Math.PI * 2);
+  g.fill();
+  g.restore();
   // sangrado de la luz de la sala hacia DENTRO del borde (la luz se derrama, no corta)
   g.globalCompositeOperation = "lighter";
   g.translate(pup.cx, pup.cy);
@@ -246,69 +233,26 @@ function pintarCanto(
 export function pintarEspacio(
   g: CanvasRenderingContext2D, W: number, H: number,
   cuadro: { im: HTMLImageElement; color: string } | null, pup: Pupila | null,
-  version: number, aux: HTMLCanvasElement, dpr: number,
+  aux: HTMLCanvasElement, dpr: number,
 ): void {
   g.clearRect(0, 0, W, H);
   if (!cuadro || !pup || pup.apertura <= 0) return;
   g.save();
-  // v3: la elipse solo acota (x1.35): el borde visible lo decide el alfa real del iris,
-  // que se pinta encima. v1/v2: recorte eliptico casi exacto.
-  caminoPupila(g, pup, version === 3 ? CANTO3.mascara : 1.03);
+  // la elipse solo acota (x1.35): el borde visible lo decide el alfa real del iris,
+  // que se pinta encima
+  caminoPupila(g, pup, CANTO.mascara);
   g.clip();
   g.drawImage(cuadro.im, 0, 0, W, H);
   g.restore();
-  if (version >= 2) pintarCanto(g, aux, cuadro.im, W, H, pup, cuadro.color, dpr, version);
-}
-
-/** v3 · la luz de la sala pasa ENTRE LAS FIBRAS: mas luz donde el iris es mas oscuro,
-    solo en una banda junto al borde y solo sobre pixeles de iris. No cambia la textura:
-    es luz sumada, modulada por la luminancia del propio iris. */
-export function pintarLuzFibras(
-  g: CanvasRenderingContext2D, aux: HTMLCanvasElement, iris: HTMLImageElement,
-  r: Rect, pup: Pupila, p: number, dpr: number, color: string,
-): void {
-  const f = CANTO3.fibras;
-  const fuerza = f.fuerza * suave((p - LUZ_BORDE.p0) / (LUZ_BORDE.p1 - LUZ_BORDE.p0));
-  const o = aux.getContext("2d");
-  if (!o || fuerza < 0.003 || pup.ax < 6) return;
-  o.setTransform(1, 0, 0, 1, 0, 0);
-  o.clearRect(0, 0, aux.width, aux.height);
-  o.setTransform(dpr, 0, 0, dpr, 0, 0);
-  // 1 · el iris invertido en luminancia: claro donde el iris es oscuro (entre fibras)
-  o.filter = `grayscale(1) invert(1) contrast(${f.contraste})`;
-  o.drawImage(iris, r.x, r.y, r.lado, r.lado);
-  o.filter = "none";
-  // 2 · con el color de la sala, solo sobre pixeles de iris
-  o.globalCompositeOperation = "source-atop";
-  o.fillStyle = `rgba(${color},0.55)`;
-  o.fillRect(0, 0, aux.width / dpr, aux.height / dpr);
-  // 3 · solo en la banda junto al filo, que se apaga hacia afuera
-  o.globalCompositeOperation = "destination-in";
-  o.save();
-  o.translate(pup.cx, pup.cy);
-  o.scale(Math.max(pup.ax, 1), Math.max(pup.ay, 1));
-  const banda = o.createRadialGradient(0, 0, 0.98, 0, 0, f.hasta);
-  banda.addColorStop(0, `rgba(0,0,0,${fuerza.toFixed(3)})`);
-  banda.addColorStop(1, "rgba(0,0,0,0)");
-  o.fillStyle = banda;
-  o.beginPath();
-  o.arc(0, 0, f.hasta, 0, Math.PI * 2);
-  o.fill();
-  o.restore();
-  o.globalCompositeOperation = "source-over";
-  g.save();
-  g.globalCompositeOperation = "lighter";
-  g.drawImage(aux, 0, 0, aux.width / dpr, aux.height / dpr);
-  g.restore();
+  pintarCanto(g, aux, cuadro.im, W, H, pup, cuadro.color, dpr);
 }
 
 /** B · la luz de la sala cae sobre el iris alrededor de la pupila (solo donde hay iris) */
 export function pintarLuzBorde(
   g: CanvasRenderingContext2D, luz: HTMLCanvasElement, iris: HTMLImageElement,
-  r: Rect, pup: Pupila, p: number, dpr: number, color: string, version: number,
+  r: Rect, pup: Pupila, p: number, dpr: number, color: string,
 ): void {
-  const techo = version === 3 ? CANTO3.maximoBorde : version === 2 ? CANTO.maximoBorde : LUZ_BORDE.maximo;
-  const fuerza = techo * suave((p - LUZ_BORDE.p0) / (LUZ_BORDE.p1 - LUZ_BORDE.p0));
+  const fuerza = LUZ_BORDE.maximo * suave((p - LUZ_BORDE.p0) / (LUZ_BORDE.p1 - LUZ_BORDE.p0));
   const o = luz.getContext("2d");
   if (!o || fuerza < 0.003 || pup.apertura <= 0) return;
   o.setTransform(1, 0, 0, 1, 0, 0);

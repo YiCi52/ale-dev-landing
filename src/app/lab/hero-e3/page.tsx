@@ -1,29 +1,29 @@
 import type { Metadata } from "next";
 
-import { HeroEscenaE3 } from "@/components/lab/hero/HeroEscenaE3";
+import { HeroEscena } from "@/components/hero/escena/HeroEscena";
 
-import "../hero/hero.css";
 import "./hero-e3.css";
 
 /**
- * Lab · E3 UMBRAL — prueba corta del mecanismo de entrada (13-sep-2026).
+ * Lab · vista previa del hero de PRODUCCION (desde el 19-sep-2026).
  *
- * Una sola pregunta: ¿atravesar la pupila se siente como ENTRAR a un espacio?
- * El espacio es abstracto y de prueba; no es MH Interior ni contenido.
- * La escena aprobada (/lab/hero) no se toca.
+ * Era la prueba E3 del umbral (13-sep). Cerrada la v5.1, la escena salio del lab a
+ * `components/hero/escena/` y esta pagina solo la monta tal cual la vera la home,
+ * con un panel de relleno detras para comprobar que suelta el scroll. Sirve para
+ * revisarla en un despliegue de vista previa antes de ponerla en `/`.
  */
 export const metadata: Metadata = {
-  title: "Lab · E3 umbral (prueba)",
+  title: "Lab · Hero (vista previa)",
   robots: { index: false, follow: false },
 };
 
 export default function HeroE3LabPage() {
   return (
-    <main className="he-e3">
-      <HeroEscenaE3 />
+    <>
+      <HeroEscena />
       <section className="he-despues">
-        <p>Prueba E3 · umbral. Espacio abstracto de prueba, no es contenido.</p>
+        <p>Vista previa del hero. Lo que sigue aquí es relleno, no contenido.</p>
       </section>
-    </main>
+    </>
   );
 }

@@ -70,6 +70,18 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      /*
+        Cuadros horneados del hero. El cargador con ventana suelta los cuadros que
+        quedan lejos y los vuelve a pedir al volver atras; con la cabecera por
+        defecto de los estaticos (max-age=0, must-revalidate) cada vuelta es una
+        ida y vuelta al servidor. Es la misma cabecera que usaba la ruta del lab
+        con la que se midio la escena. Una hora, no un año: si se re-hornea con
+        los mismos nombres, a la hora ya se ve el nuevo.
+      */
+      {
+        source: "/hero/escena/:carpeta/:archivo(.+\\.webp)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600, immutable" }],
+      },
     ];
   },
 };

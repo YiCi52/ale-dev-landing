@@ -1,19 +1,25 @@
 "use client";
 
-/* E3 · UMBRAL — COPIA DE PRUEBA de HeroEscena.tsx (13-sep-2026, lab).
-   La escena aprobada (gato, fractura, relevo E2-B4, iris, scroll) NO cambia: esta
-   copia solo agrega el espacio de prueba detras de la pupila y la luz que derrama
-   sobre su borde. Todo lo nuevo esta en umbralE3.ts y marcado con «E3». */
+/* HERO · la escena aprobada, en PRODUCCION (sale del lab el 19-sep-2026).
+   Es la E3-v5.1 cerrada el 16-sep: gato, cristal vivo, fractura, relevo E2-B4, iris,
+   umbral y sala. Nada de la direccion cambia al salir del lab; solo se fue lo que
+   era del laboratorio: el HUD de depuracion, el selector ?v= de versiones (la v5.1
+   queda fija) y la ruta que servia los cuadros desde ~/CastilloStudio en desarrollo
+   (los cuadros viven ahora en public/hero/escena/). Todo lo del umbral, en umbral.ts. */
 import { useEffect, useRef, useState } from "react";
 
 import {
-  E3_RECURSOS, cargarEspacio, cuadroEspacio, indiceDeCuadro, pintarEspacio,
-  pintarLuzBorde, pintarLuzFibras, pupilaEnPantalla, type Espacio, type Pupila,
+  cargarEspacio, cuadroEspacio, indiceDeCuadro, pintarEspacio,
+  pintarLuzBorde, pupilaEnPantalla, type Espacio, type Pupila,
   P_UMBRAL, cargarUmbral, cuadroUmbral, colorMedio, type Umbral,
-} from "./umbralE3";
+} from "./umbral";
 import {
   activar, crearVentana, cuadro, type Ventana,
 } from "./ventana";
+import {
+  CAMINO_PIE, CRISTAL_LEJOS, DIAM_CRISTAL, ESCALA_GATO, NARIZ, PISADA,
+  curva, progresoDe, tramo,
+} from "./curvas";
 import { HeroCrystalMount } from "@/components/hero/HeroCrystalMount";
 import {
   altoVisible,
@@ -22,8 +28,10 @@ import {
   type Encuadre,
 } from "@/components/hero/encuadre";
 
+import "./hero-escena.css";
+
 /*
-  Lab · HERO como una sola escena — prototipo.
+  HERO como una sola escena.
 
   Rige SPEC-hero-estados.md. Un solo numero, p, gobierna todo. Nadie escucha a
   nadie: el cristal no sabe que existe el gato, deriva del mismo progreso.
@@ -59,80 +67,10 @@ import {
 */
 
 const N = 120;
-const RUTA = (i: number) =>
-  `/lab/gatoc/seq/gc_${String(i + 1).padStart(4, "0")}.webp`;
-
-/* ---------------------------------------------------------------------------
-   MEDIDO — no estimado. Sale del alfa de los propios fotogramas con
-   scripts/medir_anclajes.py. Si se re-hornea la secuencia, se regenera.
---------------------------------------------------------------------------- */
-
-/** [p, x, y] del punto mas adelantado del hocico, sobre el cuadro de 800px */
-const NARIZ: number[][] = [
-  [0.0, 0.2309, 0.2906], [0.042, 0.2455, 0.2906], [0.084, 0.2659, 0.3271],
-  [0.1261, 0.4287, 0.3569], [0.1681, 0.6751, 0.3785], [0.2101, 0.8061, 0.3626],
-  [0.2521, 0.826, 0.3604], [0.2941, 0.8403, 0.3798], [0.3361, 0.8399, 0.3701],
-  [0.3782, 0.8336, 0.3567], [0.4202, 0.8098, 0.3727], [0.4622, 0.7621, 0.3686],
-  [0.5042, 0.7684, 0.3686], [0.5462, 0.7595, 0.3804], [0.5882, 0.7416, 0.3574],
-  [0.6303, 0.7444, 0.4689], [0.6723, 0.7136, 0.4976], [0.7143, 0.6903, 0.3354],
-  [0.7563, 0.6838, 0.3354], [0.7983, 0.6684, 0.3683], [0.8403, 0.6406, 0.3911],
-  [0.8824, 0.5973, 0.3887], [0.9244, 0.4905, 0.2924], [0.9664, 0.4302, 0.306],
-  [1.0, 0.4148, 0.306],
-];
-
-/** [p, ySuelo, xIzq, xDer] de la linea de pisada, sobre el cuadro de 800px */
-const PISADA: number[][] = [
-  [0.0, 0.7385, 0.3256, 0.438], [0.042, 0.7385, 0.3258, 0.4308], [0.084, 0.7385, 0.3022, 0.4221],
-  [0.1261, 0.7385, 0.3316, 0.4508], [0.1681, 0.7385, 0.3043, 0.6527], [0.2101, 0.7385, 0.2573, 0.7827],
-  [0.2521, 0.7385, 0.2467, 0.8048], [0.2941, 0.7385, 0.2563, 0.8023], [0.3361, 0.7385, 0.2449, 0.8056],
-  [0.3782, 0.7385, 0.2337, 0.8177], [0.4202, 0.7385, 0.2447, 0.7933], [0.4622, 0.7385, 0.2475, 0.7637],
-  [0.5042, 0.7385, 0.2466, 0.7686], [0.5462, 0.7385, 0.2544, 0.7402], [0.5882, 0.7385, 0.2426, 0.7463],
-  [0.6303, 0.7385, 0.2854, 0.6733], [0.6723, 0.7385, 0.5705, 0.641], [0.7143, 0.7385, 0.2555, 0.7186],
-  [0.7563, 0.7385, 0.2564, 0.7133], [0.7983, 0.7385, 0.2598, 0.6861], [0.8403, 0.7385, 0.2565, 0.6432],
-  [0.8824, 0.7385, 0.2641, 0.6056], [0.9244, 0.7385, 0.2635, 0.3868], [0.9664, 0.7385, 0.2764, 0.3866],
-  [1.0, 0.7385, 0.2834, 0.3864],
-];
-
-/* ---------------------------------------------------------------------------
-   PUESTA EN ESCENA — todo en fraccion del viewport.
---------------------------------------------------------------------------- */
-
-/** donde apoya el gato. Avanza de verdad: 0.26 -> 0.63 de ancho, y BAJA al
-    acercarse (mas cerca = mas abajo en pantalla) y sube al alejarse. */
-const CAMINO_PIE: number[][] = [
-  [0.0, 0.26, 0.74], [0.1, 0.27, 0.745], [0.2, 0.32, 0.76],
-  [0.42, 0.5, 0.79], [0.52, 0.545, 0.8], [0.64, 0.6, 0.81],
-  [0.7, 0.625, 0.815], [0.77, 0.625, 0.815], [0.89, 0.6, 0.78],
-  [1.0, 0.565, 0.7],
-];
-
-/** alto aparente del gato, en fraccion del alto del viewport */
-const ESCALA_GATO: number[][] = [
-  [0.0, 0.4], [0.2, 0.56], [0.52, 0.7], [0.7, 0.76], [0.89, 0.6], [1.0, 0.3],
-];
-
-/** diametro del cristal, en fraccion del alto del viewport */
-const DIAM_CRISTAL: number[][] = [
-  [0.0, 0.1], [0.2, 0.14], [0.42, 0.26], [0.52, 0.36], [0.64, 0.46],
-  [0.7, 0.5], [0.77, 0.58], [0.89, 0.74], [0.95, 1.15], [1.0, 2.3],
-];
-/* La cola llega a 2.3 por una razon medida, no estetica. La pupila mide 0.836·f
-   del alto del viewport (0.8 del radio del disco, y el disco 2.09·f). Para
-   ATRAVESARLA hay que pasar de f≈1.2 (donde la pupila iguala la pantalla). Con
-   2.3 la pupila mide 1.92 pantallas: se sale del cuadro y ya estamos dentro.
-   Con la cola anterior (0.95) la pupila se quedaba en 0.79 de pantalla y el
-   iris seguia enmarcandola: se veia el umbral, no se cruzaba. */
-/* La cola se calibro CONTRA EL RENDER, no a ojo. Con 2.2 el iris crecia tanto
-   que en p=1 solo se veia el interior de la pupila: cuadro vacio. Con 1.15
-   seguia pasandose. Con 0.95 la pupila queda en ~0.8 del alto del viewport: se
-   lee como un portal vertical con el iris alrededor, que es el umbral, no un
-   fundido a negro. La p=0.93 es la que manda visualmente y ahi el iris ya llena
-   el cuadro. */
-
-/** centro del cristal mientras aun NO ha encontrado al gato (fraccion viewport) */
-const CRISTAL_LEJOS: number[][] = [
-  [0.0, 0.8, 0.66], [0.2, 0.79, 0.68], [0.47, 0.76, 0.72],
-];
+/** los cuadros de la escena: estaticos, en public/hero/escena/ */
+const BASE = "/hero/escena";
+const cuatro = (i: number) => String(i + 1).padStart(4, "0");
+const RUTA = (i: number) => `${BASE}/gato/gc_${cuatro(i)}.webp`;
 
 /* ---------------------------------------------------------------------------
    LA TRANSFORMACION DEL CRISTAL, horneada.
@@ -153,11 +91,11 @@ const N_CX = 60;
 /** el cuadro en que el relevo pasa del horneado de produccion al de E2-B4. No es
     un numero elegido: el propio horneado declara q_relevo 0.55, y 0.55 x 59 = 32. */
 const CX_RELEVO = 32;
-// E3: el relevo es E2-B4 (aprobada), servida desde lookdev; lo anterior, produccion
-const RUTA_CX = (i: number) =>
-  i >= CX_RELEVO
-    ? `${E3_RECURSOS}/cx_${String(i + 1).padStart(4, "0")}.webp`
-    : `/lab/gatoc/cristal/cx_${String(i + 1).padStart(4, "0")}.webp`;
+/* Una sola carpeta, dos horneados, y el nombre del archivo dice cual es cual:
+     cx_0001..cx_0032  el horneado de produccion (A), corregido por CORRECCION_A
+     cx_0033..cx_0060  E2-B4, el relevo aprobado (B), tal cual
+   indiceDeCuadro() lee ese numero para decidir la correccion. */
+const RUTA_CX = (i: number) => `${BASE}/cristal/cx_${cuatro(i)}.webp`;
 
 /* ---------------------------------------------------------------------------
    LA COSTURA DE p≈0.8695 — 17-sep-2026.
@@ -258,9 +196,8 @@ const ASPECTO_BASE = 1440 / 900;
    el tramo del problema (<=0.70) y en 0.87 ya vale 1, asi que de ahi en adelante
    —pupila, espesor, sala y cruce— todo queda identico. */
 const SUELTA_TOPE: readonly [number, number] = [0.72, 0.87];
-/** donde cae el punto de contacto dentro del cuadro horneado, y que fraccion del
-    cuadro ocupaba el cristal intacto. Salen del propio horneado (meta.json). */
-const CX_CONTACTO = [0.2512, 0.4493];
+/** que fraccion del cuadro ocupaba el cristal intacto. Sale del propio horneado
+    (meta.json). */
 const CX_DIAM = 0.297;
 /** donde cae el CENTRO del cristal intacto dentro del cuadro horneado. Derivado:
     la camara del horneado se centra en el centroide de la masa (0.877, ·, -0.189)
@@ -276,42 +213,7 @@ const CX_P0 = 0.72, CX_P1 = 1.0;
     Usar 1.0 haria que el "borde" tocara la nariz solo en los vertices. */
 const RADIO_VISUAL = 0.87;
 
-/** Progreso 0..1 de una seccion pegajosa. Inmune a saltos de scroll. */
-function progresoDe(section: HTMLElement): number {
-  const rect = section.getBoundingClientRect();
-  const total = rect.height - window.innerHeight;
-  if (total <= 0) return 0;
-  return Math.min(1, Math.max(0, -rect.top / total));
-}
-
-const BEATS: [number, string][] = [
-  [0.0, "0 · ENTRADA"], [0.07, "1 · DESPERTAR"], [0.2, "2 · CAMINATA"],
-  [0.42, "3 · ATENCIÓN"], [0.52, "4 · APROXIMACIÓN"], [0.64, "5 · CONTACTO"],
-  [0.77, "6 · RESPUESTA"], [0.89, "7 · UMBRAL"],
-];
-const beatDe = (p: number) =>
-  BEATS.reduce((acc, [q, n]) => (p >= q ? n : acc), BEATS[0][1]);
-
-/** rampa suave 0..1 dentro de un rango (coseno: sin tirones en los extremos) */
-function tramo(p: number, a: number, b: number): number {
-  const t = Math.min(1, Math.max(0, (p - a) / (b - a || 1)));
-  return 0.5 - Math.cos(t * Math.PI) / 2;
-}
-
-/** interpola una curva de puntos [p, ...valores] */
-function curva(p: number, pts: number[][]): number[] {
-  let a = pts[0];
-  for (const b of pts) {
-    if (p <= b[0]) {
-      const t = (p - a[0]) / (b[0] - a[0] || 1);
-      return a.slice(1).map((v, i) => v + (b[i + 1] - v) * t);
-    }
-    a = b;
-  }
-  return a.slice(1);
-}
-
-export function HeroEscenaE3() {
+export function HeroEscena() {
   const sectionRef = useRef<HTMLElement>(null);
   const fondoRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -324,7 +226,6 @@ export function HeroEscenaE3() {
   const tituloRef = useRef<HTMLDivElement>(null);
   const contextoRef = useRef<HTMLParagraphElement>(null);
   const rotuloRef = useRef<HTMLParagraphElement>(null);
-  const hudRef = useRef<HTMLDivElement>(null);
   // el encuadre del cristal viaja por ref: cambiarlo por props re-renderizaria
   // React ~60 veces por segundo
   const encuadreRef = useRef<Encuadre | null>(null);
@@ -362,16 +263,9 @@ export function HeroEscenaE3() {
       nombre: "cristal", n: N_CX, radio: RADIO_CRISTAL, url: RUTA_CX,
       imgs: cxs, alCargar: repintar,
     });
-    // E3: la sala de prueba y un lienzo auxiliar para la luz que derrama sobre el iris
-    // ?v=1..5 o ?v=51 (v5.1). v4, v5 y v5.1 usan v3 por debajo del umbral.
-    const pedida = Number(new URLSearchParams(window.location.search).get("v") ?? "1");
-    const version = [2, 3, 4, 5, 51].includes(pedida) ? pedida : 1;
-    const en3D = version >= 4;
-    const espacio: Espacio = {
-      version: en3D ? 3 : version, ps: [], imgs: [], colores: [], archivos: [],
-    };
+    // la sala (debajo del umbral) y el umbral de la v5.1, cada uno con su indice
+    const espacio: Espacio = { ps: [], imgs: [], colores: [], archivos: [] };
     const umbral: Umbral = { ps: [], sala: [], iris: [], archSala: [], archIris: [] };
-    const indiceUmbral = version === 51 ? "indice51.json" : version === 5 ? "indice5.json" : "indice4.json";
     // Las ventanas de la sala y del umbral se crean cuando llega su indice: hasta
     // entonces no se sabe cuantos cuadros hay ni como se llaman.
     let vSala: Ventana | null = null;
@@ -385,23 +279,20 @@ export function HeroEscenaE3() {
         extra: espacio.colores, calcExtra: colorMedio, alCargar: repintar,
       });
     });
-    if (en3D) {
-      void cargarUmbral(umbral, indiceUmbral).then(() => {
-        if (!umbral.archSala.length) return;
-        const n = umbral.archSala.length;
-        vUmbralSala = crearVentana({
-          nombre: "umbral-sala", n, radio: RADIO_UMBRAL,
-          url: (i) => umbral.archSala[i], imgs: umbral.sala, alCargar: repintar,
-        });
-        vUmbralIris = crearVentana({
-          nombre: "umbral-iris", n, radio: RADIO_UMBRAL,
-          url: (i) => umbral.archIris[i], imgs: umbral.iris, alCargar: repintar,
-        });
+    void cargarUmbral(umbral).then(() => {
+      if (!umbral.archSala.length) return;
+      const n = umbral.archSala.length;
+      vUmbralSala = crearVentana({
+        nombre: "umbral-sala", n, radio: RADIO_UMBRAL,
+        url: (i) => umbral.archSala[i], imgs: umbral.sala, alCargar: repintar,
       });
-    }
+      vUmbralIris = crearVentana({
+        nombre: "umbral-iris", n, radio: RADIO_UMBRAL,
+        url: (i) => umbral.archIris[i], imgs: umbral.iris, alCargar: repintar,
+      });
+    });
     const luzBorde = document.createElement("canvas");
     const cantoE3 = document.createElement("canvas");
-    const fibrasE3 = document.createElement("canvas");
     const cxCercano = (i: number): HTMLImageElement | null => cuadro(vCristal, i);
 
     /** si el pedido no bajo aun, el mas cercano: el gato nunca desaparece */
@@ -497,7 +388,7 @@ export function HeroEscenaE3() {
         const g3 = esc.getContext("2d");
         if (g3) g3.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
-      for (const c of [luzBorde, cantoE3, fibrasE3]) {
+      for (const c of [luzBorde, cantoE3]) {
         c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
       }
       dprActual = dpr;
@@ -602,8 +493,8 @@ export function HeroEscenaE3() {
           gcx.clearRect(0, 0, W, H);
           if (presencia > 0.001) {
             const im2 = cxCercano(Math.round(qcx * (N_CX - 1)));
-            // E3-v4: desde el umbral manda la escena 3D (iris real + espesor + sala)
-            const c4 = en3D && p >= P_UMBRAL ? cuadroUmbral(umbral, p) : null;
+            // desde el umbral manda la escena 3D (iris real + espesor + sala)
+            const c4 = p >= P_UMBRAL ? cuadroUmbral(umbral, p) : null;
             if (c4) {
               gcx.drawImage(c4.sala, 0, 0, W, H);
               gcx.drawImage(c4.iris, 0, 0, W, H);
@@ -637,11 +528,7 @@ export function HeroEscenaE3() {
               pupilaE3 = pupilaEnPantalla(idxCx, rect);
               cuadroE3 = cuadroEspacio(espacio, p);
               pintarLuzBorde(gcx, luzBorde, im2, rect, pupilaE3, p, dprActual,
-                             cuadroE3?.color ?? "255,236,210", version);
-              if (version === 3) {
-                pintarLuzFibras(gcx, fibrasE3, im2, rect, pupilaE3, p, dprActual,
-                                cuadroE3?.color ?? "255,236,210");
-              }
+                             cuadroE3?.color ?? "255,236,210");
             }
           }
           cxc.style.opacity = presencia.toFixed(3);
@@ -659,7 +546,7 @@ export function HeroEscenaE3() {
         const gesp = espacioRef.current?.getContext("2d");   // E3
         if (gesp) {
           pintarEspacio(gesp, W, H, releve > 0.001 ? cuadroE3 : null, pupilaE3,
-                        en3D ? 3 : version, cantoE3, dprActual);
+                        cantoE3, dprActual);
         }
 
         /* ---------- BLOOM: tapa la costura del relevo ---------- */
@@ -798,10 +685,6 @@ export function HeroEscenaE3() {
           ).toFixed(3);
         if (rotuloRef.current)
           rotuloRef.current.style.opacity = tramo(p, 0.955, 0.99).toFixed(3); // FASE 0: antes 0.92 -> asomaba sobre el iris, fuera de la pupila
-
-        if (hudRef.current)
-          hudRef.current.textContent =
-            `p ${p.toFixed(3)} · ${beatDe(p)} · frame ${Math.round(p * (N - 1)) + 1}/${N}`;
       }
       raf = requestAnimationFrame(pintar);
     };
@@ -864,7 +747,6 @@ export function HeroEscenaE3() {
             MH Interior · recorrido interactivo
           </p>
         </div>
-        <div ref={hudRef} className="he-hud" />
       </div>
     </section>
   );

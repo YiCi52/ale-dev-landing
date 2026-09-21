@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { HeroEscena } from "@/components/lab/hero/HeroEscena";
 
@@ -21,6 +22,9 @@ export const metadata: Metadata = {
 };
 
 export default function HeroLabPage() {
+  // Banco de trabajo interno del hero: existe en desarrollo, en produccion es 404.
+  // La escena que sale al publico es components/hero/escena (vista previa: /lab/hero-e3).
+  if (process.env.NODE_ENV === "production") notFound();
   return (
     <main>
       <HeroEscena />

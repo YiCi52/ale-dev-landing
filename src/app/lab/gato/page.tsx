@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { GatoPerfilSilueta } from "@/components/ui/gato/GatoPerfilSilueta";
 import { GatoPerfilFacetado } from "@/components/ui/gato/GatoPerfilFacetado";
@@ -25,6 +26,9 @@ export const metadata: Metadata = {
 const ESCALERA = [192, 96, 64, 32, 16];
 
 export default function GatoPage() {
+  // Banco de trabajo interno del hero: existe en desarrollo, en produccion es 404.
+  // La escena que sale al publico es components/hero/escena (vista previa: /lab/hero-e3).
+  if (process.env.NODE_ENV === "production") notFound();
   return (
     <main className="gc-lamina">
       <h1 className="gc-titulo">GATO C · validación de silueta</h1>

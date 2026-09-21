@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { CosturaEscena } from "@/components/lab/costura/CosturaEscena";
 
@@ -23,6 +24,9 @@ export const metadata: Metadata = {
 };
 
 export default function CosturaPage() {
+  // Banco de trabajo interno del hero: existe en desarrollo, en produccion es 404.
+  // La escena que sale al publico es components/hero/escena (vista previa: /lab/hero-e3).
+  if (process.env.NODE_ENV === "production") notFound();
   return (
     <main>
       <CosturaEscena />
