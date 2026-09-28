@@ -16,7 +16,10 @@ Lo que encontró la investigación:
 | **B. La de hoy + habitada de época (declarado)** | como está restaurada | muebles 1928–31 del círculo Le Corbusier/Perriand, marcados "interpretación" | se ve viva y no miente | lo habitado no es réplica literal |
 | **C. La de 1931** | reconstruida (madera, colores supuestos) | inventados | fiel a la idea original | la mitad sin fuente |
 
-Recomendación: **B**. Pendiente de su respuesta.
+**DECIDIDO (27-sep-2026, Alejandro): B.** Arquitectura como está restaurada hoy (verificable con fotos);
+habitada con piezas 1928–31 del círculo Le Corbusier / Jeanneret / Perriand, cada una marcada
+**"interpretación"** en su ficha, con la fuente del modelo de mueble. Nada se presenta como el mueble
+original de los Savoye.
 
 ## D2 — Garaje: ¿con auto?
 Un auto de época en el garaje (el giro del auto definió la planta) sería un punto con historia.
