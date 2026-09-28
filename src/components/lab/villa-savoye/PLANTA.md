@@ -260,3 +260,15 @@ vistazo. Es más barato mirar diez fotos que rehacer una capa.
   `expediente/solarium-pantalla.json` (29 puntos). **Las `sol1`/`sol2` del script están sobre la terraza → MAL.**
 - **Remate del caracol**: volumen redondeado en x ≈ −6,0 … −2,2, z ≈ +0,7 … +2,4.
 - Rampa en cubierta: x ≈ −1,3 … +1,4, z ≈ −7,1 … +2,6. Sobre la terraza NO hay losa (hueco confirmado).
+
+## Fase 1 — lectura EXACTA del DWG (28-sep, LibreDWG + ezdxf)
+- **Huella: 19,0 × 21,5 m** (no 21,25). El DWG mide 16,878 × 19,099 u → escala 1,1257 m/u; las filas de
+  pilotis están a 4,75 m con **voladizo de 1,25 m** en los dos extremos (4 × 4,75 + 2 × 1,25 = 21,5).
+  Es la medida que publica la bibliografía. → `D` en el script pasa de 21,25 a **21,5** (`VOLADIZO = 1,25`).
+- **Pilotis**: filas en z a 4,75 m; en x ≈ 4,70 m con los extremos ~0,1 m dentro de la fachada. El DWG es un
+  redibujo que trae solo 9 de los ~20 pilotis: la retícula completa se deduce de las filas, no se lee.
+- **Muros**: TODOS los segmentos de las capas 1 (muro) y 2 (vidrio/línea fina) de los 3 niveles, ya en
+  metros y en los ejes del modelo: `expediente/dwg-muros.json` (574 elementos). **La fase 2 construye los
+  muros desde este archivo**, no a mano. Verificación visual: `expediente/fase1-dwg-vectores-metros.png`.
+- Sigue ⚠️ la **orientación** (sin flecha de norte en el DWG). Y el DWG es de terceros: donde contradiga la
+  lámina FLC 19704 o las fotos, gana la lámina/las fotos.
