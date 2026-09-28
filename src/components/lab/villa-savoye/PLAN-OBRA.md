@@ -17,8 +17,8 @@
 
 | # | Fase | Entregable | Estado |
 |---|---|---|---|
-| 0 | Investigación | `expediente/`: una ficha por recinto + `fuentes.md` + guion de la promenade | **en curso** |
-| 1 | Planos | Los 3 niveles verificados contra los planos originales (PLANTA.md corregido) | — |
+| 0 | Investigación | `expediente/`: una ficha por recinto + `fuentes.md` + guion de la promenade + `planos.md` | ✅ cerrada 27-sep |
+| 1 | Planos | Los 3 niveles verificados contra los planos originales (PLANTA.md corregido) | **siguiente** (28-sep) |
 | 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | parcial* |
 | 3 | Materia | Materiales y color por recinto | parcial* |
 | 4 | Habitado | Muebles, objetos, plantas — solo con evidencia | parcial* |
