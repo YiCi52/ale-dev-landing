@@ -10,7 +10,7 @@ doblan hacia afuera, hojas secas mezcladas, más densidad cerca de la casa y un 
 """
 import bpy, bmesh, math, mathutils, os, random
 
-VARIANTES = 5
+VARIANTES = 8                                         # 28-sep: 8 (antes 5), cada una con su giro e inclinación
 
 
 def _hoja(bm, capa, x, y, ang, alto, ancho, curva, inclina):
@@ -39,8 +39,12 @@ def _mata(nombre, semilla, hojas, alto, col):
         r = rnd.uniform(0, 0.11) * rnd.random() ** 0.5          # más hojas al centro, alguna suelta afuera
         a = rnd.uniform(0, 2 * math.pi)
         _hoja(bm, capa, r * math.cos(a), r * math.sin(a), rnd.uniform(0, 2 * math.pi),
-              alto * rnd.uniform(0.55, 1.15), rnd.uniform(0.006, 0.011), rnd.uniform(0.1, 0.55), rnd.uniform(0.03, 0.25))
+              alto * rnd.uniform(0.5, 1.2), rnd.uniform(0.004, 0.009), rnd.uniform(0.1, 0.6), rnd.uniform(0.03, 0.28))
     bm.to_mesh(me); bm.free()
+    # sin rotaciones de partícula (acuestan la mata), el giro y la inclinación van HORNEADOS en cada variante:
+    # así no todas las matas miran igual
+    me.transform(mathutils.Matrix.Rotation(rnd.uniform(0, 2 * math.pi), 4, "Z"))
+    me.transform(mathutils.Matrix.Rotation(rnd.uniform(-0.14, 0.14), 4, mathutils.Vector((rnd.uniform(-1, 1), rnd.uniform(-1, 1), 0)).normalized()))
     _de_pie(me)
     o = bpy.data.objects.new(nombre, me); col.objects.link(o)
     for p in me.polygons: p.use_smooth = True
@@ -85,7 +89,18 @@ def _material():
     mul = nt.nodes.new("ShaderNodeMix"); mul.data_type = "RGBA"; mul.blend_type = "MULTIPLY"
     mul.inputs["Factor"].default_value = 1.0
     nt.links.new(rampa.outputs["Color"], mul.inputs[6]); nt.links.new(tono.outputs["Color"], mul.inputs[7])
-    nt.links.new(mul.outputs[2], b.inputs["Base Color"])
+    # manchas del prado a escala de metros: un césped real nunca es parejo (sombra de árboles, riego, pisadas)
+    geo = nt.nodes.new("ShaderNodeNewGeometry"); mancha = nt.nodes.new("ShaderNodeTexNoise")
+    mancha.inputs["Scale"].default_value = 0.12; mancha.inputs["Detail"].default_value = 3.0
+    nt.links.new(geo.outputs["Position"], mancha.inputs["Vector"])
+    tinte_m = nt.nodes.new("ShaderNodeValToRGB")
+    tinte_m.color_ramp.elements[0].color = (1.25, 1.12, 0.72, 1)      # zona más seca
+    tinte_m.color_ramp.elements[1].color = (0.85, 1.0, 0.95, 1)       # zona más verde y oscura
+    tinte_m.color_ramp.elements[0].position = 0.38; tinte_m.color_ramp.elements[1].position = 0.62
+    nt.links.new(mancha.outputs["Fac"], tinte_m.inputs["Fac"])
+    mul2 = nt.nodes.new("ShaderNodeMix"); mul2.data_type = "RGBA"; mul2.blend_type = "MULTIPLY"; mul2.inputs["Factor"].default_value = 1.0
+    nt.links.new(mul.outputs[2], mul2.inputs[6]); nt.links.new(tinte_m.outputs["Color"], mul2.inputs[7])
+    nt.links.new(mul2.outputs[2], b.inputs["Base Color"])
     b.inputs["Roughness"].default_value = 0.5
     b.inputs["Specular IOR Level"].default_value = 0.25
     # hoja fina: deja pasar luz verde por detrás (el contraluz es lo que hace que el pasto "brille")
@@ -93,6 +108,16 @@ def _material():
     b.inputs["Subsurface Weight"].default_value = 0.15
     m.use_backface_culling = False
     return m
+
+
+def _ruido(x, y):
+    """Ruido de valor suave 0…1 (sin dependencias): para que la densidad del césped tenga claros."""
+    def h(i, j): return (math.sin(i * 127.1 + j * 311.7) * 43758.5453) % 1.0
+    i, j = math.floor(x), math.floor(y); fx, fy = x - i, y - j
+    sx, sy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+    a = h(i, j) + (h(i + 1, j) - h(i, j)) * sx
+    b = h(i, j + 1) + (h(i + 1, j + 1) - h(i, j + 1)) * sx
+    return a + (b - a) * sy
 
 
 def _densidad(o, W, D, radio):
@@ -107,6 +132,7 @@ def _densidad(o, W, D, radio):
         else:
             cerca = max(0.0, 1.0 - max(0.0, rr - 16.0) / 24.0)            # plena hasta 16 m, baja hasta 40 m
             w = min(1.0, (radio - rr) / 6.0) * (0.08 + 0.92 * cerca ** 1.5)
+            w *= 0.72 + 0.28 * _ruido(x * 0.35, y * 0.35)             # claros y matorrales: densidad no pareja
         vg.add([v.index], w, "REPLACE")
 
 
@@ -117,7 +143,7 @@ def pradera(W, D, col, radio=58.0, cortes=150):
     alto = float(os.environ.get("VILLA_PASTO_ALTO", "0.10"))              # césped de Poissy: cortado, pero vivo
     m = _material()
     for k in range(VARIANTES):
-        o = _mata(f"pasto_mata_{k}", 11 + k, hojas=70 + 15 * k, alto=alto * (0.8 + 0.12 * k), col=bib)
+        o = _mata(f"pasto_mata_{k}", 11 + k, hojas=80 + 12 * k, alto=alto * (0.8 + 0.07 * k), col=bib)
         o.data.materials.append(m)
     t = _trebol("pasto_trebol", 99, bib); t.data.materials.append(m)
     # que la biblioteca no aparezca en el origen: se EXCLUYE de la capa (hide_render también apagaba las copias)

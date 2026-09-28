@@ -79,7 +79,7 @@ def pilotis(poligonos, altura, material, col, radio=0.14):
     return centros
 
 
-def vidrio_herradura(altura, material, col, grosor=0.05):
+def vidrio_herradura(altura, material, col, grosor=0.012):   # 12 mm (antes 5 cm: lupa)
     """El vidrio curvo del vestíbulo: el arco más largo de la capa 2 (vidrio) del nivel 0."""
     lineas = _cargar("dwg-muros.json")["niveles"]["nivel0"]
     arcos = [s for s in lineas if s["tipo"] == "ARC" and s["capa"] == "2"]

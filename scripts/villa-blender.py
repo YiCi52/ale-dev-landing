@@ -101,6 +101,15 @@ _lp = _vn.nodes.new("ShaderNodeLightPath"); _tr = _vn.nodes.new("ShaderNodeBsdfT
 _mx = _vn.nodes.new("ShaderNodeMixShader"); _so = next(n for n in _vn.nodes if n.type == "OUTPUT_MATERIAL")
 _vn.links.new(_lp.outputs["Is Shadow Ray"], _mx.inputs["Fac"]); _vn.links.new(_vb.outputs["BSDF"], _mx.inputs[1])
 _vn.links.new(_tr.outputs["BSDF"], _mx.inputs[2]); _vn.links.new(_mx.outputs["Shader"], _so.inputs["Surface"])
+# 28-sep (fase 3): vidrio más "de foto": IOR de vidrio flotado, un verde apenas en el tinte, y huellas/polvo
+# (rugosidad 0…0,05 con ruido en coordenadas de mundo) para que los reflejos no sean de espejo perfecto.
+_vb.inputs["IOR"].default_value = 1.52; _vb.inputs["Base Color"].default_value = (0.90, 0.96, 0.93, 1)
+_gv = _vn.nodes.new("ShaderNodeNewGeometry"); _rv = _vn.nodes.new("ShaderNodeTexNoise")
+_rv.inputs["Scale"].default_value = 3.0; _rv.inputs["Detail"].default_value = 6.0
+_vn.links.new(_gv.outputs["Position"], _rv.inputs["Vector"])
+_mr = _vn.nodes.new("ShaderNodeMapRange"); _mr.inputs["From Min"].default_value = 0.45; _mr.inputs["From Max"].default_value = 0.75
+_mr.inputs["To Min"].default_value = 0.0; _mr.inputs["To Max"].default_value = 0.05
+_vn.links.new(_rv.outputs["Fac"], _mr.inputs["Value"]); _vn.links.new(_mr.outputs["Result"], _vb.inputs["Roughness"])
 M_CARP     = mat("carpint", (0.10, 0.05, 0.03), 0.45)
 
 def caja(nombre, x0, x1, y0, y1, z0, z1, material):
@@ -144,9 +153,12 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,
     # En la TERRAZA la cinta sigue, pero es un VANO sin vidrio con "baby pilotis" [S4]: el paisaje se ve desde
     # afuera, al aire libre. Solo la fachada este toca la terraza (z −4,60…4,78).
     vano = TERRAZA_VANO if nombre == "este" else None
-    tramos_vid = [(z0 + 0.06, z1 - 0.06)] if not vano else [(z0 + 0.06, vano[0]), (vano[1], z1 - 0.06)]
+    # vidrio de 12 mm en el plano de los montantes (antes: un bloque macizo de 7 a 19 cm que refractaba como lupa)
+    largo_x_ = (x1 - x0) > (z1 - z0); cz_v, cx_v = (z0 + z1) / 2, (x0 + x1) / 2
+    tramos_vid = [(z0, z1)] if not vano else [(z0, vano[0]), (vano[1], z1)]
     for n_t, (t0, t1) in enumerate(tramos_vid):
-        caja(f"fa_{nombre}_vid_{n_t}", x0,x1, yv0, yv1, t0, t1, M_VIDRIO)
+        if largo_x_: caja(f"fa_{nombre}_vid_{n_t}", x0, x1, yv0, yv1, cz_v - 0.006, cz_v + 0.006, M_VIDRIO)
+        else:        caja(f"fa_{nombre}_vid_{n_t}", cx_v - 0.006, cx_v + 0.006, yv0, yv1, t0, t1, M_VIDRIO)
     # montantes de carpintería cada ~1.1 m (mismo paso que villaModel.ts); en el vano no hay carpintería
     largo_x = (x1 - x0) > (z1 - z0)
     a, b = (x0, x1) if largo_x else (z0, z1)

@@ -29,7 +29,7 @@ def retoque(esc):
         for tipo in ("Bloom", "Fog Glow"):
             try: gl.inputs["Type"].default_value = tipo; break
             except Exception: pass
-        gl.inputs["Threshold"].default_value = 1.0; gl.inputs["Strength"].default_value = 0.35; gl.inputs["Size"].default_value = 0.6
+        gl.inputs["Threshold"].default_value = 1.6; gl.inputs["Strength"].default_value = 0.2   # con 1,0/0,35 el cielo claro velaba el exterior; gl.inputs["Size"].default_value = 0.6
         ld = ng.nodes.new("CompositorNodeLensdist"); ld.inputs["Dispersion"].default_value = 0.012
         ng.links.new(rl.outputs["Image"], gl.inputs["Image"]); ng.links.new(gl.outputs["Image"], ld.inputs["Image"])
         el = ng.nodes.new("CompositorNodeEllipseMask"); el.inputs["Size"].default_value = (0.95, 0.95)
