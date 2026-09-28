@@ -44,3 +44,10 @@ terraza (jardín suspendido).
 - ✅ Rampa exterior con antepecho blanco y **baranda de tubos blancos horizontales**.
 - ⚠️ **Carpintería de la cinta de ventanas: hoy se ve OSCURA (gris/negro)** en las fotos — el render v7
   la tiene café (madera de 1931). Por D1 (la Villa de hoy) → oscura. 👁 confirmar el tono.
+
+## Plan de gestión [S10]
+- Interiores **pendientes de restitución**: pisos, carpinterías y pinturas; se buscan las
+  **polychromies d'origine**. → los colores de hoy son de restauraciones anteriores (confirma [S3]).
+- Cocina: « lieu du sourire féminin »; racionalizada para los nuevos gestos domésticos de los años 30.
+- Terrazas con **sobre-espesores** hechos en 1985–93 (Jean-Louis Véret): el nivel del piso de la
+  terraza hoy no es el original.

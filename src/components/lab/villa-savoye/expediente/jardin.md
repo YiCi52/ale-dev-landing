@@ -12,3 +12,14 @@
 - ✅ La casa en medio de un **prado** (partes de pasto largo tipo pradera, partes cortadas).
 - ✅ Llegada por un **camino de gravilla** bordeado de **setos bajos**.
 - ✅ Bosque de **árboles de hoja ancha** alrededor, a distancia. 👁 especies (roble, castaño, tilo?) — sin fuente aún.
+
+## Plan de gestión del CMN [S10] — la fuente más fuerte del paisaje
+- Le Corbusier sobre el terreno: **« le site: une vaste pelouse bombée en dôme aplati; la vue
+  principale est au Nord »** y **« la boîte est au milieu des prairies, dominant les vergers »**;
+  quería la casa en medio del pasto **« sans rien déranger »**. → el prado es **abombado**, no plano.
+- La **« fenêtre » del solárium encuadra el coteau de Carrières-sous-Poissy y los meandros del Sena,
+  al NORTE**. → dato de orientación para la fase 1.
+- Hoy: parcela de **1 ha** (eran 7); al **sur conserva su muro de cerramiento y su cortina de
+  árboles**; al **norte**, la cité scolaire (1964) se comió el **huerto de frutales** y hay dos
+  cortinas de árboles + un seto que tapan la vista. Árboles de parques vecinos (Meissonier, Villiers).
+- Por D1 (la Villa de hoy): prado + cortina de árboles al sur y al norte; sin huerto.

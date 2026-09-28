@@ -34,3 +34,8 @@ esquina noroeste [S0][S2][S4]. Retranqueada tras los pilotis y pintada de verde 
 - ✅ Bajo los pilotis el piso es **gravilla gris** (el modelo ya lo tiene).
 - ✅ Vidrio de la herradura con **montantes verticales oscuros y apretados** (negro/verde muy oscuro);
   puerta de entrada oscura en el centro. El bloque de servicio, **verde oscuro**.
+
+## Plan de gestión [S10]
+- Hoy la **boutique ocupa el vestíbulo** y el **antiguo apartamento del chofer son oficinas** no
+  visitables → por eso no hay fotos. En el lab el vestíbulo va **sin boutique** (es añadido, no obra
+  de Le Corbusier; el propio CMN quiere sacarla).

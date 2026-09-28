@@ -11,6 +11,7 @@
 | S6 | [thal.art — la promenade](https://blog.thal.art/architectural-promenade-at-the-villa-savoye/) | secundaria | vidriera 9 × 3 m, suite principal separada con cortina |
 | S8 | [Archweb — 60 fotos de interiores (2023)](https://www.archweb.com/en/gallerie/villa-savoye-foto-interni/) | fotos del estado actual (museo) | sin pies de foto: la lectura del recinto es mía |
 | S9 | [Archweb — fotos exteriores](https://www.archweb.com/en/gallery/villa-savoye-photo/) | fotos del estado actual | terraza, solárium, pilotis, jardín |
+| S10 | [Plan de gestión Villa Savoye — CMN / Patrimonio Mundial Le Corbusier](https://lecorbusier-worldheritage.org/wp-content/uploads/2019/10/plans-de-gestion-locaux-06.pdf) | institucional (CMN) | cita a Le Corbusier sobre el sitio; estado de los interiores; paisaje |
 | S7 | [ArchEyes](https://archeyes.com/the-villa-savoye-le-corbusier/) | fotos | rojo en el salón, azul en dormitorio/escritorio |
 
 **Pendientes de consultar** (primarias): Tim Benton, *The Villas of Le Corbusier* (1987) —
