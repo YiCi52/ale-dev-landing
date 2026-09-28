@@ -21,3 +21,33 @@ no como verdad absoluta: donde difiera de FLC 19704, gana la lámina original.
 2. ⚠️ Orientación: la vista principal (ventana del solárium) es al **norte** [S10]; con eso se fijan
    el salón (sureste según [S4]), la cocina (suroeste) y el cuarto del hijo (noroeste [S4] vs sur [S5]).
 3. ⚠️ Chimenea del salón [S3]: ubicarla en planta (no sale en las fotos).
+
+---
+
+## FASE 1 — superposición del modelo sobre el plano DWG (28-sep)
+
+Fuente: `LECsav.dwg` de dwglab + sus 7 láminas PNG (en `~/CastilloStudio/assets/villa-savoye/planos/`).
+Escala medida en la imagen: huella 19,0 × 21,25 m = 471 × 533 px → **~24,8–25,1 px/m** (las dos direcciones
+cuadran: la huella de PLANTA.md es correcta). Superposiciones: `fase1-superposicion-nivel0.png` y `-nivel1.png`.
+Arriba del plano = z −10,625 (lado 2); abajo = z +10,625 (lado 1 = fachada de acceso y ventana del solárium).
+
+### Nivel principal — PLANTA.md CALZA (salón, cocina, terraza, boudoir, abri en su lugar). Diferencias:
+1. **Rampa**: en el DWG ocupa x ≈ −1,4…+1,2 (≈2,6 m: dos tramos en zigzag lado a lado) y z ≈ −7,2…+2,8.
+   PLANTA.md la tiene de 1,6 m (x −1,5…0,1) y hasta z +4,78 → **más angosta, corrida y 2 m más larga**.
+2. **Escalera de caracol** (la "U"): x ≈ −4,8…−2,2, z ≈ +0,8…+2,4. PLANTA.md no la ubica en el nivel 1.
+3. **Dormitorios del lado oeste**: los muros entre CH1/CH3 y del núcleo húmedo no caen donde dice PLANTA.md
+   (ej. el límite CH1/CH3 del DWG está hacia z ≈ −3,2, no −4,99). Se redibuja esa franja.
+
+### Planta baja — el MODELO ACTUAL ESTÁ MAL en tres cosas grandes
+1. **Pilotis**: el DWG los tiene en retícula de **4,75 m en las dos direcciones**, en x = ±9,5 (al ras de la
+   fachada) y z = ±9,5 (con el voladizo de 1,125 m). El script los pone con paso 3,95/4,51 → todos corridos.
+2. **Herradura**: es una **U**: semicírculo de radio ≈ 6,3 m con centro ≈ (0, 0) hacia el lado 1, y lados
+   rectos que suben hasta el muro del fondo (z ≈ −10,4). El modelo tiene un **cilindro cerrado** r 6,5.
+3. **Bloque de servicio**: x ≈ −6,3…−2,4, z ≈ −9,4…−0,6 (más cuartos hasta el muro del fondo). El modelo lo
+   tiene 2,4 m corrido hacia el oeste (x −8,7…−3,5).
+   Rampa en planta baja: x ≈ −1,4…+1,2, z ≈ −6,4…+2,6. Caracol: x ≈ −4,8…−2,2, z ≈ +0,8…+2,4.
+
+### Orientación ⚠️
+Lado 1 (abajo) = acceso curvo + ventana del solárium → según el CMN la vista principal es al NORTE → lado 1 ≈ norte.
+Eso choca con Wikipedia/Benton ("salón al sureste"): en el DWG el salón está sobre el lado 1. Falta un plano de
+emplazamiento con flecha de norte para cerrarlo; mientras tanto el sol se decide por estética, no por "orientación real".
