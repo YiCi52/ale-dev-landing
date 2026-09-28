@@ -29,3 +29,8 @@ esquina noroeste [S0][S2][S4]. Retranqueada tras los pilotis y pintada de verde 
   **azulejo blanco**.
 - Muros de azulejo blanco en espacios de servicio del nivel bajo. 👁 Falta ver: garaje, cuarto del
   chofer, cuarto de servicio (hoy librería).
+
+## Exterior de la planta baja [S9]
+- ✅ Bajo los pilotis el piso es **gravilla gris** (el modelo ya lo tiene).
+- ✅ Vidrio de la herradura con **montantes verticales oscuros y apretados** (negro/verde muy oscuro);
+  puerta de entrada oscura en el centro. El bloque de servicio, **verde oscuro**.

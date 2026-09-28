@@ -35,3 +35,12 @@ terraza (jardín suspendido).
 - ❓ **Mueble-estantería con paneles de vidrio de colores** (rojo, azul, verde) y un **placard
   policromado** (rosa/azul/blanco) en un cuarto con parquet: no identifico el recinto; pueden ser
   piezas de exposición. No se modelan hasta ubicarlos.
+
+## Terraza y fachada [S9]
+- ✅ Pavimento de **losas cuadradas grandes de hormigón gris** (~0,8–1 m) con junta marcada.
+- ✅ **Jardineras bajas de hormigón blanco empotradas**, con arbustos redondeados verdes, gramíneas y
+  algo de flor; no es un seto uniforme.
+- ✅ **Mesa fija**: tablero delgado de hormigón blanco sobre un pie, junto a la vidriera del salón.
+- ✅ Rampa exterior con antepecho blanco y **baranda de tubos blancos horizontales**.
+- ⚠️ **Carpintería de la cinta de ventanas: hoy se ve OSCURA (gris/negro)** en las fotos — el render v7
+  la tiene café (madera de 1931). Por D1 (la Villa de hoy) → oscura. 👁 confirmar el tono.

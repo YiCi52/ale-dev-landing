@@ -10,6 +10,7 @@
 | S5 | [22h05 rue des Dames — visita 2017](https://22h05ruedesdames.com/2017/04/03/villa-savoye-du-corbusier-a-poissy/) | relato de visita | el más detallado por recinto |
 | S6 | [thal.art — la promenade](https://blog.thal.art/architectural-promenade-at-the-villa-savoye/) | secundaria | vidriera 9 × 3 m, suite principal separada con cortina |
 | S8 | [Archweb — 60 fotos de interiores (2023)](https://www.archweb.com/en/gallerie/villa-savoye-foto-interni/) | fotos del estado actual (museo) | sin pies de foto: la lectura del recinto es mía |
+| S9 | [Archweb — fotos exteriores](https://www.archweb.com/en/gallery/villa-savoye-photo/) | fotos del estado actual | terraza, solárium, pilotis, jardín |
 | S7 | [ArchEyes](https://archeyes.com/the-villa-savoye-le-corbusier/) | fotos | rojo en el salón, azul en dormitorio/escritorio |
 
 **Pendientes de consultar** (primarias): Tim Benton, *The Villas of Le Corbusier* (1987) —

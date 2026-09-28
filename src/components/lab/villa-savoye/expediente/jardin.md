@@ -7,3 +7,8 @@
 - Terraza con flores [S3]; jardineras del solárium con vegetación [S5]; arbustos bajos tipo
   lavanda en las jardineras de la terraza [S0].
 - 👁 **Pendiente**: especies de los árboles del parque y de las jardineras (fotos + fichas del CMN).
+
+## Evidencia visual [S9]
+- ✅ La casa en medio de un **prado** (partes de pasto largo tipo pradera, partes cortadas).
+- ✅ Llegada por un **camino de gravilla** bordeado de **setos bajos**.
+- ✅ Bosque de **árboles de hoja ancha** alrededor, a distancia. 👁 especies (roble, castaño, tilo?) — sin fuente aún.
