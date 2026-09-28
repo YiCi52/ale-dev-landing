@@ -20,7 +20,7 @@
 | 0 | Investigación | `expediente/`: una ficha por recinto + `fuentes.md` + guion de la promenade + `planos.md` | ✅ cerrada 27-sep |
 | 1 | Planos | Los 3 niveles verificados contra los planos originales (PLANTA.md corregido) | ✅ cerrada 28-sep — muros en metros en `expediente/dwg-muros.json`; huella 19 × 21,5; orientación ⚠️ |
 | 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **en curso** — planta baja ✅ desde el DWG (`scripts/villa_obra.py`: 10 muros, 21 pilotis, vidrio curvo con montantes) · nivel principal ✅ (13 muros rellenos + 12 tabiques + 9 vidrios detectados de pares de líneas; rampa 2,6 m) · cubierta ✅ (5 muros del nivel 2: pantallas del solárium con su ventana sobre el eje de la rampa, caja de la escalera, antepechos de la rampa; losa con los huecos reales de terraza y rampa) · alturas MEDIDAS en fachada 1 + corte A-A (la caja estaba 70 cm alta) · caja de escalera techada · rampa ✅ (2 entrepisos, tramos lado a lado + descanso, muro central con remate inclinado) · escalera ✅ (en U con compensadas, NO caracol) · **obra gris cerrada** → fase 3 |
-| 3 | Materia | Materiales y color por recinto | parcial* |
+| 3 | Materia | Materiales y color por recinto | **en curso** (28-sep) — `scripts/villa_materia.py`: vestíbulo, rampa, salón, cocina, verde solo afuera, cielo raso blanco · faltan dormitorios/baños (recintos ❓) y carpintería/vidrio |
 | 4 | Habitado | Muebles, objetos, plantas — solo con evidencia | parcial* |
 | 5 | Luz | Día y noche por recinto | parcial* |
 | 6 | Recorrido | Guion de estaciones → tramos renderizados → vistas restringidas por estación | — |
@@ -155,3 +155,16 @@ Corregido:
 - **Fondo del exterior**: `VILLA_HDRI_GIRO=300` por defecto (sin el tronco gigante: "parece Ant-Man").
 Para fases 3–4 (visto en fotos, no se toca ahora): piso de la rampa con losetas en DIAGONAL (S9 9); barandas de tubo delgado en rampa y escalera (S9 7/15/24, S8 4); canaleta de luz que cruza el techo del salón (S8 28–30); cocina con mesón de baldosa blanca y muebles con puertas correderas grises (S8 17/19/24/25); baño azul con chaise lounge de mosaico (S8 7/8/26).
 Noche: `VILLA_MODO=noche` — render `artefactos-bake/pruebas/noche-exterior.png` (CPU, 60 %, 64 muestras).
+
+## Fase 3 — Materia, primera tanda (28-sep) — `scripts/villa_materia.py`
+Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
+- **El vestíbulo tenía piso de GRAVA** (la del jardín seguía bajo la casa) → baldosa clara de 30 cm dentro de la herradura.
+- **Los muros de planta baja eran verdes también POR DENTRO.** El verde es la cara exterior; adentro (vestíbulo, bloque de servicio) son blancos [S8 1/3/4/13]. Regla: cara verde solo si mira hacia afuera del recinto cerrado (herradura + tramo recto hasta z −9,5 entre x ±6,4 + bloque de servicio).
+- **El cielo raso del porche y del vestíbulo era OCRE** (toda la losa tenía el material del piso del salón) → blanco por debajo.
+- **Salón:** muro del fondo (salón/cocina) ROSA TERRACOTA entero; paño AZUL junto a la vidriera, del lado de adentro [PLANTA.md, S8 28–30]. El render desde el extremo este reproduce la foto S8 28.
+- **Rampa:** losetas de 30 cm en diagonal en las caras de pisada [S9 9].
+- **Cocina:** azulejo blanco de 15 cm en los muros que miran hacia adentro (solo tabiques; la cara interior de la fachada es una sola pieza con el resto de la cinta).
+- **Montantes de la cinta:** perfil de 5 × 7 cm en el plano del vidrio; antes ocupaban todo el grueso del muro (21 cm) y se leían como postes de madera.
+- **Retoque del compositor** (brillo, aberración, viñeta) en todas las tomas de foto, no solo en el rincón (`VILLA_RETOQUE=0` lo apaga).
+- **Recintos** (`RECINTOS` en `villa_materia.py`): salón, cocina y terraza ✅; los demás del nivel principal tienen forma segura pero USO ❓ (qué dormitorio es de quién, dónde está el baño con el diván) → se confirma antes de pintarlos.
+- Depuración: `VILLA_INSPECT="x,y,z"` lista los objetos cerca de un punto y sus materiales por cara, sin renderizar.

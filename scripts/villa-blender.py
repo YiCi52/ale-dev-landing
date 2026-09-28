@@ -154,8 +154,11 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,
     for k in range(n_m + 1):
         u = a + (b - a) * k / n_m
         if vano and vano[0] < u < vano[1]: continue
-        if largo_x: caja(f"mont_{nombre}_{k}", u-0.03, u+0.03, yv0, yv1, z0-0.01, z1+0.01, M_CARP)
-        else:       caja(f"mont_{nombre}_{k}", x0-0.01, x1+0.01, yv0, yv1, u-0.03, u+0.03, M_CARP)
+        # perfil delgado en el plano del vidrio (7 cm de fondo), no un poste del ancho del muro: así lo muestran
+        # las fotos del salón (S8 28–30); con 21 cm se leían como pilares de madera
+        cz_, cx_ = (z0 + z1) / 2, (x0 + x1) / 2
+        if largo_x: caja(f"mont_{nombre}_{k}", u-0.025, u+0.025, yv0, yv1, cz_-0.035, cz_+0.035, M_CARP)
+        else:       caja(f"mont_{nombre}_{k}", cx_-0.035, cx_+0.035, yv0, yv1, u-0.025, u+0.025, M_CARP)
     if vano:                                                   # baby pilotis: en los ejes de la estructura (interpretación)
         for n_p, u in enumerate([k * CRUJIA / 2 for k in range(-4, 5) if vano[0] + 0.3 < k * CRUJIA / 2 < vano[1] - 0.3]):
             bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.05, depth=yv1 - yv0, location=((x0 + x1) / 2, u, (yv0 + yv1) / 2))
@@ -287,6 +290,8 @@ for o in [o for o in esc.objects if o.type == "MESH" and o.name not in ("pradera
 # ── acabados de toda la obra (villa_acabados.py): lo aprendido en la prueba del rincón ─────
 import villa_acabados
 villa_acabados.aplicar(esc, ASSETS, M_BLANCO, M_VERDE, PISOS)
+import villa_materia                                     # fase 3: materia por recinto, solo con evidencia
+villa_materia.aplicar(esc.collection, Y_LOSA, Y_TECHO, H_PILOTIS)
 
 # ── luz: el mismo HDRI del lab + sol calido ───────────────────────────────
 mundo = bpy.data.worlds.new("cielo"); esc.world = mundo; mundo.use_nodes = True
@@ -427,9 +432,22 @@ esc.render.resolution_x, esc.render.resolution_y = 1280, 800
 esc.render.resolution_percentage = int(os.environ.get("VILLA_PCT", "100"))
 esc.render.image_settings.file_format = "PNG"
 esc.render.filepath = OUT
+if os.environ.get("VILLA_CAM") not in ("rincon", "planta", "corte", "rampa") and os.environ.get("VILLA_RETOQUE", "1") == "1":
+    import villa_lookdev; villa_lookdev.retoque(esc)       # brillo, aberración y viñeta: lo que hace que parezca FOTO
 if os.environ.get("VILLA_CAM") == "rincon":               # prueba de techo de calidad (scripts/villa_lookdev.py)
     import villa_lookdev
     villa_lookdev.aplicar(esc, cam, cam_d, Y_TECHO + E_CUBIERTA)
+if "VILLA_INSPECT" in os.environ:                     # depuración: qué objetos hay alrededor de un punto
+    px, py, pz = (float(v) for v in os.environ["VILLA_INSPECT"].split(","))
+    for o in esc.objects:
+        if o.type != "MESH": continue
+        bb = [o.matrix_world @ mathutils.Vector(c) for c in o.bound_box]
+        if all(min(v[i] for v in bb) - 0.4 <= p <= max(v[i] for v in bb) + 0.4 for i, p in enumerate((px, py, pz))):
+            usos = {}
+            for pol in o.data.polygons:
+                m = o.data.materials[pol.material_index].name if o.data.materials else "-"; usos[m] = usos.get(m, 0) + 1
+            print("[inspect]", o.name, [round(min(v[i] for v in bb), 2) for i in range(3)], [round(max(v[i] for v in bb), 2) for i in range(3)], usos)
+    raise SystemExit(0)
 print(f"[villa] objetos: {len(esc.objects)} · renderizando…")
 bpy.ops.render.render(write_still=True)
 print(f"[villa] ✓ {OUT}")
