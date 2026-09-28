@@ -64,6 +64,39 @@ def baldosa(nombre, c1, c2, junta, lado, rough, giro=0.0, bump=0.2, largo=None, 
     return m
 
 
+def parque_cesta(nombre, c1, c2, junta, lado=0.24, tablillas=4, rough=0.45):
+    """Dos ladrillos (tablillas en x y en y) y un tablero de ajedrez que elige cuál va en cada cuadro."""
+    m, b = _mat(nombre, c1, rough); nt = m.node_tree
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    def tablilla(giro):
+        mp = nt.nodes.new("ShaderNodeMapping"); mp.inputs["Rotation"].default_value = (0, 0, giro)
+        nt.links.new(geo.outputs["Position"], mp.inputs["Vector"])
+        lad = nt.nodes.new("ShaderNodeTexBrick"); lad.offset = 0.0; lad.squash = 1.0
+        lad.inputs["Scale"].default_value = 1.0; lad.inputs["Brick Width"].default_value = lado
+        lad.inputs["Row Height"].default_value = lado / tablillas; lad.inputs["Mortar Size"].default_value = 0.0015
+        lad.inputs["Color1"].default_value = (*c1, 1); lad.inputs["Color2"].default_value = (*c2, 1)
+        lad.inputs["Mortar"].default_value = (*junta, 1); lad.inputs["Bias"].default_value = 0.0
+        nt.links.new(mp.outputs["Vector"], lad.inputs["Vector"]); return lad
+    t1, t2 = tablilla(0.0), tablilla(math.pi / 2)
+    aj = nt.nodes.new("ShaderNodeTexChecker"); aj.inputs["Scale"].default_value = 1.0 / lado / 2
+    nt.links.new(geo.outputs["Position"], aj.inputs["Vector"])
+    aj.inputs["Color1"].default_value = (1, 1, 1, 1); aj.inputs["Color2"].default_value = (0, 0, 0, 1)
+    col = nt.nodes.new("ShaderNodeMix"); col.data_type = "RGBA"
+    nt.links.new(aj.outputs["Fac"], col.inputs["Factor"]); nt.links.new(t1.outputs["Color"], col.inputs[6]); nt.links.new(t2.outputs["Color"], col.inputs[7])
+    veta = nt.nodes.new("ShaderNodeTexNoise"); veta.inputs["Scale"].default_value = 60.0; veta.inputs["Detail"].default_value = 4
+    nt.links.new(geo.outputs["Position"], veta.inputs["Vector"])
+    vr = nt.nodes.new("ShaderNodeMapRange"); vr.inputs["To Min"].default_value = 0.9; vr.inputs["To Max"].default_value = 1.08
+    nt.links.new(veta.outputs["Fac"], vr.inputs["Value"])
+    mul = nt.nodes.new("ShaderNodeMix"); mul.data_type = "RGBA"; mul.blend_type = "MULTIPLY"; mul.inputs["Factor"].default_value = 1.0
+    nt.links.new(col.outputs[2], mul.inputs[6]); nt.links.new(vr.outputs["Result"], mul.inputs[7])
+    nt.links.new(mul.outputs[2], b.inputs["Base Color"])
+    fac = nt.nodes.new("ShaderNodeMix"); fac.data_type = "FLOAT"
+    nt.links.new(aj.outputs["Fac"], fac.inputs[0]); nt.links.new(t1.outputs["Fac"], fac.inputs[2]); nt.links.new(t2.outputs["Fac"], fac.inputs[3])
+    bp = nt.nodes.new("ShaderNodeBump"); bp.inputs["Strength"].default_value = 0.08; bp.invert = True
+    nt.links.new(fac.outputs[0], bp.inputs["Height"]); nt.links.new(bp.outputs["Normal"], b.inputs["Normal"])
+    return m
+
+
 def pintura(nombre, color, rough=0.75):
     """Pintura mate sobre revoque: el mismo grano del revoque blanco, con otro color."""
     blanco = bpy.data.materials.get("blanco")
@@ -159,8 +192,8 @@ def cuartos(y_losa, y_techo, col):
               for o in _objetos(("n1_muro", "n1_tabique")))
     z = y_losa + 0.002
     # parqué RUBIO ("plancher blond" [eg-xiste]; parqué en fotos de cuartos S8 5/10/12/32; huéspedes [CMN])
-    # tablillas de 30 × 7 cm trabadas a media pieza (antes salían cuadritos de 7 × 7: parecía baldosa)
-    parque = baldosa("m_parque", (0.56, 0.41, 0.25), (0.47, 0.34, 0.20), (0.30, 0.21, 0.12), 0.07, 0.45, bump=0.1, largo=0.30, traba=0.5)
+    # parqué EN CUADROS (tipo cesta): cuadros de 24 cm de 4 tablillas, alternando la dirección [S8 10/12]
+    parque = parque_cesta("m_parque", (0.56, 0.41, 0.25), (0.47, 0.34, 0.20), (0.30, 0.21, 0.12))
     for nombre, r in (("huespedes", (-9.30, -6.05, -3.13, 1.62)), ("hijo", (-9.30, -6.05, -10.56, -4.75)),
                       ("boudoir", (1.45, 4.75, -10.56, -4.75)), ("suite", (-4.65, -1.45, -10.56, -2.0))):
         _losa_piso(f"mu_piso_{nombre}", *r, z, parque, col)
@@ -237,6 +270,7 @@ def cielo_raso_blanco():
 
 
 def aplicar(col, y_losa, y_techo, h_pilotis=3.07):
+    dinteles(col, (h_pilotis - 0.2, y_techo - 0.01), pisos=(0.05, y_losa + 0.012))    # antes de pintar: la pintura los alcanza
     piso_vestibulo(col); rampa_diagonal(y_losa); salon(y_losa, y_techo); cocina(y_losa, y_techo)
     verde_solo_afuera(h_pilotis); cielo_raso_blanco(); cuartos(y_losa, y_techo, col); puertas(col, (0.05, y_losa + 0.012))
 
@@ -249,23 +283,23 @@ def _circuncentro(a, b, c):
     return ux, uy
 
 
-def puertas(col, pisos=(0.05, 3.322)):
+PUERTAS_GEOM = []                                   # (nivel, bisagra, dir. de giro, dir. del vano, cara0, cara1, radio)
+
+
+def _puertas_dwg():
     """Las puertas que dibuja el DWG: arco de giro de ~90° (r 0,5–1,1 m) + la línea de la hoja desde la bisagra.
-    Se ponen ABIERTAS, como las dibuja el plano (así no cierran la vista del recorrido). Hoja de 4 cm y 2,10 m,
-    pintada oscura como en las fotos [S8 10/16]. Sin línea de hoja en el plano → no se inventa."""
+    Devuelve (nivel, bisagra, extremo ABIERTO, extremo del VANO, radio). Sin línea de hoja → no se inventa."""
     ruta = os.path.join(os.getcwd(), "src/components/lab/villa-savoye/expediente/dwg-muros.json")
     niveles = json.load(open(ruta, encoding="utf-8"))["niveles"]
-    m, _ = _mat("m_puerta", (0.085, 0.06, 0.05), 0.38)
-    me = bpy.data.meshes.new("carp_puertas"); bm = bmesh.new(); n = 0
-    for nivel, h0 in zip(("nivel0", "nivel1"), pisos):
+    fuera = []
+    for nivel in ("nivel0", "nivel1"):
         lineas = [t for t in niveles[nivel] if t["tipo"] != "ARC"]
         for s in niveles[nivel]:
             if s["tipo"] != "ARC": continue
             p = s["pts"]; c = _circuncentro(p[0], p[len(p) // 2], p[-1])
             if not c: continue
             r = math.dist(c, p[0])
-            a0 = math.atan2(p[0][1] - c[1], p[0][0] - c[0]); a1 = math.atan2(p[-1][1] - c[1], p[-1][0] - c[0])
-            giro = abs(math.degrees(a1 - a0)) % 360
+            giro = abs(math.degrees(math.atan2(p[-1][1] - c[1], p[-1][0] - c[0]) - math.atan2(p[0][1] - c[1], p[0][0] - c[0]))) % 360
             if not (0.5 < r < 1.1 and 70 < min(giro, 360 - giro) < 110): continue
             hoja = None
             for t in lineas:
@@ -274,13 +308,105 @@ def puertas(col, pisos=(0.05, 3.322)):
                         if (math.dist(u, c) < 0.06 and math.dist(v, e) < 0.06) or (math.dist(v, c) < 0.06 and math.dist(u, e) < 0.06):
                             hoja = e
             if not hoja: continue
-            dx, dz = (hoja[0] - c[0]) / r, (hoja[1] - c[1]) / r; nx, nz = -dz * 0.02, dx * 0.02
-            base = [(c[0] + nx, c[1] + nz), (hoja[0] + nx, hoja[1] + nz), (hoja[0] - nx, hoja[1] - nz), (c[0] - nx, c[1] - nz)]
-            ab = [bm.verts.new((x, z, h0)) for x, z in base]; ar = [bm.verts.new((x, z, h0 + 2.10)) for x, z in base]
-            bm.faces.new(ab[::-1]); bm.faces.new(ar)
-            for k in range(4): bm.faces.new((ab[k], ab[(k + 1) % 4], ar[(k + 1) % 4], ar[k]))
-            n += 1
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    bm.to_mesh(me); bm.free()
-    o = bpy.data.objects.new(me.name, me); col.objects.link(o); me.materials.append(m)
-    print(f"[materia] carpintería: {n} puertas del DWG, abiertas como las dibuja el plano")
+            # En ESTE DWG la línea de la hoja va sobre el VANO (puerta cerrada) y el arco termina en la posición
+            # abierta. Verificado en render (28-sep): leído al revés, la hoja tapaba el vano como un rectángulo
+            # negro y el dintel salía perpendicular al muro, como un estante.
+            abierto = p[-1] if math.dist(hoja, p[0]) < 1e-6 else p[0]
+            fuera.append((nivel, c, tuple(abierto), tuple(hoja), r))
+    return fuera
+
+
+def _muros_nivel(nivel):
+    """Contornos de muro de un nivel (rellenos del DWG + tabiques de pares de líneas) para saber de qué lado del
+    vano está el muro."""
+    import villa_obra
+    polis = [p for p in villa_obra._cargar("dwg-muros-solidos.json")["niveles"][nivel] if villa_obra._area(p) >= 0.05]
+    rects = villa_obra.tabiques_de_lineas(nivel, 19.0, 21.5, polis) if nivel == "nivel1" else []
+    return polis, rects
+
+
+def _lado_del_muro(c, u, w, polis, rects):
+    """+1 si el muro está del lado −w de la línea del vano (lo normal: la bisagra va en la cara del lado del giro),
+    −1 si está del lado +w, 0 si no se sabe (entonces se centra). Mira justo al lado de las dos jambas."""
+    def en_muro(x, z):
+        return any(_dentro((x, z), p) for p in polis) or any(r[0] < x < r[1] and r[2] < z < r[3] for r in rects)
+    votos = 0
+    for jx, jz, sg in ((c[0], c[1], -1), (c[0] + u[0] * u[2], c[1] + u[1] * u[2], 1)):
+        fx, fz = jx + u[0] * 0.05 * sg, jz + u[1] * 0.05 * sg            # un poco afuera del vano, dentro de la jamba
+        votos += en_muro(fx - w[0] * 0.07, fz - w[1] * 0.07) - en_muro(fx + w[0] * 0.07, fz + w[1] * 0.07)
+    return (votos > 0) - (votos < 0)
+
+
+def dinteles(col, techos, grueso=0.16, h_puerta=2.10, pisos=(0.05, 3.322)):
+    """Sobre cada puerta, el muro: el DWG corta los muros en la puerta de piso a techo (es un corte a 1 m) y el
+    modelo los levantaba así, con un hueco hasta el cielo raso (lo vio Alejandro en el boudoir). En las fotos
+    [S8 10/16] la puerta es de ~2,10 m con muro encima. Se nombran como muros de su nivel para que la pintura
+    del recinto (azul, azulejo, verde/blanco) los alcance."""
+    import villa_obra
+    blanco = bpy.data.materials.get("blanco"); verde = bpy.data.materials.get("verde")
+    n = 0
+    cache = {}
+    for k, (nivel, c, hoja, cerrado, r) in enumerate(_puertas_dwg()):
+        if nivel not in cache: cache[nivel] = _muros_nivel(nivel)
+        w = ((hoja[0] - c[0]) / r, (hoja[1] - c[1]) / r)                 # hacia donde abre
+        largo = math.dist(c, cerrado); u = ((cerrado[0] - c[0]) / largo, (cerrado[1] - c[1]) / largo, largo)
+        lado = _lado_del_muro(c, u, w, *cache[nivel])
+        a0, a1 = (-grueso, 0.0) if lado > 0 else (0.0, grueso) if lado < 0 else (-grueso / 2, grueso / 2)
+        poli = [(c[0] + w[0] * a1, c[1] + w[1] * a1), (cerrado[0] + w[0] * a1, cerrado[1] + w[1] * a1),
+                (cerrado[0] + w[0] * a0, cerrado[1] + w[1] * a0), (c[0] + w[0] * a0, c[1] + w[1] * a0)]
+        PUERTAS_GEOM.append((nivel, c, w, u, a0, a1, r))
+        i = 0 if nivel == "nivel0" else 1
+        nombre = f"pb_muro_dintel_{k}" if i == 0 else f"n1_tabique_dintel_{k}"
+        villa_obra._prisma(nombre, poli, pisos[i] + h_puerta, techos[i], verde if i == 0 else blanco, col); n += 1
+    print(f"[materia] {n} dinteles sobre las puertas (antes: hueco hasta el techo)")
+
+
+def _caja_orientada(bm, o, u, w, a_u, b_u, a_w, b_w, h0, h1):
+    """Caja alineada al vano: de a_u a b_u a lo largo de u, de a_w a b_w a lo largo de w, de h0 a h1."""
+    pts = [(o[0] + u[0] * p + w[0] * q, o[1] + u[1] * p + w[1] * q) for p, q in ((a_u, a_w), (b_u, a_w), (b_u, b_w), (a_u, b_w))]
+    ab = [bm.verts.new((x, z, h0)) for x, z in pts]; ar = [bm.verts.new((x, z, h1)) for x, z in pts]
+    bm.faces.new(ab[::-1]); bm.faces.new(ar)
+    for k in range(4): bm.faces.new((ab[k], ab[(k + 1) % 4], ar[(k + 1) % 4], ar[k]))
+
+
+def puertas(col, pisos=(0.05, 3.322), h=2.10):
+    """Como en las fotos [S8 10/12]: hoja LISA enrasada gris-café oscuro, MARCO metálico delgado y oscuro en el vano,
+    MANIJA de palanca metálica a 1 m. Abiertas 90° hacia el lado donde el plano dibuja el giro."""
+    m, b = _mat("m_puerta", (0.10, 0.085, 0.075), 0.42)
+    nt = m.node_tree                                                    # pintura sobre madera: veta apenas visible
+    veta = nt.nodes.new("ShaderNodeTexWave"); veta.inputs["Scale"].default_value = 5.0; veta.inputs["Distortion"].default_value = 3.0
+    geo = nt.nodes.new("ShaderNodeNewGeometry"); nt.links.new(geo.outputs["Position"], veta.inputs["Vector"])
+    mr = nt.nodes.new("ShaderNodeMapRange"); mr.inputs["To Min"].default_value = 0.92; mr.inputs["To Max"].default_value = 1.08
+    nt.links.new(veta.outputs["Fac"], mr.inputs["Value"])
+    mul = nt.nodes.new("ShaderNodeMix"); mul.data_type = "RGBA"; mul.blend_type = "MULTIPLY"; mul.inputs["Factor"].default_value = 1.0
+    mul.inputs[6].default_value = (0.10, 0.085, 0.075, 1); nt.links.new(mr.outputs["Result"], mul.inputs[7])
+    nt.links.new(mul.outputs[2], b.inputs["Base Color"])
+    marco_m, _ = _mat("m_marco_puerta", (0.045, 0.045, 0.05), 0.35, metal=0.6)
+    metal, _ = _mat("m_manija", (0.66, 0.66, 0.64), 0.22, metal=1.0)
+    bh, bmar, bman = bmesh.new(), bmesh.new(), bmesh.new()
+    n = 0
+    for nivel, c, w, u, a0, a1, r in PUERTAS_GEOM:
+        h0 = pisos[0] if nivel == "nivel0" else pisos[1]
+        L = u[2]; t = 0.035                                            # ancho de la jamba metálica
+        # marco: dos jambas y el cabezal, del grueso del muro + 1 cm por cada cara
+        for p0, p1 in ((0.0, t), (L - t, L)):
+            _caja_orientada(bmar, c, u, w, p0, p1, a0 - 0.01, a1 + 0.01, h0, h0 + h + t)
+        _caja_orientada(bmar, c, u, w, 0.0, L, a0 - 0.01, a1 + 0.01, h0 + h, h0 + h + t)
+        # hoja: gira en la bisagra (jamba de c), abierta 90° hacia +w; 4 cm de grueso, luz de 1 cm con el marco
+        ancho = L - 2 * t - 0.01
+        o = (c[0] + u[0] * t + w[0] * a1, c[1] + u[1] * t + w[1] * a1)
+        _caja_orientada(bh, o, w, (-u[0], -u[1]), 0.0, ancho, -0.04, 0.0, h0 + 0.01, h0 + h - 0.005)
+        # manija de palanca a 1 m, a 7 cm del canto libre, en las dos caras de la hoja
+        libre = (o[0] + w[0] * (ancho - 0.07), o[1] + w[1] * (ancho - 0.07))
+        for cara in (0.012, -0.052):
+            _caja_orientada(bman, libre, w, (-u[0], -u[1]), -0.012, 0.012, cara - 0.02, cara + 0.02, h0 + 0.985, h0 + 1.015)  # roseta
+            _caja_orientada(bman, libre, w, (-u[0], -u[1]), -0.12, 0.0, cara - 0.018 if cara > 0 else cara - 0.0,
+                            cara + 0.0 if cara > 0 else cara + 0.018, h0 + 0.99, h0 + 1.01)                             # palanca
+        n += 1
+    for nombre, bm_, mat in (("carp_puertas", bh, m), ("carp_marcos", bmar, marco_m), ("carp_manijas", bman, metal)):
+        bmesh.ops.recalc_face_normals(bm_, faces=bm_.faces)
+        me = bpy.data.meshes.new(nombre); bm_.to_mesh(me); bm_.free()
+        ob = bpy.data.objects.new(nombre, me); col.objects.link(ob); me.materials.append(mat)
+    print(f"[materia] carpintería: {n} puertas con marco metálico, hoja lisa y manija de palanca [S8 10/12]")
+
+

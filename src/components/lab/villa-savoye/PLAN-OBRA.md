@@ -182,3 +182,9 @@ Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
 - **Pisos por recinto:** parqué RUBIO en tablillas 30 × 7 trabadas (huéspedes [CMN]; hijo, boudoir y suite por "plancher blond" [eg-xiste] + fotos S8 5/10/12/32 → confianza media) · cocina baldosa tostada 20 cm [S8 19] · baño 14 y baño de la suite baldosa blanca 10 cm · el resto (hall, pasillos) sigue ocre: sin fuente.
 - **Rampa:** tramo INTERIOR gris oscuro liso [S8 9/15/20/31]; tramo EXTERIOR losetas en diagonal [S9 9].
 - **Puertas:** 17 del DWG (arco de giro de ~90° + línea de hoja desde la bisagra), abiertas como las dibuja el plano, hoja de 4 cm × 2,10 m, pintura oscura [S8 10/16]. Sin línea de hoja en el plano → no se pone (1 caso).
+
+### Fase 3, carpintería (28-sep) — puertas fieles a las fotos S8 10/12
+- **Lectura del DWG corregida:** en este plano la línea de la hoja va sobre el VANO (puerta cerrada) y el arco termina en la posición abierta. Leído al revés, la hoja tapaba el vano ("un rectángulo negro") y el dintel salía como estante.
+- **Dinteles:** muro sobre cada puerta de 2,10 m hasta el cielo raso (el DWG corta a 1 m y el modelo dejaba el hueco hasta el techo). El lado del muro se DETECTA en el plano mirando junto a las dos jambas (`_lado_del_muro`); si no se sabe, se centra. Se nombran como muros del nivel para que la pintura del recinto los alcance.
+- **Puerta:** hoja lisa enrasada gris-café oscuro con veta apenas visible · marco metálico delgado y oscuro (jambas de 3,5 cm + cabezal, grueso del muro + 1 cm por cara) · manija de palanca metálica a 1 m con roseta, en las dos caras. Abiertas 90° hacia el lado del giro del plano.
+- **Parqué EN CUADROS tipo cesta** (cuadros de 24 cm de 4 tablillas alternadas) [S8 10/12], no tablillas trabadas.
