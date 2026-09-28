@@ -16,3 +16,22 @@ terraza (jardín suspendido).
 | **Rampa (tramo 2)** | Exterior, de la terraza al solárium [S4][S6] | ✅ |
 
 **Carpintería**: originalmente de **madera**; reemplazada por **aluminio pintado** en la restauración de 1967 [S2].
+
+## Evidencia visual [S8] — estado actual (museo), revisado 27-sep
+
+- **Salón**: ✅ la luminaria es un **tubo lineal suspendido de varillas que corre a lo largo del
+  techo** (confirma [S3]) — los globos del render v7 están MAL. ✅ Radiadores grises bajo la cinta.
+  ✅ Polychromie hoy: muro del fondo **rosa pálido**, paños **azul pálido**, una columna/paño
+  **rojo oscuro**. Piso de baldosa beige. Muebles del museo: LC2 cuero café, **LC4 en piel de
+  vaca (pony)**, mesa **LC6 con tablero de vidrio** con sillas. ⚠️ Las fotos no muestran la chimenea
+  de [S3] — 👁 buscar.
+- **Cocina**: ✅ muros de azulejo blanco; mesón corrido bajo la ventana con **pileta doble** y dos
+  llaves; placares empotrados de **puertas corredizas grises** con repisas arriba; radiador bajo el
+  mesón. 👁 confirmar cuál foto es cocina y cuál lavandería (las dos tienen pileta bajo ventana).
+- **Baño de los padres**: ✅ **bañera de mosaico azul** + **diván ondulado de azulejo gris**,
+  lavamanos blanco de pedestal, muros de azulejo blanco, claraboya.
+- **Dormitorios**: ✅ **parquet** (bloques), muros **azul** (uno ultramar oscuro, otro más claro),
+  placares bajos empotrados bajo las ventanas con puertas grises. Hoy vacíos.
+- ❓ **Mueble-estantería con paneles de vidrio de colores** (rojo, azul, verde) y un **placard
+  policromado** (rosa/azul/blanco) en un cuarto con parquet: no identifico el recinto; pueden ser
+  piezas de exposición. No se modelan hasta ubicarlos.

@@ -16,3 +16,16 @@ esquina noroeste [S0][S2][S4]. Retranqueada tras los pilotis y pintada de verde 
 | **Habitación de huéspedes** | S1 la pone en planta baja; S4 (Benton) y S5 en el nivel principal | ⚠️ |
 
 **Hoy** hay una exposición permanente (planos, maquetas, cartas de Madame Savoye) en esta planta [S1].
+
+## Evidencia visual [S8] — estado actual (museo), revisado 27-sep
+
+- **Lavamanos del vestíbulo**: ✅ lavamanos blanco de pedestal, exento, junto a las columnas
+  redondas y la escalera; maceta con planta al lado. Piso de baldosa gris clara.
+- **Escalera de caracol**: ✅ zanca helicoidal maciza de revoque **blanco**, peldaños **gris
+  antracita**, baranda de **tubo negro** delgado.
+- **Rampa**: ✅ piso **antracita** (linóleo), antepechos blancos con **corte triangular**, baranda
+  de tubo negro, columnas redondas blancas.
+- **Lavandería**: ✅ **pileta de hormigón** larga con varias llaves de bronce, sobre muro de
+  **azulejo blanco**.
+- Muros de azulejo blanco en espacios de servicio del nivel bajo. 👁 Falta ver: garaje, cuarto del
+  chofer, cuarto de servicio (hoy librería).
