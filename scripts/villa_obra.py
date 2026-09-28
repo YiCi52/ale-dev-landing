@@ -127,10 +127,12 @@ def _montantes(pts, altura, col, paso=0.42, ancho=0.05, fondo=0.09):
 def planta_baja(altura_muros, altura_pilotis, m_muro, m_piloti, m_vidrio, col):
     polis = _cargar("dwg-muros-solidos.json")["niveles"]["nivel0"]
     chicos = [p for p in polis if _area(p) < 0.12]
-    muros = [p for p in polis if _area(p) >= 0.12 and not villa_circulacion.es_muro_de_rampa(*_bbox(p))]
+    muros = [p for p in polis if _area(p) >= 0.12 and not villa_circulacion.es_muro_de_rampa(*_bbox(p))
+             and not villa_circulacion.es_de_escalera(*_bbox(p))]     # la escalera es exenta: sus antepechos van aparte
     for n, p in enumerate(muros):
         _prisma(f"pb_muro_{n}", p, 0.0, altura_muros, m_muro, col)
     centros = pilotis(chicos, altura_pilotis, m_piloti, col)
+    PILOTIS_CENTROS[:] = centros
     vidrio_herradura(altura_muros, m_vidrio, col)
     print(f"[villa_obra] planta baja: {len(muros)} muros · {len(centros)} pilotis · vidrio de la herradura")
 
@@ -169,8 +171,30 @@ def tabiques_de_lineas(nivel, W, D, solidos, margen_fachada=0.4, sep=(0.10, 0.30
     return muros
 
 
+PILOTIS_CENTROS = []                               # los llena planta_baja; el nivel principal los prolonga
 TERRAZA = (1.40, 9.5, -4.62, 4.78)                 # x0, x1, z0, z1 del jardín suspendido
-MESA_Z0, MESA_Z1, H_MESA, E_MESA = -3.45, -2.40, 0.72, 0.08
+# La tapa cubre TODO el conjunto (z −4,60…−2,40): en las fotos de Archweb (S9, 19/20/29/30) la mesa de la terraza
+# es un tablero delgado de hormigón sobre apoyos de lámina, no un cajón. Los pares de líneas son esos apoyos.
+MESA_Z0, MESA_Z1, H_MESA, E_MESA = -4.60, -2.40, 0.72, 0.06
+
+
+def columnas_nivel(z0, z1, W, D, muros, rects, material, col, radio=0.14):
+    """Los pilotis SIGUEN hacia arriba: las fotos del salón (S8, 29/30) muestran columnas redondas exentas a
+    1,25 m de la ventana. El plano del nivel 1 no las dibuja. Se prolongan los de la planta baja salvo donde
+    quedan dentro de un muro, de la fachada, del pozo de la rampa o de la escalera."""
+    cajas = [_bbox(p) for p in muros] + [tuple(r) for r in rects]
+    hechas = 0
+    for x, z in PILOTIS_CENTROS:
+        if abs(x) > W / 2 - 0.35 or abs(z) > D / 2 - 0.35: continue
+        if -1.5 < x < 1.5 and -7.4 < z < 2.8: continue            # pozo de la rampa
+        if villa_circulacion.es_de_escalera(x - 0.1, x + 0.1, z - 0.1, z + 0.1): continue
+        if any(b[0] - 0.2 < x < b[1] + 0.2 and b[2] - 0.2 < z < b[3] + 0.2 for b in cajas): continue
+        bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=radio, depth=z1 - z0, location=(x, z, (z0 + z1) / 2))
+        o = bpy.context.object; o.name = f"n1_columna_{hechas}"
+        for c in o.users_collection: c.objects.unlink(o)
+        col.objects.link(o); o.data.materials.append(material); bpy.ops.object.shade_smooth(); hechas += 1
+    print(f"[villa_obra] nivel principal: {hechas} columnas (pilotis prolongados)")
+    return hechas
 
 
 def vidriera_terraza(z0, z1, m_vidrio, col, paneles=4):
@@ -216,7 +240,8 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
     # Fuera solo las piezas que viven ENTERAS en la franja de fachada (esquineros): los tabiques que
     # llegan hasta la fachada SÍ van (el 28-sep se perdieron todos los de los dormitorios por filtrar de más).
     en_franja = lambda x, z: abs(x) > W / 2 - 0.3 or abs(z) > D / 2 - 0.3
-    interiores = [p for p in solidos if not all(en_franja(x, z) for x, z in p)]
+    interiores = [p for p in solidos if not all(en_franja(x, z) for x, z in p)
+                  and not villa_circulacion.es_de_escalera(*_bbox(p))]
     for n, p in enumerate(interiores):
         _prisma(f"n1_muro_{n}", p, z0, z1, m_muro, col)
     rects = _sin_solapes([r for r in tabiques_de_lineas("nivel1", W, D, solidos) if not villa_circulacion.es_muro_de_rampa(*r)])
@@ -236,6 +261,7 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
     for n, (x0, x1, a, b) in enumerate(vidrios):
         _prisma(f"n1_vidrio_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z1, m_vidrio or m_muro, col)
     if m_vidrio: vidriera_terraza(z0, z1, m_vidrio, col)
+    columnas = columnas_nivel(z0, z1, W, D, interiores, rects, m_muro, col)
     print(f"[villa_obra] nivel principal: {len(interiores)} muros rellenos · {len(rects)} tabiques · {len(vidrios)} vidrios · mesa de terraza ({len(mesa)} piezas)")
     return interiores, rects
 
@@ -248,6 +274,7 @@ VENTANA_SOLARIUM = (-1.39, 0.36, 8.25, 8.40)
 # La llegada de la escalera caracol a la cubierta: una caja TECHADA (corte A-A del DWG: losa de 9,10 a 9,30),
 # más baja que las pantallas (9,40). Planta = la U de la pieza 2 del nivel 2, con su remate redondo.
 CAJA_ESCALERA = (-6.05, -2.25, 0.65, 2.45)
+CHIMENEA, ALTO_CHIMENEA = (3.69, 3.98, 9.36, 9.62), 3.25     # remata ~9,9 m, medio metro sobre las pantallas
 ALTO_ESCALERA, E_TECHO_ESCALERA = 2.64, 0.20
 
 
@@ -310,7 +337,11 @@ def cubierta(z_piso, alto_pantalla, alto_antepecho, m_muro, col):
             _prisma("cub_escalera_techo", env, z_piso + ALTO_ESCALERA - E_TECHO_ESCALERA,
                     z_piso + ALTO_ESCALERA, m_muro, col)
     pantalla_continua(col, z_piso, alto_pantalla, 1.00, 2.03)
-    print(f"[villa_obra] cubierta: {len(muros)} muros (pantallas + rampa) · ventana del solárium")
+    # La chimenea: la pieza 7 del nivel 2 (0,29 × 0,26) que el filtro de área descartaba como "poste". La foto 27
+    # de Archweb (S9) la muestra junto a las pantallas, un poco más alta que ellas: altura = interpretación.
+    cx0, cx1, cz0, cz1 = CHIMENEA
+    _prisma("cub_chimenea", [(cx0, cz0), (cx1, cz0), (cx1, cz1), (cx0, cz1)], z_piso, z_piso + ALTO_CHIMENEA, m_muro, col)
+    print(f"[villa_obra] cubierta: {len(muros)} muros (pantallas + rampa) · ventana del solárium · chimenea")
 
 
 def pantalla_continua(col, z_piso, alto, alto_antepecho, alto_dintel):

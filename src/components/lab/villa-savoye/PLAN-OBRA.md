@@ -144,3 +144,14 @@ Consecuencia: la caja del nivel principal era 0,7 m más alta y la ventana corri
 - **Pasto nuevo** (`scripts/villa_pasto.py`): matas de 70–130 hojas reales (cintas que se afinan y se doblan), 5 variantes + trébol, **420 000 matas como instancias** (memoria casi plana), más densas cerca de la casa, tono por mata. Altura 10 cm (césped cortado). Las rotaciones de partícula van APAGADAS: con ellas las matas salían acostadas (probado lado a lado). El pelo de antes sigue con `VILLA_PASTO_MODO=pelo`.
 - Costo: ~3,5 min a 60 % y 32 muestras en CPU con pasto; Metal abortó una vez con el pasto nuevo → renders con pasto en CPU hasta ver si se repite. Revisiones de obra: `VILLA_PASTO_N=0`.
 - Cámara nueva: `VILLA_CAM=libre VILLA_CAM_POS="x,y,z" VILLA_CAM_MIRA="x,y,z" VILLA_CAM_LENTE=35`; `VILLA_CAM=pasto` (+ `VILLA_PASTO_CERCA=1`).
+
+## Pasada contra fotos (28-sep, Archweb S8 interiores + S9 exteriores)
+Confirmado por las fotos: vano sin vidrio de la terraza (S9 13/14/30), vidriera del salón (S9 12/19), losas grandes de concreto en terraza (S9 8/13), muros verdes y cinta con montantes en planta baja (S9 1/4), piso ocre y muro rosa del salón (S8 28–30).
+Corregido:
+- **Escalera EXENTA** (S8 3/4/11/13): la "jaula" del DWG era el antepecho cortado a la altura del plano. Ahora `villa_circulacion.antepechos_escalera`: cada vértice del contorno sube con su peldaño (+1 m) y baja 30 cm (zanca); abierta por debajo. Mismo error que el muro central de la rampa.
+- **Columnas en el nivel principal** (S8 29/30): el DWG no las dibuja; se prolongan los pilotis de la planta baja donde no caen en muro, fachada, rampa o escalera (6).
+- **Mesa de la terraza**: tablero delgado de 6 cm sobre apoyos de lámina (S9 19/20/29/30), no cajón.
+- **Chimenea** junto a las pantallas (S9 27): era la pieza 7 del nivel 2 que el filtro descartaba; altura ~9,9 m = interpretación.
+- **Fondo del exterior**: `VILLA_HDRI_GIRO=300` por defecto (sin el tronco gigante: "parece Ant-Man").
+Para fases 3–4 (visto en fotos, no se toca ahora): piso de la rampa con losetas en DIAGONAL (S9 9); barandas de tubo delgado en rampa y escalera (S9 7/15/24, S8 4); canaleta de luz que cruza el techo del salón (S8 28–30); cocina con mesón de baldosa blanca y muebles con puertas correderas grises (S8 17/19/24/25); baño azul con chaise lounge de mosaico (S8 7/8/26).
+Noche: `VILLA_MODO=noche` — render `artefactos-bake/pruebas/noche-exterior.png` (CPU, 60 %, 64 muestras).

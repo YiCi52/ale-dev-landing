@@ -12,7 +12,7 @@ muro de ojo en medio (z 1,48…1,62) y un remate semicircular con compensadas (c
 Sus muros ya salen de los rellenos del plano (villa_obra); aquí van solo los peldaños.
 Ejes como en villa_obra: JSON (x, z) → Blender (X, Y); la altura es la Z de Blender.
 """
-import bpy, bmesh, math
+import bpy, bmesh, json, math, os
 
 POZO_X = (-1.25, 1.25)
 TRAMO_OESTE, TRAMO_ESTE, MURO_X = (-1.25, -0.07), (0.07, 1.25), (-0.07, 0.07)
@@ -167,3 +167,68 @@ def tapas_escalera(h0, h1, material, col, nombre):
 def es_muro_de_rampa(x0, x1, z0, z1):
     """El muro central de la rampa lo construye este módulo con su remate inclinado: villa_obra lo salta."""
     return x0 >= MURO_X[0] - 0.02 and x1 <= MURO_X[1] + 0.02 and z0 >= Z_FONDO - 0.1 and z1 <= Z_BOCA + 1.0
+
+
+# ── antepechos de la escalera (28-sep, corrección con las fotos S8 3/4/11/13) ──────────────────────
+# En el DWG los "muros" de la jaula de la escalera (la U con remate curvo y el muro de ojo) aparecen cortados a la
+# altura del plano, como muros. Las fotos muestran otra cosa: la escalera es EXENTA y escultórica —se ve desde el
+# vestíbulo, con el espacio abierto por debajo— y esas piezas son su antepecho, que sube con los peldaños.
+# Mismo error que el muro central de la rampa. Aquí: cada vértice del contorno del plano sube a la altura del
+# peldaño que tiene al lado (+1 m de antepecho) y baja 30 cm por debajo (la zanca).
+ZANCA, ANTEPECHO = 0.30, 1.00
+
+
+def es_de_escalera(x0, x1, z0, z1):
+    return x0 >= ESC_X0 - 0.05 and x1 <= ESC_CENTRO[0] + ESC_R + 0.2 and z0 >= 0.6 and z1 <= 2.5
+
+
+def _peldano(x, z, base, techo, tramo=None):
+    """Altura del peldaño junto al punto (x, z). tramo = 'A' o 'B' para forzar un lado (el muro de ojo)."""
+    cx, cz = ESC_CENTRO; largo = cx - ESC_X0; r = (techo - base) / (PELDANOS_RECTOS * 2 + COMPENSADAS)
+    if x <= cx or tramo:
+        lado = tramo or ("A" if z < cz else "B")
+        t = min(max((x - ESC_X0) / largo, 0.0), 1.0)
+        s = PELDANOS_RECTOS * t if lado == "A" else PELDANOS_RECTOS + COMPENSADAS + PELDANOS_RECTOS * (1 - t)
+    else:
+        th = math.atan2(z - cz, x - cx)
+        s = PELDANOS_RECTOS + COMPENSADAS * (th + math.pi / 2) / math.pi
+    return base + s * r
+
+
+def _prisma_alabeado(bm, poli, bajo, alto):
+    """Como un prisma, pero cada vértice con su propia cota abajo y arriba (el antepecho sube con la escalera)."""
+    from mathutils.geometry import tessellate_polygon
+    pts = []
+    for q in poli:
+        if not pts or math.dist(q, pts[-1]) > 1e-3: pts.append(q)
+    if len(pts) > 2 and math.dist(pts[0], pts[-1]) <= 1e-3: pts.pop()
+    ab = [bm.verts.new((x, z, bajo(x, z))) for x, z in pts]; ar = [bm.verts.new((x, z, alto(x, z))) for x, z in pts]
+    for i, j, k in tessellate_polygon([[(x, z, 0.0) for x, z in pts]]):
+        for tri in ((ab[k], ab[j], ab[i]), (ar[i], ar[j], ar[k])):
+            try: bm.faces.new(tri)
+            except ValueError: pass
+    n = len(pts)
+    for k in range(n):
+        try: bm.faces.new((ab[k], ab[(k + 1) % n], ar[(k + 1) % n], ar[k]))
+        except ValueError: pass
+
+
+def antepechos_escalera(pisos, material, col):
+    ruta = os.path.join(os.getcwd(), "src/components/lab/villa-savoye/expediente/dwg-muros-solidos.json")
+    niveles = json.load(open(ruta, encoding="utf-8"))["niveles"]
+    def construir(bm):
+        for nivel, (base, techo) in zip(("nivel0", "nivel1"), zip(pisos, pisos[1:])):
+            for p in niveles[nivel]:
+                xs = [x for x, _ in p]; zs = [z for _, z in p]
+                if not es_de_escalera(min(xs), max(xs), min(zs), max(zs)): continue
+                ojo = max(zs) - min(zs) < 0.3                      # el muro de ojo, entre los dos tramos
+                if ojo:
+                    bajo = lambda x, z, b=base, t=techo: max(_peldano(x, z, b, t, "A") - ZANCA, b)
+                    alto = lambda x, z, b=base, t=techo: _peldano(x, z, b, t, "B") + ANTEPECHO
+                else:
+                    bajo = lambda x, z, b=base, t=techo: max(_peldano(x, z, b, t) - ZANCA, b)
+                    alto = lambda x, z, b=base, t=techo: _peldano(x, z, b, t) + ANTEPECHO
+                _prisma_alabeado(bm, p, bajo, alto)
+    o = _malla("circ_escalera_antepechos", construir, material, col)
+    import villa_obra; villa_obra.suavizar_curvas(o.data)
+    print("[villa_circulacion] escalera exenta: antepechos que suben con los peldaños (fotos S8)")

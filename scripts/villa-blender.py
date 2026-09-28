@@ -22,6 +22,8 @@ if os.environ.get("VILLA_CAM") == "rincon":
     for k, v in (("VILLA_HDR", os.path.join(ASSETS, "charolettenbrunn_park_4k.hdr")), ("VILLA_HDRI_GIRO", "145"),
                  ("VILLA_SOL_AZ", "170"), ("VILLA_SOL_EL", "28")):
         os.environ.setdefault(k, v)
+if not os.environ.get("VILLA_CAM"):                     # la toma de aproximación: sin el tronco gigante de
+    os.environ.setdefault("VILLA_HDRI_GIRO", "300")      # fondo ("parece Ant-Man", Alejandro 28-sep); pinos lejanos
 HDR = os.environ.get("VILLA_HDR", os.path.join(ASSETS, "ballawley_park_4k.hdr"))
 if not os.path.exists(HDR): HDR = os.path.join(RAIZ, "public/lab/villa-savoye/sky_1k.hdr")
 OUT = os.environ.get("VILLA_OUT", os.path.join(RAIZ, "artefactos-bake/prueba-villa.png"))
@@ -179,6 +181,7 @@ circ.tapas_escalera(Y_TECHO - 0.01, Y_TECHO + E_CUBIERTA, M_BLANCO, esc.collecti
 PISOS = [0.0, Y_LOSA, Y_TECHO + E_CUBIERTA]            # suelo · nivel principal · cubierta
 circ.rampa(PISOS, M_BLANCO, esc.collection)
 circ.escalera(PISOS, M_BLANCO, esc.collection)
+circ.antepechos_escalera(PISOS, M_BLANCO, esc.collection)
 
 # ── terreno ───────────────────────────────────────────────────────────────
 bpy.ops.mesh.primitive_plane_add(size=160, location=(0,0,0)); bpy.context.object.name = "pradera"
