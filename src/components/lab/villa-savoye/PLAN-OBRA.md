@@ -70,3 +70,13 @@ terraza). **Se revisa contra el expediente** en su fase; no se da por bueno por 
   `VILLA_PASTO_N` (0 = sin pasto), `VILLA_SOL_AZ`/`VILLA_SOL_EL`, `VILLA_OUT`.
 - `scripts/villa_detalle.py` — pisos, muebles, terraza, pasto.
 - `scripts/render-seguro.sh` — el único modo permitido de renderizar.
+
+## Observaciones de Alejandro sobre los renders v7 (27-sep) — para las fases 3–5
+
+1. **LC2: una varilla atraviesa el asiento.** Causa en `villa_detalle.py`: el marco superior de la jaula es un
+   rectángulo cerrado a 0,62 m, así que su lado frontal cruza sobre el asiento. La LC2 real no tiene ese tramo
+   (la jaula abraza brazos y respaldo, el frente queda abierto). Se corrige en la fase 4 (habitado).
+2. **Vidrios con poco realismo.** Falta reflejo creíble, un tinte verdoso de canto y alguna imperfección;
+   se trabaja en la fase 3 (materia).
+3. **La textura de las paredes deja ver "recuadros" de render** (repetición del mosaico de la foto de revoque
+   con proyección de caja). Fase 3: romper la repetición (escala mayor + mezcla con ruido a dos escalas).
