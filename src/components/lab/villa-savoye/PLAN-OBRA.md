@@ -114,3 +114,10 @@ Consecuencia: la caja del nivel principal era 0,7 m más alta y la ventana corri
 - **Losas:** los huecos de rampa y escalera en el piso del nivel principal y en la cubierta salen del mismo módulo; dos tapas cierran las esquinas que el semicírculo deja fuera del hueco rectangular.
 - **A verificar con fotos:** si en el nivel principal el pozo de la rampa tiene vidrio hacia la terraza o cubierta propia (hoy queda abierto al cielo desde la cubierta hasta el suelo); barandas y pasamanos van en la fase 4.
 - Cámaras de verificación: `VILLA_CAM=corte` (`VILLA_CORTE_X` o `VILLA_CORTE_Z`), `VILLA_CAM=rampa` con `VILLA_CORTE`, `VILLA_CAM=hall`; `VILLA_EXPO` para aclarar zonas oscuras al verificar.
+
+## Prueba de techo de calidad (28-sep) — `scripts/villa_lookdev.py`, `VILLA_CAM=rincon`
+- Toma: llegando por la rampa al solárium, mirando la ventana de la pantalla. 1920×1080, 192 muestras, **4 min 10 s en Metal** (sin caída).
+- Ajustes de la toma: `VILLA_HDRI_GIRO=230 VILLA_SOL_AZ=170 VILLA_SOL_EL=28`, exposición −0,45.
+- Lo que ya funciona: revoque sin recuadros (mundo + 2 muestras), chorreaduras, oclusión, losetas con tono por pieza, pantalla en UNA pieza (booleana; sin juntas falsas), DOF, retoque (brillo, aberración, viñeta).
+- Lo que todavía delata el CG: piso demasiado limpio y parejo; revoque sin textura visible a esta distancia; una junta doble en el piso a la derecha (dos piezas de losa); el fondo es foto de bosque, no el prado de Poissy.
+- Siguiente escalón (necesita descargas → pedir permiso): escaneo de losa de concreto, hierba en las juntas, HDRI con prado abierto.
