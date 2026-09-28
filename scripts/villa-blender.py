@@ -278,7 +278,8 @@ PHI_SOL = math.radians(float(os.environ.get("VILLA_SOL_AZ", "-38")))     # rumbo
 ELEV_OBJ = math.radians(float(os.environ.get("VILLA_SOL_EL", "34")))     # alto: entra por la cinta de ventanas
 AZ_OBJETIVO = math.pi - PHI_SOL
 mp_w = nt.nodes.new("ShaderNodeMapping"); tc_w = nt.nodes.new("ShaderNodeTexCoord")
-mp_w.inputs["Rotation"].default_value = (0, 0, AZ_SOL_HDRI - AZ_OBJETIVO)
+mp_w.inputs["Rotation"].default_value = (0, 0, AZ_SOL_HDRI - AZ_OBJETIVO + math.radians(float(os.environ.get("VILLA_HDRI_GIRO", "0"))))
+# VILLA_HDRI_GIRO: gira solo el fondo. Se puede porque el sol del HDRI va recortado y la sombra la pone la lámpara.
 nt.links.new(tc_w.outputs["Generated"], mp_w.inputs["Vector"]); nt.links.new(mp_w.outputs["Vector"], env.inputs["Vector"])
 bg = nt.nodes.new("ShaderNodeBackground"); bg.inputs["Strength"].default_value = 0.55 if MODO == "dia" else 0.018
 sal = nt.nodes.new("ShaderNodeOutputWorld")
@@ -393,6 +394,9 @@ esc.render.resolution_x, esc.render.resolution_y = 1280, 800
 esc.render.resolution_percentage = int(os.environ.get("VILLA_PCT", "100"))
 esc.render.image_settings.file_format = "PNG"
 esc.render.filepath = OUT
+if os.environ.get("VILLA_CAM") == "rincon":               # prueba de techo de calidad (scripts/villa_lookdev.py)
+    import villa_lookdev
+    villa_lookdev.aplicar(esc, cam, cam_d, ASSETS, M_BLANCO, Y_TECHO + E_CUBIERTA)
 print(f"[villa] objetos: {len(esc.objects)} · renderizando…")
 bpy.ops.render.render(write_still=True)
 print(f"[villa] ✓ {OUT}")
