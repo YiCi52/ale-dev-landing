@@ -47,7 +47,7 @@ TABIQUES = [
 LOSA = [(-9.5,-1.5,-10.75,-4.57),(0.1,9.5,-10.75,-4.57),(-1.5,0.1,-10.75,-7.0),
         (-9.5,-1.5,4.78,10.75),(0.1,9.5,4.78,10.75),(-1.5,0.1,4.78,10.75),
         (-9.5,-1.5,-4.57,2.4),(0.1,1.4,-4.57,2.4),(-6.35,-1.5,2.4,4.78),(0.1,1.4,2.4,4.78)]
-VACIO_RAMPA = (-1.5, 0.1, -7.0, 4.78)
+VACIO_RAMPA = (-1.4, 1.2, -7.2, 2.8)          # fase 1 (DWG): rampa de 2,6 m, más corta
 
 def tramos(a, b, puertas):
     out, cur = [], a
@@ -119,18 +119,10 @@ for n,(x0,x1,z0,z1) in enumerate([(-W/2,vx0,-D/2,D/2),(vx1,W/2,-D/2,D/2),
                                   (vx0,vx1,-D/2,vz0),(vx0,vx1,vz1,D/2)]):
     caja(f"losa_nobile_{n}", x0, x1, H_PILOTIS, Y_LOSA, z0, z1, M_PISO)
 
-# ── tabiques con sus huecos ───────────────────────────────────────────────
-for n,(eje, v, a, b, puertas, vidrio) in enumerate(TABIQUES):
-    material = M_VIDRIO if vidrio else (M_ROSA if n == 2 else M_AZUL if n == 1 else M_BLANCO)
-    for u, w in tramos(a, b, puertas):
-        # Los tabiques paran 2 cm antes de la cara interior de la fachada: si llegan justo
-        # al mismo plano, Cycles dibuja una línea negra (dos caras en el mismo lugar).
-        if eje == "x":
-            u, w = max(u, -D/2+0.21), min(w, D/2-0.21)
-            caja(f"tab{n}", v-T_TAB/2, v+T_TAB/2, Y_LOSA, Y_TECHO-0.01, u, w, material)
-        else:
-            u, w = max(u, -W/2+0.21), min(w, W/2-0.21)
-            caja(f"tab{n}", u, w, Y_LOSA, Y_TECHO-0.01, v-T_TAB/2, v+T_TAB/2, material)
+# ── tabiques del nivel principal: DESDE EL PLANO (fase 2) ───────────────
+# Antes: TABIQUES a mano (PLANTA.md §2), con la franja oeste mal. Ahora: muros rellenos + pares de líneas del DWG.
+# La polychromie (rosa, azul) vuelve en la fase 3 (materia): aquí todo es obra gris.
+villa_obra.nivel_principal(Y_LOSA, Y_TECHO - 0.01, W, D, M_BLANCO, esc.collection, M_VIDRIO)
 
 # ── fachadas: banda inferior, cinta de vidrio continua, banda superior ────
 yv0, yv1 = H_PILOTIS + H_BANDA_INF, H_PILOTIS + H_BANDA_INF + H_VENTANA
@@ -356,7 +348,7 @@ if os.environ.get("VILLA_CAM") == "planta":                # verificación de ob
     for o in esc.objects:
         if o.type in ("MESH", "CURVE") and o.name != "pradera":
             zmin = min((o.matrix_world @ mathutils.Vector(c)).z for c in o.bound_box)
-            if zmin > H_PILOTIS - 0.05: o.hide_render = True
+            if zmin > float(os.environ.get("VILLA_CORTE", H_PILOTIS - 0.05)): o.hide_render = True
 
 # ── render ────────────────────────────────────────────────────────────────
 esc.render.engine = "CYCLES"
