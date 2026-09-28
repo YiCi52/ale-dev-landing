@@ -49,7 +49,6 @@ TABIQUES = [
     ("z", -6.17, -5.12, 1.36, [(-3.4, -2.5)], False),
     ("z", -0.28, -5.12, -1.5, [(-4.4, -3.5)], False),
 ]
-VACIO_RAMPA = (-1.4, 1.2, -7.2, 2.8)          # fase 1 (DWG): rampa de 2,6 m, más corta
 
 def tramos(a, b, puertas):
     out, cur = [], a
@@ -115,11 +114,12 @@ sys.path.insert(0, os.path.join(RAIZ, "scripts"))
 import villa_obra
 villa_obra.planta_baja(H_RDC, H_PILOTIS, M_VERDE, M_BLANCO, M_VIDRIO, esc.collection)
 
-# ── losa del nobile, en paneles alrededor del vacio de la rampa ───────────
-vx0, vx1, vz0, vz1 = VACIO_RAMPA
-for n,(x0,x1,z0,z1) in enumerate([(-W/2,vx0,-D/2,D/2),(vx1,W/2,-D/2,D/2),
-                                  (vx0,vx1,-D/2,vz0),(vx0,vx1,vz1,D/2)]):
+# ── losa del nivel principal: huecos REALES de rampa y escalera (fase 2, del DWG) ──────
+import villa_circulacion as circ
+HUECOS_PISO = [circ.HUECO_RAMPA, *circ.HUECOS_ESCALERA]
+for n,(x0,x1,z0,z1) in enumerate(villa_obra.rects_con_huecos(-W/2, W/2, -D/2, D/2, HUECOS_PISO)):
     caja(f"losa_nobile_{n}", x0, x1, H_PILOTIS, Y_LOSA, z0, z1, M_PISO)
+circ.tapas_escalera(H_PILOTIS, Y_LOSA, M_PISO, esc.collection, "losa_nobile_tapas_escalera")
 
 # ── tabiques del nivel principal: DESDE EL PLANO (fase 2) ───────────────
 # Antes: TABIQUES a mano (PLANTA.md §2), con la franja oeste mal. Ahora: muros rellenos + pares de líneas del DWG.
@@ -144,7 +144,8 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,
 
 # ── cubierta: losa con los huecos REALES (fase 2): terraza abierta y rampa (interior de la U del DWG) ──
 HUECOS_CUBIERTA = [(1.40, 9.5, -4.57, 4.78),          # terraza: jardín suspendido, abierto al cielo
-                   (-1.25, 1.25, -6.08, 2.50)]         # rampa al solárium (nivel 2, pieza 8 por dentro)
+                   circ.HUECO_RAMPA,                   # la rampa llega al solárium (el descanso también: 1,5 m de altura libre si no)
+                   *circ.HUECOS_ESCALERA]              # la escalera llega adentro de su caja techada
 for n,(x0,x1,z0,z1) in enumerate(villa_obra.rects_con_huecos(-W/2+0.23, W/2-0.23, -D/2+0.23, D/2-0.23, HUECOS_CUBIERTA)):
     caja(f"cubierta_{n}", x0, x1, Y_TECHO-0.01, Y_TECHO+E_CUBIERTA, z0, z1, M_BLANCO)
 for nombre, x0,x1,z0,z1 in [("s",-W/2,W/2,D/2-0.22,D/2), ("n",-W/2,W/2,-D/2,-D/2+0.22),
@@ -154,6 +155,12 @@ for nombre, x0,x1,z0,z1 in [("s",-W/2,W/2,D/2-0.22,D/2), ("n",-W/2,W/2,-D/2,-D/2
 # ── pantallas del solárium, caja de la escalera y muros de la rampa: DESDE EL PLANO (fase 2) ──
 # Antes: dos arcos a ojo (villaModel.ts) puestos sobre la terraza. Ahora: contornos del nivel 2 del DWG.
 villa_obra.cubierta(Y_TECHO + E_CUBIERTA, H_PANTALLA, 1.05, M_BLANCO, esc.collection)
+circ.tapas_escalera(Y_TECHO - 0.01, Y_TECHO + E_CUBIERTA, M_BLANCO, esc.collection, "cubierta_tapas_escalera")
+
+# ── rampa y escalera: DESDE EL PLANO (fase 2) ─────────────────────────────
+PISOS = [0.0, Y_LOSA, Y_TECHO + E_CUBIERTA]            # suelo · nivel principal · cubierta
+circ.rampa(PISOS, M_BLANCO, esc.collection)
+circ.escalera(PISOS, M_BLANCO, esc.collection)
 
 # ── terreno ───────────────────────────────────────────────────────────────
 bpy.ops.mesh.primitive_plane_add(size=160, location=(0,0,0)); bpy.context.object.name = "pradera"
@@ -253,7 +260,7 @@ for o in [o for o in esc.objects if o.type == "MESH" and o.name not in ("pradera
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     o.select_set(False)
     # el revoque de la caja es continuo: biselar sus piezas por separado dibuja juntas que no existen
-    if o.name.startswith(("sol", "herradura", "fa_", "antepecho", "cubierta", "losa", "pb_", "piloti", "cub_")): continue
+    if o.name.startswith(("sol", "herradura", "fa_", "antepecho", "cubierta", "losa", "pb_", "piloti", "cub_", "circ_", "cubierta")): continue
     bv = o.modifiers.new("bisel", "BEVEL"); bv.width = 0.015; bv.segments = 2; bv.limit_method = "ANGLE"
 
 # ── luz: el mismo HDRI del lab + sol calido ───────────────────────────────
@@ -340,10 +347,29 @@ if os.environ.get("VILLA_CAM") == "planta":                # verificación de ob
             zmin = min((o.matrix_world @ mathutils.Vector(c)).z for c in o.bound_box)
             if zmin > float(os.environ.get("VILLA_CORTE", H_PILOTIS - 0.05)): o.hide_render = True
 
-if os.environ.get("VILLA_CAM") == "aerea":                 # verificación de obra: la cubierta en 3/4, desde arriba
+if os.environ.get("VILLA_CAM") in ("aerea", "rampa", "hall"):      # verificación de obra en 3/4, desde arriba
     cam_d.lens = 35; cam_d.shift_y = 0
+    mira = mathutils.Vector((0, 0, Y_TECHO))
     cam.location = (22.0, 26.0, 21.0)
-    cam.rotation_euler = (mathutils.Vector((0, 0, Y_TECHO)) - cam.location).to_track_quat("-Z", "Y").to_euler()
+    if os.environ["VILLA_CAM"] == "hall":                    # de pie en el vestíbulo, mirando la rampa (la foto clásica)
+        cam_d.lens = 18; cam.location, mira = (1.9, 4.6, 1.6), mathutils.Vector((-0.4, -3.0, 2.2))
+    if os.environ["VILLA_CAM"] == "rampa":                   # rampa y escalera, con VILLA_CORTE para quitar la cubierta
+        cam.location, mira = (9.0, 10.0, 13.0), mathutils.Vector((-1.5, -1.5, 2.5))
+    cam.rotation_euler = (mira - cam.location).to_track_quat("-Z", "Y").to_euler()
+    if "VILLA_CORTE" in os.environ:
+        for o in esc.objects:
+            if o.type in ("MESH", "CURVE") and o.name != "pradera":
+                zmin = min((o.matrix_world @ mathutils.Vector(c)).z for c in o.bound_box)
+                if zmin > float(os.environ["VILLA_CORTE"]): o.hide_render = True
+
+if os.environ.get("VILLA_CAM") == "corte":                 # corte longitudinal por el pozo de la rampa (como el B-B)
+    cx = float(os.environ.get("VILLA_CORTE_X", "0.6"))       # el plano de corte = clip_start de una cámara ortográfica
+    cam_d.type = "ORTHO"; cam_d.ortho_scale = 24; cam_d.shift_y = 0
+    cam.location = (cx + 30.0, -1.0, 4.5); cam.rotation_euler = (math.pi / 2, 0, math.pi / 2)
+    cam_d.clip_start, cam_d.clip_end = 30.0, 80.0
+    if "VILLA_CORTE_Z" in os.environ:                       # corte transversal (plano Y del Blender = z del plano)
+        cz = float(os.environ["VILLA_CORTE_Z"]); cam_d.ortho_scale = 11
+        cam.location = (-3.5, cz + 30.0, 3.4); cam.rotation_euler = (math.pi / 2, 0, math.pi)
 
 # ── render ────────────────────────────────────────────────────────────────
 esc.render.engine = "CYCLES"
@@ -358,7 +384,9 @@ except Exception as e:
 esc.cycles.samples = int(os.environ.get("VILLA_MUESTRAS", "160"))
 esc.cycles.use_denoising = True
 esc.view_settings.view_transform = "AgX"
-if os.environ.get("VILLA_CAM") != "interior": esc.view_settings.exposure = -0.1 if MODO == "dia" else 1.2
+if os.environ.get("VILLA_CAM") not in ("interior", "hall"): esc.view_settings.exposure = -0.1 if MODO == "dia" else 1.2
+if os.environ.get("VILLA_CAM") == "hall": esc.view_settings.exposure = 1.3
+if "VILLA_EXPO" in os.environ: esc.view_settings.exposure = float(os.environ["VILLA_EXPO"])   # solo para verificar zonas oscuras
 try: esc.view_settings.look = "AgX - Punchy"
 except Exception: pass
 esc.render.resolution_x, esc.render.resolution_y = 1280, 800

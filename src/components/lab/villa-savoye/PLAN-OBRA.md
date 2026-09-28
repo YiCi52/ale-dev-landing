@@ -19,7 +19,7 @@
 |---|---|---|---|
 | 0 | Investigación | `expediente/`: una ficha por recinto + `fuentes.md` + guion de la promenade + `planos.md` | ✅ cerrada 27-sep |
 | 1 | Planos | Los 3 niveles verificados contra los planos originales (PLANTA.md corregido) | ✅ cerrada 28-sep — muros en metros en `expediente/dwg-muros.json`; huella 19 × 21,5; orientación ⚠️ |
-| 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **en curso** — planta baja ✅ desde el DWG (`scripts/villa_obra.py`: 10 muros, 21 pilotis, vidrio curvo con montantes) · nivel principal ✅ (13 muros rellenos + 12 tabiques + 9 vidrios detectados de pares de líneas; rampa 2,6 m) · cubierta ✅ (5 muros del nivel 2: pantallas del solárium con su ventana sobre el eje de la rampa, caja de la escalera, antepechos de la rampa; losa con los huecos reales de terraza y rampa) · alturas MEDIDAS en fachada 1 + corte A-A (la caja estaba 70 cm alta) · caja de escalera techada · sigue: **las rampas y la escalera caracol** (corte B-B), después fase 3 |
+| 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **en curso** — planta baja ✅ desde el DWG (`scripts/villa_obra.py`: 10 muros, 21 pilotis, vidrio curvo con montantes) · nivel principal ✅ (13 muros rellenos + 12 tabiques + 9 vidrios detectados de pares de líneas; rampa 2,6 m) · cubierta ✅ (5 muros del nivel 2: pantallas del solárium con su ventana sobre el eje de la rampa, caja de la escalera, antepechos de la rampa; losa con los huecos reales de terraza y rampa) · alturas MEDIDAS en fachada 1 + corte A-A (la caja estaba 70 cm alta) · caja de escalera techada · rampa ✅ (2 entrepisos, tramos lado a lado + descanso, muro central con remate inclinado) · escalera ✅ (en U con compensadas, NO caracol) · **obra gris cerrada** → fase 3 |
 | 3 | Materia | Materiales y color por recinto | parcial* |
 | 4 | Habitado | Muebles, objetos, plantas — solo con evidencia | parcial* |
 | 5 | Luz | Día y noche por recinto | parcial* |
@@ -107,3 +107,10 @@ terraza). **Se revisa contra el expediente** en su fase; no se da por bueno por 
 
 Consecuencia: la caja del nivel principal era 0,7 m más alta y la ventana corrida 23 cm más alta de lo real. Con las cotas medidas la proporción ya se lee como la casa.
 - **Metal:** la cámara `aerea` abortó 2 de 3 veces en GPU; en CPU pasa siempre (~24 s). Para verificación aérea usar `VILLA_CPU=1`.
+
+## Rampa y escalera (28-sep) — `scripts/villa_circulacion.py`
+- **Rampa, del plano:** pozo x −1,25…1,25; dos tramos de 1,18 m lado a lado (oeste sube hacia el fondo, este vuelve), muro central de 14 cm, descanso z −6,08…−7,12. Mismo esquema del nivel principal a la cubierta. El muro central se quitó de los rellenos genéricos (planta baja y nivel principal) porque en planta aparece como muro pero es un **antepecho con remate inclinado**: nace sobre el tramo que baja y remata 1 m sobre el que sube.
+- **Escalera: NO es caracol.** El DWG la dibuja en U: dos tramos rectos (x −4,75…−3,15), muro de ojo en medio y remate semicircular con compensadas (r 0,75). 18 contrahuellas por entrepiso (6 + 6 compensadas + 6). Sus muros ya venían de los rellenos.
+- **Losas:** los huecos de rampa y escalera en el piso del nivel principal y en la cubierta salen del mismo módulo; dos tapas cierran las esquinas que el semicírculo deja fuera del hueco rectangular.
+- **A verificar con fotos:** si en el nivel principal el pozo de la rampa tiene vidrio hacia la terraza o cubierta propia (hoy queda abierto al cielo desde la cubierta hasta el suelo); barandas y pasamanos van en la fase 4.
+- Cámaras de verificación: `VILLA_CAM=corte` (`VILLA_CORTE_X` o `VILLA_CORTE_Z`), `VILLA_CAM=rampa` con `VILLA_CORTE`, `VILLA_CAM=hall`; `VILLA_EXPO` para aclarar zonas oscuras al verificar.

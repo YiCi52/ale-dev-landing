@@ -8,6 +8,7 @@ corrige el plano o el JSON, no este archivo.
 Ejes del JSON: x (izq −, der +), z (lado 2 / fondo −, lado 1 / acceso +). Blender: (X, Y, Z) = (x, z, altura).
 """
 import bpy, bmesh, json, math, os
+import villa_circulacion
 
 EXP = os.path.join(os.getcwd(), "src/components/lab/villa-savoye/expediente")
 
@@ -19,6 +20,10 @@ def _cargar(nombre):
 
 def _area(p):
     return abs(sum(p[i][0] * p[i - 1][1] - p[i - 1][0] * p[i][1] for i in range(len(p)))) / 2
+
+
+def _bbox(p):
+    return min(x for x, _ in p), max(x for x, _ in p), min(z for _, z in p), max(z for _, z in p)
 
 
 def _centro(p):
@@ -115,7 +120,7 @@ def _montantes(pts, altura, col, paso=0.42, ancho=0.05, fondo=0.09):
 def planta_baja(altura_muros, altura_pilotis, m_muro, m_piloti, m_vidrio, col):
     polis = _cargar("dwg-muros-solidos.json")["niveles"]["nivel0"]
     chicos = [p for p in polis if _area(p) < 0.12]
-    muros = [p for p in polis if _area(p) >= 0.12]
+    muros = [p for p in polis if _area(p) >= 0.12 and not villa_circulacion.es_muro_de_rampa(*_bbox(p))]
     for n, p in enumerate(muros):
         _prisma(f"pb_muro_{n}", p, 0.0, altura_muros, m_muro, col)
     centros = pilotis(chicos, altura_pilotis, m_piloti, col)
@@ -165,7 +170,7 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
     interiores = [p for p in solidos if not all(en_franja(x, z) for x, z in p)]
     for n, p in enumerate(interiores):
         _prisma(f"n1_muro_{n}", p, z0, z1, m_muro, col)
-    rects = tabiques_de_lineas("nivel1", W, D, solidos)
+    rects = [r for r in tabiques_de_lineas("nivel1", W, D, solidos) if not villa_circulacion.es_muro_de_rampa(*r)]
     for n, (x0, x1, a, b) in enumerate(rects):
         _prisma(f"n1_tabique_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z1, m_muro, col)
     vidrios = tabiques_de_lineas("nivel1", W, D, solidos, sep=(0.03, 0.08))
