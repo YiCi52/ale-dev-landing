@@ -337,7 +337,22 @@ def _lado_del_muro(c, u, w, polis, rects):
     return (votos > 0) - (votos < 0)
 
 
-def dinteles(col, techos, grueso=0.16, h_puerta=2.10, pisos=(0.05, 3.322)):
+def _caras_del_muro(c, u, w, polis, rects, defecto):
+    """Mide las DOS caras reales del muro junto a cada jamba (barrido de 5 mm a lo largo de w). Con un grueso
+    supuesto el dintel sobresalía 1 cm (muros de 15 cm, dintel de 16; lo vio Alejandro)."""
+    def en_muro(x, z):
+        return any(_dentro((x, z), p) for p in polis) or any(r[0] < x < r[1] and r[2] < z < r[3] for r in rects)
+    medidas = []
+    for jx, jz, sg in ((c[0], c[1], -1), (c[0] + u[0] * u[2], c[1] + u[1] * u[2], 1)):
+        fx, fz = jx + u[0] * 0.03 * sg, jz + u[1] * 0.03 * sg
+        dentro = [k / 200 for k in range(-80, 81) if en_muro(fx + w[0] * k / 200, fz + w[1] * k / 200)]
+        if dentro and 0.08 < max(dentro) - min(dentro) + 0.005 < 0.3:     # un muro normal, no una esquina
+            medidas.append((min(dentro) - 0.0025, max(dentro) + 0.0025))
+    if not medidas: return defecto
+    return (sum(m[0] for m in medidas) / len(medidas), sum(m[1] for m in medidas) / len(medidas))
+
+
+def dinteles(col, techos, grueso=0.15, h_puerta=2.10, pisos=(0.05, 3.322)):
     """Sobre cada puerta, el muro: el DWG corta los muros en la puerta de piso a techo (es un corte a 1 m) y el
     modelo los levantaba así, con un hueco hasta el cielo raso (lo vio Alejandro en el boudoir). En las fotos
     [S8 10/16] la puerta es de ~2,10 m con muro encima. Se nombran como muros de su nivel para que la pintura
@@ -351,7 +366,8 @@ def dinteles(col, techos, grueso=0.16, h_puerta=2.10, pisos=(0.05, 3.322)):
         w = ((hoja[0] - c[0]) / r, (hoja[1] - c[1]) / r)                 # hacia donde abre
         largo = math.dist(c, cerrado); u = ((cerrado[0] - c[0]) / largo, (cerrado[1] - c[1]) / largo, largo)
         lado = _lado_del_muro(c, u, w, *cache[nivel])
-        a0, a1 = (-grueso, 0.0) if lado > 0 else (0.0, grueso) if lado < 0 else (-grueso / 2, grueso / 2)
+        supuesto = (-grueso, 0.0) if lado > 0 else (0.0, grueso) if lado < 0 else (-grueso / 2, grueso / 2)
+        a0, a1 = _caras_del_muro(c, u, w, *cache[nivel], supuesto)
         poli = [(c[0] + w[0] * a1, c[1] + w[1] * a1), (cerrado[0] + w[0] * a1, cerrado[1] + w[1] * a1),
                 (cerrado[0] + w[0] * a0, cerrado[1] + w[1] * a0), (c[0] + w[0] * a0, c[1] + w[1] * a0)]
         PUERTAS_GEOM.append((nivel, c, w, u, a0, a1, r))
@@ -382,8 +398,9 @@ def puertas(col, pisos=(0.05, 3.322), h=2.10):
     mul.inputs[6].default_value = (0.10, 0.085, 0.075, 1); nt.links.new(mr.outputs["Result"], mul.inputs[7])
     nt.links.new(mul.outputs[2], b.inputs["Base Color"])
     marco_m, _ = _mat("m_marco_puerta", (0.045, 0.045, 0.05), 0.35, metal=0.6)
-    metal, _ = _mat("m_manija", (0.66, 0.66, 0.64), 0.22, metal=1.0)
-    bh, bmar, bman = bmesh.new(), bmesh.new(), bmesh.new()
+    metal, _ = _mat("m_manija", (0.80, 0.79, 0.76), 0.18, metal=1.0)   # níquel satinado: que se lea
+    bh, bmar, bman, bll = bmesh.new(), bmesh.new(), bmesh.new(), bmesh.new()
+    negro, _ = _mat("m_bocallave", (0.01, 0.01, 0.01), 0.6)
     n = 0
     for nivel, c, w, u, a0, a1, r in PUERTAS_GEOM:
         h0 = pisos[0] if nivel == "nivel0" else pisos[1]
@@ -396,17 +413,29 @@ def puertas(col, pisos=(0.05, 3.322), h=2.10):
         ancho = L - 2 * t - 0.01
         o = (c[0] + u[0] * t + w[0] * a1, c[1] + u[1] * t + w[1] * a1)
         _caja_orientada(bh, o, w, (-u[0], -u[1]), 0.0, ancho, -0.04, 0.0, h0 + 0.01, h0 + h - 0.005)
-        # manija de palanca a 1 m, a 7 cm del canto libre, en las dos caras de la hoja
-        libre = (o[0] + w[0] * (ancho - 0.07), o[1] + w[1] * (ancho - 0.07))
-        for cara in (0.012, -0.052):
-            _caja_orientada(bman, libre, w, (-u[0], -u[1]), -0.012, 0.012, cara - 0.02, cara + 0.02, h0 + 0.985, h0 + 1.015)  # roseta
-            _caja_orientada(bman, libre, w, (-u[0], -u[1]), -0.12, 0.0, cara - 0.018 if cara > 0 else cara - 0.0,
-                            cara + 0.0 if cara > 0 else cara + 0.018, h0 + 0.99, h0 + 1.01)                             # palanca
+        # herrajes: placa larga con bocallave y manija de palanca a 1 m, en las dos caras; tres bisagras
+        libre = (o[0] + w[0] * (ancho - 0.06), o[1] + w[1] * (ancho - 0.06))
+        uu = (-u[0], -u[1])
+        for cara, sale in ((0.0, 1), (-0.04, -1)):                       # las dos caras de la hoja (grueso 4 cm)
+            f0 = cara if sale > 0 else cara - 0.004
+            _caja_orientada(bman, libre, w, uu, -0.02, 0.02, f0, f0 + 0.004, h0 + 0.90, h0 + 1.08)       # placa
+            _caja_orientada(bll, libre, w, uu, -0.004, 0.004, f0 + (0.0045 if sale > 0 else -0.0005),
+                            f0 + (0.0050 if sale > 0 else 0.0), h0 + 0.925, h0 + 0.945)                          # bocallave
+            p0 = f0 + 0.004 if sale > 0 else f0 - 0.012
+            _caja_orientada(bman, libre, w, uu, -0.008, 0.008, p0, p0 + 0.012, h0 + 1.02, h0 + 1.036)     # cuello
+            q0 = p0 + (0.004 if sale > 0 else -0.004)
+            _caja_orientada(bman, libre, w, uu, -0.125, 0.008, q0, q0 + 0.012, h0 + 1.021, h0 + 1.035)    # palanca
+        for hb in (0.22, 1.02, 1.82):                                    # bisagras en el canto de la bisagra
+            _caja_orientada(bman, o, w, uu, -0.012, 0.004, -0.046, 0.006, h0 + hb, h0 + hb + 0.10)
         n += 1
-    for nombre, bm_, mat in (("carp_puertas", bh, m), ("carp_marcos", bmar, marco_m), ("carp_manijas", bman, metal)):
+    for nombre, bm_, mat in (("carp_puertas", bh, m), ("carp_marcos", bmar, marco_m), ("carp_manijas", bman, metal),
+                             ("carp_bocallaves", bll, negro)):
         bmesh.ops.recalc_face_normals(bm_, faces=bm_.faces)
         me = bpy.data.meshes.new(nombre); bm_.to_mesh(me); bm_.free()
         ob = bpy.data.objects.new(nombre, me); col.objects.link(ob); me.materials.append(mat)
+        if nombre in ("carp_puertas", "carp_marcos"):                   # cantos apenas redondeados: atrapan luz
+            bv = ob.modifiers.new("canto", "BEVEL"); bv.width = 0.003; bv.segments = 2
+            bv.limit_method = "ANGLE"; bv.harden_normals = True
     print(f"[materia] carpintería: {n} puertas con marco metálico, hoja lisa y manija de palanca [S8 10/12]")
 
 
