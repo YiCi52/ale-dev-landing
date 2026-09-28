@@ -19,7 +19,7 @@
 |---|---|---|---|
 | 0 | Investigación | `expediente/`: una ficha por recinto + `fuentes.md` + guion de la promenade + `planos.md` | ✅ cerrada 27-sep |
 | 1 | Planos | Los 3 niveles verificados contra los planos originales (PLANTA.md corregido) | ✅ cerrada 28-sep — muros en metros en `expediente/dwg-muros.json`; huella 19 × 21,5; orientación ⚠️ |
-| 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **siguiente** (parcial*) |
+| 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **en curso** — planta baja ✅ desde el DWG (`scripts/villa_obra.py`: 10 muros, 21 pilotis, vidrio curvo con montantes); sigue nivel principal |
 | 3 | Materia | Materiales y color por recinto | parcial* |
 | 4 | Habitado | Muebles, objetos, plantas — solo con evidencia | parcial* |
 | 5 | Luz | Día y noche por recinto | parcial* |
@@ -61,6 +61,7 @@ terraza). **Se revisa contra el expediente** en su fase; no se da por bueno por 
   hebras apagó el Mac de 8 GB; el vigilante mata Blender a los 4 GB).
 - **Peso**: tramos + vistas no caben en `public/lab` (Vercel al tope). Decidir hosting (ej.
   Cloudflare R2) ANTES de la fase 6.
+- **GPU Metal**: se cae (SIGABRT dentro de Cycles) con ~100 objetos sueltos iguales → piezas repetidas SIEMPRE en una sola malla. `VILLA_CPU=1` fuerza CPU para aislar fallas; `VILLA_CAM=planta` = vista cenital de la planta baja para verificar contra el plano.
 - **Ritmo**: tope de horas por semana; el outreach (DMs) no se sacrifica por el lab.
 
 ## Scripts

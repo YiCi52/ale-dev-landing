@@ -21,8 +21,8 @@ if not os.path.exists(HDR): HDR = os.path.join(RAIZ, "public/lab/villa-savoye/sk
 OUT = os.environ.get("VILLA_OUT", os.path.join(RAIZ, "artefactos-bake/prueba-villa.png"))
 
 # ── PLANTA.md §1 ──────────────────────────────────────────────────────────
-CRUJIA, VOLADIZO = 4.75, 1.125
-W, D = CRUJIA * 4, CRUJIA * 4 + VOLADIZO * 2   # 19.0 x 21.25
+CRUJIA, VOLADIZO = 4.75, 1.25              # fase 1 (DWG): voladizo 1,25, no 1,125
+W, D = CRUJIA * 4, CRUJIA * 4 + VOLADIZO * 2   # 19.0 x 21.5
 H_PILOTIS, H_BANDA_INF, H_VENTANA, H_BANDA_SUP = 3.3, 0.55, 1.2, 1.5
 H_VOL = H_BANDA_INF + H_VENTANA + H_BANDA_SUP
 Y_LOSA, Y_TECHO = H_PILOTIS + 0.15, H_PILOTIS + H_VOL
@@ -32,20 +32,20 @@ T_TAB = 0.15
 TABIQUES = [
     ("z", 4.78, 0.1, 9.5, [(4.0, 7.0)], True),
     ("z", 4.78, -9.5, 0.1, [(-8.9, -8.0)], False),
-    ("x", -4.79, 4.78, 10.63, [(6.4, 7.3)], False),
+    ("x", -4.79, 4.78, 10.75, [(6.4, 7.3)], False),
     ("x", 0.1, -4.83, 4.78, [(1.2, 3.0)], False),
     ("x", -1.5, -7.0, 4.78, [], False),
     ("z", -4.83, 1.36, 9.5, [], False),
-    ("x", 4.47, -10.63, -4.83, [(-7.6, -6.7)], False),
-    ("x", 1.36, -10.63, -4.83, [], False),
-    ("x", -5.12, -10.63, 4.78, [(-9.6, -8.7), (-3.6, -2.7), (2.6, 3.5)], False),
+    ("x", 4.47, -10.75, -4.83, [(-7.6, -6.7)], False),
+    ("x", 1.36, -10.75, -4.83, [], False),
+    ("x", -5.12, -10.75, 4.78, [(-9.6, -8.7), (-3.6, -2.7), (2.6, 3.5)], False),
     ("z", -4.99, -9.5, -5.12, [(-7.6, -6.7)], False),
     ("z", 1.92, -9.5, -5.12, [], False),
     ("z", -6.17, -5.12, 1.36, [(-3.4, -2.5)], False),
     ("z", -0.28, -5.12, -1.5, [(-4.4, -3.5)], False),
 ]
-LOSA = [(-9.5,-1.5,-10.625,-4.57),(0.1,9.5,-10.625,-4.57),(-1.5,0.1,-10.625,-7.0),
-        (-9.5,-1.5,4.78,10.625),(0.1,9.5,4.78,10.625),(-1.5,0.1,4.78,10.625),
+LOSA = [(-9.5,-1.5,-10.75,-4.57),(0.1,9.5,-10.75,-4.57),(-1.5,0.1,-10.75,-7.0),
+        (-9.5,-1.5,4.78,10.75),(0.1,9.5,4.78,10.75),(-1.5,0.1,4.78,10.75),
         (-9.5,-1.5,-4.57,2.4),(0.1,1.4,-4.57,2.4),(-6.35,-1.5,2.4,4.78),(0.1,1.4,2.4,4.78)]
 VACIO_RAMPA = (-1.5, 0.1, -7.0, 4.78)
 
@@ -105,21 +105,13 @@ def caja(nombre, x0, x1, y0, y1, z0, z1, material):
     o.data.materials.append(material)
     return o
 
-# ── planta baja: la herradura + el bloque de servicio ─────────────────────
+# ── planta baja + pilotis: DESDE EL PLANO (fase 2, scripts/villa_obra.py) ────
+# Antes: cilindro cerrado r 6,5, bloque de servicio corrido 2,4 m y pilotis en retícula equivocada.
+# Ahora: contornos exactos del DWG (rellenos de la capa 7) extruidos; el vidrio curvo sale del arco de la capa 2.
 H_RDC = H_PILOTIS - 0.2
-bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=6.5, depth=H_RDC,
-                                    location=(0.3, 1.0, H_RDC/2))
-herradura = bpy.context.object; herradura.name = "herradura"
-bpy.ops.object.modifier_add(type='SOLIDIFY'); herradura.modifiers[-1].thickness = 0.06
-herradura.data.materials.append(M_VIDRIO)
-caja("bloque_servicio", -8.7, -3.5, 0, H_RDC, -6.8, -0.4, M_VERDE)
-
-# ── pilotis ───────────────────────────────────────────────────────────────
-for i in range(5):
-    for j in range(5):
-        bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.16, depth=H_PILOTIS,
-            location=((i-2)*(W/4-0.8), (j-2)*(D/4-0.8), H_PILOTIS/2))
-        bpy.context.object.data.materials.append(M_BLANCO)
+sys.path.insert(0, os.path.join(RAIZ, "scripts"))
+import villa_obra
+villa_obra.planta_baja(H_RDC, H_PILOTIS, M_VERDE, M_BLANCO, M_VIDRIO, esc.collection)
 
 # ── losa del nobile, en paneles alrededor del vacio de la rampa ───────────
 vx0, vx1, vz0, vz1 = VACIO_RAMPA
@@ -279,7 +271,7 @@ for o in [o for o in esc.objects if o.type == "MESH" and o.name not in ("pradera
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     o.select_set(False)
     # el revoque de la caja es continuo: biselar sus piezas por separado dibuja juntas que no existen
-    if o.name.startswith(("sol", "herradura", "fa_", "antepecho", "cubierta", "losa")): continue
+    if o.name.startswith(("sol", "herradura", "fa_", "antepecho", "cubierta", "losa", "pb_", "piloti")): continue
     bv = o.modifiers.new("bisel", "BEVEL"); bv.width = 0.015; bv.segments = 2; bv.limit_method = "ANGLE"
 
 # ── luz: el mismo HDRI del lab + sol calido ───────────────────────────────
@@ -358,10 +350,19 @@ if os.environ.get("VILLA_CAM") == "interior":             # dentro del salón, m
     cam.rotation_euler = (math.radians(84), 0, math.radians(-128))
     esc.view_settings.exposure = 1.1 if MODO == "dia" else -0.6   # de noche los bombillos están EN cuadro: 0.8 quemaba todo a durazno
 
+if os.environ.get("VILLA_CAM") == "planta":                # verificación de obra: planta baja vista desde arriba
+    cam_d.type = "ORTHO"; cam_d.ortho_scale = 26; cam_d.shift_y = 0
+    cam.location = (0, 0, 40); cam.rotation_euler = (0, 0, 0)
+    for o in esc.objects:
+        if o.type in ("MESH", "CURVE") and o.name != "pradera":
+            zmin = min((o.matrix_world @ mathutils.Vector(c)).z for c in o.bound_box)
+            if zmin > H_PILOTIS - 0.05: o.hide_render = True
+
 # ── render ────────────────────────────────────────────────────────────────
 esc.render.engine = "CYCLES"
 try:
     prefs = bpy.context.preferences.addons["cycles"].preferences
+    if os.environ.get("VILLA_CPU"): raise RuntimeError("CPU pedida por VILLA_CPU")
     prefs.compute_device_type = "METAL"; prefs.get_devices()
     for d in prefs.devices: d.use = True
     esc.cycles.device = "GPU"
