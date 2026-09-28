@@ -227,3 +227,36 @@ mirar fotos, y salieron porque Alejandro insistió, no porque el proceso las bus
 el modelo contra fotos **de cada fachada y de cada ambiente visible**, elemento por elemento
 — forma en planta, color, material, carpintería, mobiliario, vegetación. Lista escrita, no
 vistazo. Es más barato mirar diez fotos que rehacer una capa.
+
+---
+
+# CORRECCIONES DE LA FASE 1 (28-sep-2026) — contra el DWG de dwglab (`LECsav.dwg`)
+
+> **Manda esta sección donde choque con lo de arriba.** Medido sobre las láminas PNG del DWG a ~25 px/m
+> (precisión ~0,2 m). Evidencia: `~/CastilloStudio/assets/villa-savoye/planos/fase1-corregido-3-niveles.png`.
+> La huella 19,0 × 21,25 m está CONFIRMADA. Ejes: z −10,625 = lado 2 (fondo); z +10,625 = lado 1 (acceso).
+
+## Nivel 0 — planta baja
+- **Pilotis**: retícula de **4,75 m** en x = −9,5 · −4,75 · 0 · 4,75 · 9,5 y z = −9,5 · −4,75 · 0 · 4,75 · 9,5
+  (en x al ras de la fachada; en z con el voladizo de 1,125). El DWG muestra además pilotis extra alrededor
+  de la rampa y la curva (≈ (±1,3; 7,9) y ≈ (4,8; −1,8)) → confirmar con los vectores del DWG.
+- **Herradura = U**: semicírculo r ≈ **6,33 m**, centro ≈ **(0; 0)**, abierto hacia el lado 1; lado recto
+  derecho en x ≈ +6,33 desde z 0 hasta z ≈ −9,4; lado izquierdo contra el bloque de servicio.
+  (El script la tiene como cilindro cerrado r 6,5 en (0,3; 1,0) → MAL.)
+- **Bloque de servicio**: x ≈ **−6,3 … −2,4**, z ≈ **−9,4 … −0,6** (el script: x −8,7…−3,5 → MAL).
+  Muro de fondo del garaje/servicio en z ≈ −10,4, de x ≈ −4,7 a +4,9, con escaleritas en las esquinas.
+- **Rampa**: x ≈ −1,35 … +1,2, z ≈ −6,4 … +2,6. **Caracol**: x ≈ −4,8 … −2,2, z ≈ +0,8 … +2,4.
+
+## Nivel 1 — nivel principal (lo de §2 CALZA salvo esto)
+- **Rampa**: x ≈ **−1,4 … +1,2** (≈2,6 m, dos tramos en zigzag), z ≈ **−7,2 … +2,8**. (§2: x −1,5…0,1,
+  z −7,0…+4,78 → más angosta y 2 m más larga: corregir `VACIO_RAMPA` y la losa.)
+- **Caracol**: x ≈ −4,8 … −2,2, z ≈ +0,8 … +2,4 (no estaba en §2).
+- **Franja oeste (dormitorios / núcleo húmedo)**: los tabiques no coinciden con §2 → redibujar con los
+  vectores del DWG.
+
+## Nivel 2 — cubierta y solárium
+- **Pantalla del solárium**: un solo muro en S sobre la franja del salón (z ≈ +4,8 … +9,6), de x ≈ −7,6 a
+  +8,0, con un tramo recto en z ≈ 8,27 y un banco/abertura de ~1,7 m. Polilínea en
+  `expediente/solarium-pantalla.json` (29 puntos). **Las `sol1`/`sol2` del script están sobre la terraza → MAL.**
+- **Remate del caracol**: volumen redondeado en x ≈ −6,0 … −2,2, z ≈ +0,7 … +2,4.
+- Rampa en cubierta: x ≈ −1,3 … +1,4, z ≈ −7,1 … +2,6. Sobre la terraza NO hay losa (hueco confirmado).
