@@ -44,9 +44,6 @@ TABIQUES = [
     ("z", -6.17, -5.12, 1.36, [(-3.4, -2.5)], False),
     ("z", -0.28, -5.12, -1.5, [(-4.4, -3.5)], False),
 ]
-LOSA = [(-9.5,-1.5,-10.75,-4.57),(0.1,9.5,-10.75,-4.57),(-1.5,0.1,-10.75,-7.0),
-        (-9.5,-1.5,4.78,10.75),(0.1,9.5,4.78,10.75),(-1.5,0.1,4.78,10.75),
-        (-9.5,-1.5,-4.57,2.4),(0.1,1.4,-4.57,2.4),(-6.35,-1.5,2.4,4.78),(0.1,1.4,2.4,4.78)]
 VACIO_RAMPA = (-1.4, 1.2, -7.2, 2.8)          # fase 1 (DWG): rampa de 2,6 m, más corta
 
 def tramos(a, b, puertas):
@@ -140,30 +137,18 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,
         if largo_x: caja(f"mont_{nombre}_{k}", u-0.03, u+0.03, yv0, yv1, z0-0.01, z1+0.01, M_CARP)
         else:       caja(f"mont_{nombre}_{k}", x0-0.01, x1+0.01, yv0, yv1, u-0.03, u+0.03, M_CARP)
 
-# ── cubierta ──────────────────────────────────────────────────────────────
-for n,(x0,x1,z0,z1) in enumerate(LOSA):
-    x0, x1 = max(x0, -W/2+0.23), min(x1, W/2-0.23); z0, z1 = max(z0, -D/2+0.23), min(z1, D/2-0.23)
+# ── cubierta: losa con los huecos REALES (fase 2): terraza abierta y rampa (interior de la U del DWG) ──
+HUECOS_CUBIERTA = [(1.40, 9.5, -4.57, 4.78),          # terraza: jardín suspendido, abierto al cielo
+                   (-1.25, 1.25, -6.08, 2.50)]         # rampa al solárium (nivel 2, pieza 8 por dentro)
+for n,(x0,x1,z0,z1) in enumerate(villa_obra.rects_con_huecos(-W/2+0.23, W/2-0.23, -D/2+0.23, D/2-0.23, HUECOS_CUBIERTA)):
     caja(f"cubierta_{n}", x0, x1, Y_TECHO-0.01, Y_TECHO+0.34, z0, z1, M_BLANCO)
 for nombre, x0,x1,z0,z1 in [("s",-W/2,W/2,D/2-0.22,D/2), ("n",-W/2,W/2,-D/2,-D/2+0.22),
                             ("e",W/2-0.22,W/2,-D/2+0.22,D/2-0.22), ("o",-W/2,-W/2+0.22,-D/2+0.22,D/2-0.22)]:
     caja(f"antepecho_{nombre}", x0,x1, Y_TECHO+0.001, Y_TECHO+1.05, z0,z1, M_BLANCO)
 
-# ── pantallas curvas del solárium (villaModel.ts, misma conversión de ejes que caja()) ──
-def pantalla(nombre, r, h, cx, cz, theta0, largo, y_base, segs=48, grosor=0.14):
-    import bmesh
-    me = bpy.data.meshes.new(nombre); o = bpy.data.objects.new(nombre, me)
-    esc.collection.objects.link(o); bm = bmesh.new(); vs = []
-    for k in range(segs + 1):
-        th = theta0 + largo * k / segs
-        x, z = cx + r * math.sin(th), cz + r * math.cos(th)   # three.js: x=r·sinθ, z=r·cosθ
-        vs.append((bm.verts.new((x, z, y_base)), bm.verts.new((x, z, y_base + h))))
-    for k in range(segs):
-        bm.faces.new((vs[k][0], vs[k+1][0], vs[k+1][1], vs[k][1]))
-    bm.to_mesh(me); bm.free()
-    o.modifiers.new("grosor", "SOLIDIFY").thickness = grosor
-    o.data.materials.append(M_BLANCO); return o
-pantalla("sol1", 4.6, 2.6, -1.5, -2.0, math.pi*0.05, math.pi*1.15, Y_TECHO + 0.35)
-pantalla("sol2", 3.1, 2.2,  4.8, -2.2, math.pi*1.10, math.pi*0.85, Y_TECHO + 0.35)
+# ── pantallas del solárium, caja de la escalera y muros de la rampa: DESDE EL PLANO (fase 2) ──
+# Antes: dos arcos a ojo (villaModel.ts) puestos sobre la terraza. Ahora: contornos del nivel 2 del DWG.
+villa_obra.cubierta(Y_TECHO + 0.34, 2.6, 1.05, M_BLANCO, esc.collection)
 
 # ── terreno ───────────────────────────────────────────────────────────────
 bpy.ops.mesh.primitive_plane_add(size=160, location=(0,0,0)); bpy.context.object.name = "pradera"
@@ -263,7 +248,7 @@ for o in [o for o in esc.objects if o.type == "MESH" and o.name not in ("pradera
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     o.select_set(False)
     # el revoque de la caja es continuo: biselar sus piezas por separado dibuja juntas que no existen
-    if o.name.startswith(("sol", "herradura", "fa_", "antepecho", "cubierta", "losa", "pb_", "piloti")): continue
+    if o.name.startswith(("sol", "herradura", "fa_", "antepecho", "cubierta", "losa", "pb_", "piloti", "cub_")): continue
     bv = o.modifiers.new("bisel", "BEVEL"); bv.width = 0.015; bv.segments = 2; bv.limit_method = "ANGLE"
 
 # ── luz: el mismo HDRI del lab + sol calido ───────────────────────────────
@@ -349,6 +334,11 @@ if os.environ.get("VILLA_CAM") == "planta":                # verificación de ob
         if o.type in ("MESH", "CURVE") and o.name != "pradera":
             zmin = min((o.matrix_world @ mathutils.Vector(c)).z for c in o.bound_box)
             if zmin > float(os.environ.get("VILLA_CORTE", H_PILOTIS - 0.05)): o.hide_render = True
+
+if os.environ.get("VILLA_CAM") == "aerea":                 # verificación de obra: la cubierta en 3/4, desde arriba
+    cam_d.lens = 35; cam_d.shift_y = 0
+    cam.location = (22.0, 26.0, 21.0)
+    cam.rotation_euler = (mathutils.Vector((0, 0, Y_TECHO)) - cam.location).to_track_quat("-Z", "Y").to_euler()
 
 # ── render ────────────────────────────────────────────────────────────────
 esc.render.engine = "CYCLES"

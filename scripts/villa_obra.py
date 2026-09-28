@@ -173,3 +173,49 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
         _prisma(f"n1_vidrio_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z1, m_vidrio or m_muro, col)
     print(f"[villa_obra] nivel principal: {len(interiores)} muros rellenos · {len(rects)} tabiques · {len(vidrios)} vidrios")
     return interiores, rects
+
+
+# ── cubierta (fase 2, 28-sep) ─────────────────────────────────────────────
+# Hueco entre las dos pantallas del solárium, sobre el eje de la rampa: la "ventana" que enmarca el paisaje
+# al final del recorrido. En el DWG es un vacío de 1,75 m entre las piezas 0 y 1 del nivel 2. Alturas de
+# antepecho y dintel = interpretación (el plano no las da); se contrastan con las fotos S8/S9 en el cierre.
+VENTANA_SOLARIUM = (-1.39, 0.36, 8.25, 8.40)
+
+
+def rects_con_huecos(x0, x1, z0, z1, huecos):
+    """Un rectángulo menos otros rectángulos, en franjas verticales: paneles de losa sin caras solapadas."""
+    xs = sorted({x0, x1, *[v for h in huecos for v in h[:2] if x0 < v < x1]})
+    out = []
+    for a, b in zip(xs, xs[1:]):
+        cortes = sorted((h[2], h[3]) for h in huecos if h[0] <= a and h[1] >= b)
+        cur = z0
+        for c0, c1 in cortes:
+            if c0 > cur: out.append((a, b, cur, min(c0, z1)))
+            cur = max(cur, c1)
+        if cur < z1: out.append((a, b, cur, z1))
+    return [r for r in out if r[1] - r[0] > 0.01 and r[3] - r[2] > 0.01]
+
+
+def cubierta(z_piso, alto_pantalla, alto_antepecho, m_muro, col):
+    """Pantallas del solárium, caja de la escalera y muros de la rampa: contornos del nivel 2 del DWG.
+    Fuera: el contorno de fachada (3, 4: ya son los antepechos), la unión duplicada de las pantallas (5),
+    el poste suelto (7) y la pieza 6, que es la mesa fija de la TERRAZA vista desde arriba, no cubierta."""
+    polis, vistos = [], []
+    for p in _cargar("dwg-muros-solidos.json")["niveles"]["nivel2"]:
+        a = _area(p); per = sum(math.dist(p[i], p[i - 1]) for i in range(len(p)))
+        c = _centro(p)                                   # duplicado = mismo centro y misma área (con tolerancia:
+        repetido = any(math.dist(c, v[0]) < 0.25 and abs(a - v[1]) < 0.1 for v in vistos)   # redondear no basta)
+        if repetido or a < 0.3 or 2 * a / per > 0.2: continue                # duplicados, postes, rellenos gruesos
+        vistos.append((c, a)); polis.append(p)
+    caja = lambda p: (min(x for x, _ in p), max(x for x, _ in p), min(z for _, z in p), max(z for _, z in p))
+    union = lambda p: sum(1 for q in polis if q is not p and caja(p)[0] <= _centro(q)[0] <= caja(p)[1]
+                          and caja(p)[2] <= _centro(q)[1] <= caja(p)[3]) >= 2
+    muros = [p for p in polis if not union(p)]
+    for n, p in enumerate(muros):
+        rampa = caja(p)[0] > -1.5 and caja(p)[1] < 1.5
+        alto = alto_antepecho if rampa else alto_pantalla
+        _prisma(f"cub_{'rampa' if rampa else 'pantalla'}_{n}", p, z_piso, z_piso + alto, m_muro, col)
+    x0, x1, a, b = VENTANA_SOLARIUM
+    _prisma("cub_ventana_antepecho", [(x0, a), (x1, a), (x1, b), (x0, b)], z_piso, z_piso + 0.95, m_muro, col)
+    _prisma("cub_ventana_dintel", [(x0, a), (x1, a), (x1, b), (x0, b)], z_piso + 2.10, z_piso + alto_pantalla, m_muro, col)
+    print(f"[villa_obra] cubierta: {len(muros)} muros (pantallas + rampa) · ventana del solárium")

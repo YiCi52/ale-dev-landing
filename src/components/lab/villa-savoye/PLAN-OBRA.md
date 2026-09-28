@@ -19,7 +19,7 @@
 |---|---|---|---|
 | 0 | Investigación | `expediente/`: una ficha por recinto + `fuentes.md` + guion de la promenade + `planos.md` | ✅ cerrada 27-sep |
 | 1 | Planos | Los 3 niveles verificados contra los planos originales (PLANTA.md corregido) | ✅ cerrada 28-sep — muros en metros en `expediente/dwg-muros.json`; huella 19 × 21,5; orientación ⚠️ |
-| 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **en curso** — planta baja ✅ desde el DWG (`scripts/villa_obra.py`: 10 muros, 21 pilotis, vidrio curvo con montantes) · nivel principal ✅ (13 muros rellenos + 12 tabiques + 9 vidrios detectados de pares de líneas; rampa 2,6 m) · sigue cubierta |
+| 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **en curso** — planta baja ✅ desde el DWG (`scripts/villa_obra.py`: 10 muros, 21 pilotis, vidrio curvo con montantes) · nivel principal ✅ (13 muros rellenos + 12 tabiques + 9 vidrios detectados de pares de líneas; rampa 2,6 m) · cubierta ✅ (5 muros del nivel 2: pantallas del solárium con su ventana sobre el eje de la rampa, caja de la escalera, antepechos de la rampa; losa con los huecos reales de terraza y rampa) · sigue: cierre de obra gris contra fotos S8/S9 |
 | 3 | Materia | Materiales y color por recinto | parcial* |
 | 4 | Habitado | Muebles, objetos, plantas — solo con evidencia | parcial* |
 | 5 | Luz | Día y noche por recinto | parcial* |
@@ -82,3 +82,12 @@ terraza). **Se revisa contra el expediente** en su fase; no se da por bueno por 
 3. **La textura de las paredes deja ver "recuadros" de render** (repetición del mosaico de la foto de revoque
    con proyección de caja). Fase 3: romper la repetición (escala mayor + mezcla con ruido a dos escalas).
 4. **La sombra queda muy de lado** (sol a 34°, vista cenital de la planta baja, 28-sep). Fase 5: subir la elevación del sol (~45–50°).
+
+## Cubierta (fase 2, 28-sep) — lo que es plano y lo que es interpretación
+- **Del plano (nivel 2, capa 7):** las dos pantallas curvas del solárium, la caja de la escalera, la U de muros de la rampa. Reemplazan los dos arcos a ojo (`sol1`/`sol2`) que estaban sobre la terraza.
+- **Descartado del nivel 2, con motivo:** piezas 3 y 4 (contorno de fachada = antepechos ya hechos), 5 (unión duplicada de las pantallas), 7 (poste suelto de 0,3 m, sin identificar), 6 (es la **mesa fija de la terraza** vista desde arriba: x 2,6…4,9 · z −2,4…−3,7).
+- **Interpretación, a verificar con fotos:** alto de pantallas 2,6 m; ventana del solárium con antepecho a 0,95 m y dintel a 2,10 m; antepechos de la rampa a 1,05 m.
+- **Pendiente para la fase 4:** la mesa de la terraza de `villa_detalle.py` está en (4,0…6,2 · −1,2…−0,4); el DWG la pone en (2,6…4,9 · −2,4…−3,7). Moverla allá.
+- **Pendiente:** la escalera caracol no está modelada; la losa de cubierta va cerrada sobre ella hasta que exista (un hueco sin escalera deja ver el interior).
+- **Metal:** abortó una vez con la escena completa y la misma escena pasó en CPU y luego en Metal. Intermitente; si se repite, `VILLA_CPU=1`.
+- Cámara de verificación nueva: `VILLA_CAM=aerea` (3/4 desde arriba).
