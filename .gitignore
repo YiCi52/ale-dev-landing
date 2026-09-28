@@ -49,3 +49,4 @@ next-env.d.ts
 
 # intermedios del bake de Villa Savoye (regenerables con scripts/bake-villa-lightmap.py)
 artefactos-bake/
+__pycache__/
