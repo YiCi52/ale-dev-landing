@@ -224,7 +224,9 @@ def salon(Y_LOSA, Y_TECHO, D, M, col):
 def terraza(Y_LOSA, M, col):
     """TERRASSE: jardineras de hormigón blanco empotradas con arbustos bajos tipo lavanda + la mesa fija."""
     z = Y_LOSA
-    for n, (x0, x1, y0, y1) in enumerate([(1.0, 8.8, -4.5, -3.8), (8.4, 9.1, -3.8, 2.8)]):
+    # 28-sep: la jardinera larga empezaba en x 1,0 (dentro del pozo de la rampa) y atravesaba la mesa fija del DWG
+    # (x 2,6…4,9): se parte en dos tramos a los lados de la mesa.
+    for n, (x0, x1, y0, y1) in enumerate([(1.45, 2.55, -4.5, -3.8), (4.95, 8.8, -4.5, -3.8), (8.4, 9.1, -3.8, 2.8)]):
         cojin(f"mu_jardinera_{n}", x0, x1, y0, y1, z, z + 0.45, M["hormigon_claro"], col, 0.01)
         largo = max(x1 - x0, y1 - y0); k_n = int(largo / 0.35)
         for k in range(k_n):
@@ -337,5 +339,8 @@ def detallar(W, D, Y_LOSA, Y_TECHO):
     pisos(Y_LOSA, col)
     salon(Y_LOSA, Y_TECHO, D, M, col)
     terraza(Y_LOSA, M, col)
-    if os.environ.get("VILLA_PASTO_N", "60000") != "0": pasto(W, D, col)
+    if os.environ.get("VILLA_PASTO_N", "420000") != "0":
+        if os.environ.get("VILLA_PASTO_MODO") == "pelo": pasto(W, D, col)      # el de antes (hebras), por si acaso
+        else:
+            import villa_pasto; villa_pasto.pradera(W, D, col)                 # matas instanciadas (28-sep)
     return M

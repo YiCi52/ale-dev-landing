@@ -137,3 +137,10 @@ Consecuencia: la caja del nivel principal era 0,7 m más alta y la ventana corri
 - **Vidriera del salón a la terraza** (9 × 3 m, corrediza, [S5][S6]): el DWG no la dibuja; va por el expediente, x 1,40…9,30 en z 4,78, 4 paños con marcos de acero oscuro.
 - Cada toma con su cielo: exterior/aérea contra el bosque (ballawley), rincón contra el prado (charolettenbrunn) — el prado desde la cámara de aproximación muestra casas y un muro de piedra.
 - Pendiente anotado: la cinta de ventanas del lado de la TERRAZA en la Villa real es un vano sin vidrio; hoy lleva vidrio como el resto.
+
+## Terraza y pasto (28-sep, opción A)
+- **Cinta de la terraza = VANO sin vidrio** [S4 "ventana corrida con baby piloti"]: fachada este, z −4,60…4,78, sin vidrio ni montantes; baby pilotis de 5 cm de radio en los ejes de media crujía (su número y posición = interpretación, a verificar con fotos).
+- **Jardinera** partida en dos tramos a los lados de la mesa (antes empezaba dentro del pozo de la rampa y atravesaba la mesa).
+- **Pasto nuevo** (`scripts/villa_pasto.py`): matas de 70–130 hojas reales (cintas que se afinan y se doblan), 5 variantes + trébol, **420 000 matas como instancias** (memoria casi plana), más densas cerca de la casa, tono por mata. Altura 10 cm (césped cortado). Las rotaciones de partícula van APAGADAS: con ellas las matas salían acostadas (probado lado a lado). El pelo de antes sigue con `VILLA_PASTO_MODO=pelo`.
+- Costo: ~3,5 min a 60 % y 32 muestras en CPU con pasto; Metal abortó una vez con el pasto nuevo → renders con pasto en CPU hasta ver si se repite. Revisiones de obra: `VILLA_PASTO_N=0`.
+- Cámara nueva: `VILLA_CAM=libre VILLA_CAM_POS="x,y,z" VILLA_CAM_MIRA="x,y,z" VILLA_CAM_LENTE=35`; `VILLA_CAM=pasto` (+ `VILLA_PASTO_CERCA=1`).

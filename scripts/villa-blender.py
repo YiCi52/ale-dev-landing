@@ -132,21 +132,33 @@ circ.tapas_escalera(H_PILOTIS, Y_LOSA, M_PISO, esc.collection, "losa_nobile_tapa
 # La polychromie (rosa, azul) vuelve en la fase 3 (materia): aquí todo es obra gris.
 villa_obra.nivel_principal(Y_LOSA, Y_TECHO - 0.01, W, D, M_BLANCO, esc.collection, M_VIDRIO)
 
+TERRAZA_VANO = (-4.60, 4.78)                           # tramo de la fachada este que da a la terraza
 # ── fachadas: banda inferior, cinta de vidrio continua, banda superior ────
 yv0, yv1 = H_PILOTIS + H_BANDA_INF, H_PILOTIS + H_BANDA_INF + H_VENTANA
 for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,-D/2,-D/2+0.19),
                                ("este",W/2-0.19,W/2,-D/2+0.19,D/2-0.19), ("oeste",-W/2,-W/2+0.19,-D/2+0.19,D/2-0.19)]:
     caja(f"fa_{nombre}_inf", x0,x1, H_PILOTIS, yv0, z0,z1, M_BLANCO)
     caja(f"fa_{nombre}_sup", x0,x1, yv1, Y_TECHO, z0,z1, M_BLANCO)
-    caja(f"fa_{nombre}_vid", x0,x1, yv0, yv1, z0+0.06, z1-0.06, M_VIDRIO)
-    # montantes de carpintería cada ~1.1 m (mismo paso que villaModel.ts)
+    # En la TERRAZA la cinta sigue, pero es un VANO sin vidrio con "baby pilotis" [S4]: el paisaje se ve desde
+    # afuera, al aire libre. Solo la fachada este toca la terraza (z −4,60…4,78).
+    vano = TERRAZA_VANO if nombre == "este" else None
+    tramos_vid = [(z0 + 0.06, z1 - 0.06)] if not vano else [(z0 + 0.06, vano[0]), (vano[1], z1 - 0.06)]
+    for n_t, (t0, t1) in enumerate(tramos_vid):
+        caja(f"fa_{nombre}_vid_{n_t}", x0,x1, yv0, yv1, t0, t1, M_VIDRIO)
+    # montantes de carpintería cada ~1.1 m (mismo paso que villaModel.ts); en el vano no hay carpintería
     largo_x = (x1 - x0) > (z1 - z0)
     a, b = (x0, x1) if largo_x else (z0, z1)
     n_m = max(1, int((b - a) / 1.1))
     for k in range(n_m + 1):
         u = a + (b - a) * k / n_m
+        if vano and vano[0] < u < vano[1]: continue
         if largo_x: caja(f"mont_{nombre}_{k}", u-0.03, u+0.03, yv0, yv1, z0-0.01, z1+0.01, M_CARP)
         else:       caja(f"mont_{nombre}_{k}", x0-0.01, x1+0.01, yv0, yv1, u-0.03, u+0.03, M_CARP)
+    if vano:                                                   # baby pilotis: en los ejes de la estructura (interpretación)
+        for n_p, u in enumerate([k * CRUJIA / 2 for k in range(-4, 5) if vano[0] + 0.3 < k * CRUJIA / 2 < vano[1] - 0.3]):
+            bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.05, depth=yv1 - yv0, location=((x0 + x1) / 2, u, (yv0 + yv1) / 2))
+            o = bpy.context.object; o.name = f"fa_baby_piloti_{n_p}"; o.data.materials.append(M_BLANCO)
+            bpy.ops.object.shade_smooth()
 
 # ── cubierta: losa con los huecos REALES (fase 2): terraza abierta y rampa (interior de la U del DWG) ──
 HUECOS_CUBIERTA = [(1.40, 9.5, -4.57, 4.78),          # terraza: jardín suspendido, abierto al cielo
@@ -358,10 +370,18 @@ if os.environ.get("VILLA_CAM") == "planta":                # verificación de ob
             zmin = min((o.matrix_world @ mathutils.Vector(c)).z for c in o.bound_box)
             if zmin > float(os.environ.get("VILLA_CORTE", H_PILOTIS - 0.05)): o.hide_render = True
 
-if os.environ.get("VILLA_CAM") in ("aerea", "rampa", "hall"):      # verificación de obra en 3/4, desde arriba
+if os.environ.get("VILLA_CAM") in ("aerea", "rampa", "hall", "pasto", "libre"):      # verificación de obra en 3/4, desde arriba
     cam_d.lens = 35; cam_d.shift_y = 0
     mira = mathutils.Vector((0, 0, Y_TECHO))
     cam.location = (22.0, 26.0, 21.0)
+    if os.environ["VILLA_CAM"] == "libre":                   # cualquier punto: VILLA_CAM_POS="x,y,z" VILLA_CAM_MIRA="x,y,z"
+        cam_d.lens = float(os.environ.get("VILLA_CAM_LENTE", "35"))
+        cam.location = tuple(float(v) for v in os.environ["VILLA_CAM_POS"].split(","))
+        mira = mathutils.Vector(tuple(float(v) for v in os.environ["VILLA_CAM_MIRA"].split(",")))
+    if os.environ["VILLA_CAM"] == "pasto":                   # verificación del pasto: a ras, mirando la casa
+        cam_d.lens = 35; cam.location, mira = (12.0, 17.0, 0.55), mathutils.Vector((4.0, 8.0, 1.2))
+        if os.environ.get("VILLA_PASTO_CERCA"):                 # a 40 cm del suelo, mirando el pasto de cerca
+            cam_d.lens = 50; cam.location, mira = (12.0, 17.0, 0.35), mathutils.Vector((10.5, 14.8, 0.0))
     if os.environ["VILLA_CAM"] == "hall":                    # de pie en el vestíbulo, mirando la rampa (la foto clásica)
         cam_d.lens = 18; cam.location, mira = (1.9, 4.6, 1.6), mathutils.Vector((-0.4, -3.0, 2.2))
     if os.environ["VILLA_CAM"] == "rampa":                   # rampa y escalera, con VILLA_CORTE para quitar la cubierta
