@@ -35,21 +35,21 @@ def _mat(nombre, color, rough, metal=0.0):
     return m, b
 
 
-def baldosa(nombre, c1, c2, junta, lado, rough, giro=0.0, bump=0.2):
+def baldosa(nombre, c1, c2, junta, lado, rough, giro=0.0, bump=0.2, largo=None, traba=0.0):
     """Baldosa procedural en coordenadas de MUNDO (continúa entre piezas), con giro opcional (la diagonal)."""
     m, b = _mat(nombre, c1, rough); nt = m.node_tree
     geo = nt.nodes.new("ShaderNodeNewGeometry")
     mp = nt.nodes.new("ShaderNodeMapping"); mp.inputs["Rotation"].default_value = (0, 0, giro)
     nt.links.new(geo.outputs["Position"], mp.inputs["Vector"])
-    lad = nt.nodes.new("ShaderNodeTexBrick"); lad.offset = 0.0; lad.squash = 1.0
-    lad.inputs["Scale"].default_value = 1.0; lad.inputs["Brick Width"].default_value = lado
+    lad = nt.nodes.new("ShaderNodeTexBrick"); lad.offset = traba; lad.squash = 1.0
+    lad.inputs["Scale"].default_value = 1.0; lad.inputs["Brick Width"].default_value = largo or lado
     lad.inputs["Row Height"].default_value = lado; lad.inputs["Mortar Size"].default_value = 0.004
     lad.inputs["Mortar Smooth"].default_value = 0.2
     lad.inputs["Color1"].default_value = (*c1, 1); lad.inputs["Color2"].default_value = (*c2, 1)
     lad.inputs["Mortar"].default_value = (*junta, 1)
     nt.links.new(mp.outputs["Vector"], lad.inputs["Vector"])
     # cada pieza con su tono y su brillo (una baldosa real nunca es idéntica a la de al lado)
-    celda = nt.nodes.new("ShaderNodeVectorMath"); celda.operation = "SNAP"; celda.inputs[1].default_value = (lado,) * 3
+    celda = nt.nodes.new("ShaderNodeVectorMath"); celda.operation = "SNAP"; celda.inputs[1].default_value = (largo or lado, lado, lado)
     nt.links.new(mp.outputs["Vector"], celda.inputs[0])
     azar = nt.nodes.new("ShaderNodeTexWhiteNoise"); nt.links.new(celda.outputs["Vector"], azar.inputs["Vector"])
     tono = nt.nodes.new("ShaderNodeMapRange"); tono.inputs["To Min"].default_value = 0.92; tono.inputs["To Max"].default_value = 1.06
@@ -112,10 +112,15 @@ def piso_vestibulo(col, h=0.05):
     print("[materia] piso del vestíbulo: baldosa clara dentro de la herradura (antes: grava)")
 
 
-def rampa_diagonal():
+def rampa_diagonal(y_losa=3.31):
+    """Tramo EXTERIOR (nivel principal → cubierta): losetas en diagonal [S9 9]. Tramo INTERIOR (planta baja →
+    nivel principal): piso liso gris oscuro [S8 9/15/20/31]."""
     m = baldosa("m_rampa", (0.62, 0.60, 0.56), (0.57, 0.55, 0.51), (0.78, 0.77, 0.74), 0.30, 0.6, giro=math.radians(45), bump=0.35)
-    n = sum(_asignar_caras(o, m, lambda c, nn: nn.z > 0.3) for o in _objetos(("circ_rampa",)) if o.name == "circ_rampa")
-    print(f"[materia] rampa: losetas en diagonal en {n} caras")
+    oscuro, _ = _mat("m_rampa_interior", (0.075, 0.075, 0.08), 0.5)
+    rampa = [o for o in _objetos(("circ_rampa",)) if o.name == "circ_rampa"]
+    n = sum(_asignar_caras(o, m, lambda c, nn: nn.z > 0.3 and c.z > y_losa + 0.05) for o in rampa)
+    n_i = sum(_asignar_caras(o, oscuro, lambda c, nn: nn.z > 0.3 and c.z <= y_losa + 0.05) for o in rampa)
+    print(f"[materia] rampa: exterior en diagonal ({n} caras) · interior gris oscuro ({n_i})")
 
 
 def salon(y_losa, y_techo):
@@ -153,8 +158,19 @@ def cuartos(y_losa, y_techo, col):
     n_p = sum(_asignar_caras(o, charron, _mira_hacia((-5.9, -5.0, -4.4, 0.6), y_losa, y_techo))
               for o in _objetos(("n1_muro", "n1_tabique")))
     z = y_losa + 0.002
-    parque = baldosa("m_parque", (0.40, 0.26, 0.15), (0.34, 0.21, 0.12), (0.22, 0.14, 0.08), 0.07, 0.45, bump=0.1)
-    _losa_piso("mu_piso_huespedes", -9.30, -6.05, -3.13, 1.62, z, parque, col)
+    # parqué RUBIO ("plancher blond" [eg-xiste]; parqué en fotos de cuartos S8 5/10/12/32; huéspedes [CMN])
+    # tablillas de 30 × 7 cm trabadas a media pieza (antes salían cuadritos de 7 × 7: parecía baldosa)
+    parque = baldosa("m_parque", (0.56, 0.41, 0.25), (0.47, 0.34, 0.20), (0.30, 0.21, 0.12), 0.07, 0.45, bump=0.1, largo=0.30, traba=0.5)
+    for nombre, r in (("huespedes", (-9.30, -6.05, -3.13, 1.62)), ("hijo", (-9.30, -6.05, -10.56, -4.75)),
+                      ("boudoir", (1.45, 4.75, -10.56, -4.75)), ("suite", (-4.65, -1.45, -10.56, -2.0))):
+        _losa_piso(f"mu_piso_{nombre}", *r, z, parque, col)
+    # cocina: baldosa cuadrada tostada [S8 19]; baños: baldosa blanca chica (baño 14 y el de la suite, este un
+    # milímetro más arriba porque se monta sobre el parqué de la suite)
+    tostada = baldosa("m_baldosa_cocina", (0.50, 0.36, 0.24), (0.46, 0.33, 0.22), (0.30, 0.25, 0.20), 0.20, 0.4)
+    _losa_piso("mu_piso_cocina", -9.30, -4.79, 4.86, 10.56, z, tostada, col)
+    banio = baldosa("m_baldosa_bano", (0.84, 0.84, 0.81), (0.80, 0.80, 0.78), (0.62, 0.62, 0.60), 0.10, 0.2)
+    _losa_piso("mu_piso_bano14", -9.30, -6.05, -4.62, -3.28, z, banio, col)
+    _losa_piso("mu_piso_bano_suite", -4.65, -2.30, -6.10, -3.30, z + 0.003, banio, col)
     losa_t = bpy.data.materials.get("mu_losa_terraza")
     if losa_t: _losa_piso("mu_piso_kiosque", 4.93, 9.30, -10.56, -4.75, z, losa_t, col)
     print(f"[materia] boudoir azul profundo ({n_b} caras) · pasillo bleu charron ({n_p}) · parqué huéspedes · piso del kiosque")
@@ -221,5 +237,50 @@ def cielo_raso_blanco():
 
 
 def aplicar(col, y_losa, y_techo, h_pilotis=3.07):
-    piso_vestibulo(col); rampa_diagonal(); salon(y_losa, y_techo); cocina(y_losa, y_techo)
-    verde_solo_afuera(h_pilotis); cielo_raso_blanco(); cuartos(y_losa, y_techo, col)
+    piso_vestibulo(col); rampa_diagonal(y_losa); salon(y_losa, y_techo); cocina(y_losa, y_techo)
+    verde_solo_afuera(h_pilotis); cielo_raso_blanco(); cuartos(y_losa, y_techo, col); puertas(col, (0.05, y_losa + 0.012))
+
+
+def _circuncentro(a, b, c):
+    d = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]))
+    if abs(d) < 1e-9: return None
+    ux = ((a[0]**2 + a[1]**2) * (b[1] - c[1]) + (b[0]**2 + b[1]**2) * (c[1] - a[1]) + (c[0]**2 + c[1]**2) * (a[1] - b[1])) / d
+    uy = ((a[0]**2 + a[1]**2) * (c[0] - b[0]) + (b[0]**2 + b[1]**2) * (a[0] - c[0]) + (c[0]**2 + c[1]**2) * (b[0] - a[0])) / d
+    return ux, uy
+
+
+def puertas(col, pisos=(0.05, 3.322)):
+    """Las puertas que dibuja el DWG: arco de giro de ~90° (r 0,5–1,1 m) + la línea de la hoja desde la bisagra.
+    Se ponen ABIERTAS, como las dibuja el plano (así no cierran la vista del recorrido). Hoja de 4 cm y 2,10 m,
+    pintada oscura como en las fotos [S8 10/16]. Sin línea de hoja en el plano → no se inventa."""
+    ruta = os.path.join(os.getcwd(), "src/components/lab/villa-savoye/expediente/dwg-muros.json")
+    niveles = json.load(open(ruta, encoding="utf-8"))["niveles"]
+    m, _ = _mat("m_puerta", (0.085, 0.06, 0.05), 0.38)
+    me = bpy.data.meshes.new("carp_puertas"); bm = bmesh.new(); n = 0
+    for nivel, h0 in zip(("nivel0", "nivel1"), pisos):
+        lineas = [t for t in niveles[nivel] if t["tipo"] != "ARC"]
+        for s in niveles[nivel]:
+            if s["tipo"] != "ARC": continue
+            p = s["pts"]; c = _circuncentro(p[0], p[len(p) // 2], p[-1])
+            if not c: continue
+            r = math.dist(c, p[0])
+            a0 = math.atan2(p[0][1] - c[1], p[0][0] - c[0]); a1 = math.atan2(p[-1][1] - c[1], p[-1][0] - c[0])
+            giro = abs(math.degrees(a1 - a0)) % 360
+            if not (0.5 < r < 1.1 and 70 < min(giro, 360 - giro) < 110): continue
+            hoja = None
+            for t in lineas:
+                for u, v in zip(t["pts"], t["pts"][1:]):
+                    for e in (p[0], p[-1]):
+                        if (math.dist(u, c) < 0.06 and math.dist(v, e) < 0.06) or (math.dist(v, c) < 0.06 and math.dist(u, e) < 0.06):
+                            hoja = e
+            if not hoja: continue
+            dx, dz = (hoja[0] - c[0]) / r, (hoja[1] - c[1]) / r; nx, nz = -dz * 0.02, dx * 0.02
+            base = [(c[0] + nx, c[1] + nz), (hoja[0] + nx, hoja[1] + nz), (hoja[0] - nx, hoja[1] - nz), (c[0] - nx, c[1] - nz)]
+            ab = [bm.verts.new((x, z, h0)) for x, z in base]; ar = [bm.verts.new((x, z, h0 + 2.10)) for x, z in base]
+            bm.faces.new(ab[::-1]); bm.faces.new(ar)
+            for k in range(4): bm.faces.new((ab[k], ab[(k + 1) % 4], ar[(k + 1) % 4], ar[k]))
+            n += 1
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(me.name, me); col.objects.link(o); me.materials.append(m)
+    print(f"[materia] carpintería: {n} puertas del DWG, abiertas como las dibuja el plano")

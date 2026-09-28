@@ -187,6 +187,9 @@ def columnas_nivel(z0, z1, W, D, muros, rects, material, col, radio=0.14):
     for x, z in PILOTIS_CENTROS:
         if abs(x) > W / 2 - 0.35 or abs(z) > D / 2 - 0.35: continue
         if -1.5 < x < 1.5 and -7.4 < z < 2.8: continue            # pozo de la rampa
+        # a cielo abierto no hay nada que sostener: el piloti del centro de la terraza termina en su piso
+        # (Alejandro, 28-sep: "no sostiene nada"). Los del borde, bajo la losa, sí siguen.
+        if TERRAZA[0] + 0.2 < x < 9.3 and TERRAZA[2] + 0.2 < z < TERRAZA[3] - 0.2: continue
         if villa_circulacion.es_de_escalera(x - 0.1, x + 0.1, z - 0.1, z + 0.1): continue
         if any(b[0] - 0.2 < x < b[1] + 0.2 and b[2] - 0.2 < z < b[3] + 0.2 for b in cajas): continue
         bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=radio, depth=z1 - z0, location=(x, z, (z0 + z1) / 2))

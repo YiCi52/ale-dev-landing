@@ -176,3 +176,9 @@ Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
 - **Boudoir** azul profundo · **pasillo al hijo** bleu charron · **parqué** en el cuarto de huéspedes. Los demás dormitorios quedan BLANCOS: su color no tiene fuente.
 - Renders: `f3-salon-estar.png` (≈ S8 28/29), `f3-kiosque.png` (≈ S9 17/18/26), `f3-planta-n1.png`.
 - Fase 4 (anotado): la mesa de la terraza vista de cerca se lee como cajón; el baño de los padres (bañera, diván, claraboya) y los muebles fijos (tablero del boudoir, escritorio del hijo, clóset de huéspedes).
+
+### Fase 3, tercera tanda (28-sep)
+- **Columna quitada:** el piloti del centro de la terraza (4,76; −1,95) subía a cielo abierto sin sostener nada (lo vio Alejandro). Regla: no hay columna dentro de la terraza salvo en su borde, bajo la losa. Las del salón quedan a 0,97 m de la ventana (verificado en planta: no están empotradas).
+- **Pisos por recinto:** parqué RUBIO en tablillas 30 × 7 trabadas (huéspedes [CMN]; hijo, boudoir y suite por "plancher blond" [eg-xiste] + fotos S8 5/10/12/32 → confianza media) · cocina baldosa tostada 20 cm [S8 19] · baño 14 y baño de la suite baldosa blanca 10 cm · el resto (hall, pasillos) sigue ocre: sin fuente.
+- **Rampa:** tramo INTERIOR gris oscuro liso [S8 9/15/20/31]; tramo EXTERIOR losetas en diagonal [S9 9].
+- **Puertas:** 17 del DWG (arco de giro de ~90° + línea de hoja desde la bisagra), abiertas como las dibuja el plano, hoja de 4 cm × 2,10 m, pintura oscura [S8 10/16]. Sin línea de hoja en el plano → no se pone (1 caso).
