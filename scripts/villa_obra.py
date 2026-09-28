@@ -55,7 +55,14 @@ def _prisma(nombre, poli, z0, z1, material, col):
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bmesh.ops.dissolve_degenerate(bm, dist=1e-4, edges=bm.edges)
     bm.to_mesh(me); bm.free(); me.materials.append(material)
+    suavizar_curvas(me)
     return o
+
+
+def suavizar_curvas(me, angulo=25):
+    """Las curvas del plano llegan como polilíneas (48 caras en una pantalla): sombreadas planas se leen como
+    PANELES. Sombreado suave, pero toda arista de más de 25° queda viva (esquinas, cantos, remates)."""
+    me.shade_smooth(); me.set_sharp_from_angle(angle=math.radians(angulo))
 
 
 def pilotis(poligonos, altura, material, col, radio=0.14):

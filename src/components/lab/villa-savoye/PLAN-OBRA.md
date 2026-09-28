@@ -121,3 +121,10 @@ Consecuencia: la caja del nivel principal era 0,7 m más alta y la ventana corri
 - Lo que ya funciona: revoque sin recuadros (mundo + 2 muestras), chorreaduras, oclusión, losetas con tono por pieza, pantalla en UNA pieza (booleana; sin juntas falsas), DOF, retoque (brillo, aberración, viñeta).
 - Lo que todavía delata el CG: piso demasiado limpio y parejo; revoque sin textura visible a esta distancia; una junta doble en el piso a la derecha (dos piezas de losa); el fondo es foto de bosque, no el prado de Poissy.
 - Siguiente escalón (necesita descargas → pedir permiso): escaneo de losa de concreto, hierba en las juntas, HDRI con prado abierto.
+
+### Pulido del rincón, ronda 2 (28-sep, con observaciones de Alejandro)
+- **"Se ve como paneles, no curva":** las curvas del DWG son polilíneas (48 caras) y se sombreaban planas. Arreglo en `villa_obra.suavizar_curvas` (sombreado suave + aristas vivas solo sobre 25°), aplicado a TODA la obra, no solo al rincón.
+- **Junta doble en el piso:** el bisel de cada panel de losa dibujaba una ranura. Las losas ya no llevan bisel.
+- **Descargas (OK de Alejandro):** HDRI `charolettenbrunn_park_4k` (prado abierto, cambia el bosque) y escaneo `concrete_floor_worn_001`. El pasto de las juntas reusa `leafy_grass`.
+- **Losa:** el escaneo es oscuro (albedo ~0,15, medido con `VILLA_DEBUG_PISO`): aporta variación, el tono lo fija un gris cálido de 0,50. Cada loseta lee la foto corrida al azar.
+- Toma final: `VILLA_HDR=…charolettenbrunn_park_4k.hdr VILLA_HDRI_GIRO=145 VILLA_SOL_AZ=170 VILLA_SOL_EL=28`, 192 muestras, 4 min en Metal.
