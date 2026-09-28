@@ -342,12 +342,20 @@ def _caras_del_muro(c, u, w, polis, rects, defecto):
     supuesto el dintel sobresalía 1 cm (muros de 15 cm, dintel de 16; lo vio Alejandro)."""
     def en_muro(x, z):
         return any(_dentro((x, z), p) for p in polis) or any(r[0] < x < r[1] and r[2] < z < r[3] for r in rects)
+    def borde(fx, fz, adentro, afuera):
+        """Bisección entre un punto dentro y uno fuera del muro: la cara exacta (±1 µm), no a pasos de 5 mm.
+        Con pasos quedaba 2,5 mm corrida y se veía como una línea sobre la puerta (Alejandro, 28-sep)."""
+        for _ in range(24):
+            mid = (adentro + afuera) / 2
+            if en_muro(fx + w[0] * mid, fz + w[1] * mid): adentro = mid
+            else: afuera = mid
+        return (adentro + afuera) / 2
     medidas = []
     for jx, jz, sg in ((c[0], c[1], -1), (c[0] + u[0] * u[2], c[1] + u[1] * u[2], 1)):
         fx, fz = jx + u[0] * 0.03 * sg, jz + u[1] * 0.03 * sg
         dentro = [k / 200 for k in range(-80, 81) if en_muro(fx + w[0] * k / 200, fz + w[1] * k / 200)]
         if dentro and 0.08 < max(dentro) - min(dentro) + 0.005 < 0.3:     # un muro normal, no una esquina
-            medidas.append((min(dentro) - 0.0025, max(dentro) + 0.0025))
+            medidas.append((borde(fx, fz, min(dentro), min(dentro) - 0.005), borde(fx, fz, max(dentro), max(dentro) + 0.005)))
     if not medidas: return defecto
     return (sum(m[0] for m in medidas) / len(medidas), sum(m[1] for m in medidas) / len(medidas))
 
@@ -368,8 +376,12 @@ def dinteles(col, techos, grueso=0.15, h_puerta=2.10, pisos=(0.05, 3.322)):
         lado = _lado_del_muro(c, u, w, *cache[nivel])
         supuesto = (-grueso, 0.0) if lado > 0 else (0.0, grueso) if lado < 0 else (-grueso / 2, grueso / 2)
         a0, a1 = _caras_del_muro(c, u, w, *cache[nivel], supuesto)
-        poli = [(c[0] + w[0] * a1, c[1] + w[1] * a1), (cerrado[0] + w[0] * a1, cerrado[1] + w[1] * a1),
-                (cerrado[0] + w[0] * a0, cerrado[1] + w[1] * a0), (c[0] + w[0] * a0, c[1] + w[1] * a0)]
+        # 3 cm DENTRO de cada jamba: el muro lleva bisel en sus cantos y, al tope, quedaba una ranura vertical
+        # sobre la puerta (la "línea" que seguía viendo Alejandro). Solapado, el dintel tapa la ranura; mismo
+        # material en coordenadas de mundo, así que el solape no se nota.
+        e0 = (c[0] - u[0] * 0.03, c[1] - u[1] * 0.03); e1 = (cerrado[0] + u[0] * 0.03, cerrado[1] + u[1] * 0.03)
+        poli = [(e0[0] + w[0] * a1, e0[1] + w[1] * a1), (e1[0] + w[0] * a1, e1[1] + w[1] * a1),
+                (e1[0] + w[0] * a0, e1[1] + w[1] * a0), (e0[0] + w[0] * a0, e0[1] + w[1] * a0)]
         PUERTAS_GEOM.append((nivel, c, w, u, a0, a1, r))
         i = 0 if nivel == "nivel0" else 1
         nombre = f"pb_muro_dintel_{k}" if i == 0 else f"n1_tabique_dintel_{k}"
@@ -386,56 +398,50 @@ def _caja_orientada(bm, o, u, w, a_u, b_u, a_w, b_w, h0, h1):
 
 
 def puertas(col, pisos=(0.05, 3.322), h=2.10):
-    """Como en las fotos [S8 10/12]: hoja LISA enrasada gris-café oscuro, MARCO metálico delgado y oscuro en el vano,
-    MANIJA de palanca metálica a 1 m. Abiertas 90° hacia el lado donde el plano dibuja el giro."""
-    m, b = _mat("m_puerta", (0.10, 0.085, 0.075), 0.42)
-    nt = m.node_tree                                                    # pintura sobre madera: veta apenas visible
-    veta = nt.nodes.new("ShaderNodeTexWave"); veta.inputs["Scale"].default_value = 5.0; veta.inputs["Distortion"].default_value = 3.0
-    geo = nt.nodes.new("ShaderNodeNewGeometry"); nt.links.new(geo.outputs["Position"], veta.inputs["Vector"])
-    mr = nt.nodes.new("ShaderNodeMapRange"); mr.inputs["To Min"].default_value = 0.92; mr.inputs["To Max"].default_value = 1.08
-    nt.links.new(veta.outputs["Fac"], mr.inputs["Value"])
+    """Medida contra la foto S8 10 (cuarto azul), por píxel: hoja LISA enrasada, gris-café cálido de albedo ~0,2
+    (la foto la da casi tan clara como el muro azul; la primera versión era casi negra), SIN marco que contraste
+    (el canto de la hoja toca el muro), manija de palanca chica con roseta y una bocallave redonda debajo.
+    Abiertas 90° hacia el lado del giro del plano, para no cerrar el recorrido."""
+    m, b = _mat("m_puerta", (0.20, 0.15, 0.13), 0.5)
+    nt = m.node_tree                                                    # pintura satinada: variación mínima
+    ruido = nt.nodes.new("ShaderNodeTexNoise"); ruido.inputs["Scale"].default_value = 3.0
+    geo = nt.nodes.new("ShaderNodeNewGeometry"); nt.links.new(geo.outputs["Position"], ruido.inputs["Vector"])
+    mr = nt.nodes.new("ShaderNodeMapRange"); mr.inputs["To Min"].default_value = 0.97; mr.inputs["To Max"].default_value = 1.03
+    nt.links.new(ruido.outputs["Fac"], mr.inputs["Value"])
     mul = nt.nodes.new("ShaderNodeMix"); mul.data_type = "RGBA"; mul.blend_type = "MULTIPLY"; mul.inputs["Factor"].default_value = 1.0
-    mul.inputs[6].default_value = (0.10, 0.085, 0.075, 1); nt.links.new(mr.outputs["Result"], mul.inputs[7])
+    mul.inputs[6].default_value = (0.20, 0.15, 0.13, 1); nt.links.new(mr.outputs["Result"], mul.inputs[7])
     nt.links.new(mul.outputs[2], b.inputs["Base Color"])
-    marco_m, _ = _mat("m_marco_puerta", (0.045, 0.045, 0.05), 0.35, metal=0.6)
-    metal, _ = _mat("m_manija", (0.80, 0.79, 0.76), 0.18, metal=1.0)   # níquel satinado: que se lea
-    bh, bmar, bman, bll = bmesh.new(), bmesh.new(), bmesh.new(), bmesh.new()
+    metal, _ = _mat("m_manija", (0.80, 0.79, 0.76), 0.18, metal=1.0)
     negro, _ = _mat("m_bocallave", (0.01, 0.01, 0.01), 0.6)
+    bh, bman, bll = bmesh.new(), bmesh.new(), bmesh.new()
     n = 0
     for nivel, c, w, u, a0, a1, r in PUERTAS_GEOM:
         h0 = pisos[0] if nivel == "nivel0" else pisos[1]
-        L = u[2]; t = 0.035                                            # ancho de la jamba metálica
-        # marco: dos jambas y el cabezal, del grueso del muro + 1 cm por cada cara
-        for p0, p1 in ((0.0, t), (L - t, L)):
-            _caja_orientada(bmar, c, u, w, p0, p1, a0 - 0.01, a1 + 0.01, h0, h0 + h + t)
-        _caja_orientada(bmar, c, u, w, 0.0, L, a0 - 0.01, a1 + 0.01, h0 + h, h0 + h + t)
-        # hoja: gira en la bisagra (jamba de c), abierta 90° hacia +w; 4 cm de grueso, luz de 1 cm con el marco
-        ancho = L - 2 * t - 0.01
-        o = (c[0] + u[0] * t + w[0] * a1, c[1] + u[1] * t + w[1] * a1)
-        _caja_orientada(bh, o, w, (-u[0], -u[1]), 0.0, ancho, -0.04, 0.0, h0 + 0.01, h0 + h - 0.005)
-        # herrajes: placa larga con bocallave y manija de palanca a 1 m, en las dos caras; tres bisagras
-        libre = (o[0] + w[0] * (ancho - 0.06), o[1] + w[1] * (ancho - 0.06))
+        ancho = u[2] - 0.006                                           # luz de 3 mm por lado, sin marco
+        o = (c[0] + u[0] * 0.003 + w[0] * a1, c[1] + u[1] * 0.003 + w[1] * a1)
         uu = (-u[0], -u[1])
-        for cara, sale in ((0.0, 1), (-0.04, -1)):                       # las dos caras de la hoja (grueso 4 cm)
-            f0 = cara if sale > 0 else cara - 0.004
-            _caja_orientada(bman, libre, w, uu, -0.02, 0.02, f0, f0 + 0.004, h0 + 0.90, h0 + 1.08)       # placa
-            _caja_orientada(bll, libre, w, uu, -0.004, 0.004, f0 + (0.0045 if sale > 0 else -0.0005),
-                            f0 + (0.0050 if sale > 0 else 0.0), h0 + 0.925, h0 + 0.945)                          # bocallave
-            p0 = f0 + 0.004 if sale > 0 else f0 - 0.012
-            _caja_orientada(bman, libre, w, uu, -0.008, 0.008, p0, p0 + 0.012, h0 + 1.02, h0 + 1.036)     # cuello
+        _caja_orientada(bh, o, w, uu, 0.0, ancho, -0.04, 0.0, h0 + 0.008, h0 + h - 0.003)
+        libre = (o[0] + w[0] * (ancho - 0.065), o[1] + w[1] * (ancho - 0.065))
+        for cara, sale in ((0.0, 1), (-0.04, -1)):
+            f0 = cara if sale > 0 else cara - 0.006
+            for hz, lado, mat_bm in ((1.0, 0.018, bman), (0.90, 0.015, bman)):          # roseta de la manija · de la llave
+                _caja_orientada(mat_bm, libre, w, uu, -lado, lado, f0, f0 + 0.006, h0 + hz - lado, h0 + hz + lado)
+            k0 = f0 + 0.0062 if sale > 0 else f0 - 0.0004
+            _caja_orientada(bll, libre, w, uu, -0.003, 0.003, k0, k0 + 0.0004, h0 + 0.89, h0 + 0.91)   # bocallave
+            p0 = f0 + 0.006 if sale > 0 else f0 - 0.012
+            _caja_orientada(bman, libre, w, uu, -0.007, 0.007, p0, p0 + 0.012, h0 + 0.993, h0 + 1.007)  # cuello
             q0 = p0 + (0.004 if sale > 0 else -0.004)
-            _caja_orientada(bman, libre, w, uu, -0.125, 0.008, q0, q0 + 0.012, h0 + 1.021, h0 + 1.035)    # palanca
-        for hb in (0.22, 1.02, 1.82):                                    # bisagras en el canto de la bisagra
-            _caja_orientada(bman, o, w, uu, -0.012, 0.004, -0.046, 0.006, h0 + hb, h0 + hb + 0.10)
+            _caja_orientada(bman, libre, w, uu, -0.12, 0.007, q0, q0 + 0.012, h0 + 0.994, h0 + 1.006)   # palanca
+        for hb in (0.22, 1.02, 1.82):                                   # bisagras en el canto
+            _caja_orientada(bman, o, w, uu, -0.010, 0.003, -0.044, 0.004, h0 + hb, h0 + hb + 0.09)
         n += 1
-    for nombre, bm_, mat in (("carp_puertas", bh, m), ("carp_marcos", bmar, marco_m), ("carp_manijas", bman, metal),
-                             ("carp_bocallaves", bll, negro)):
+    for nombre, bm_, mat in (("carp_puertas", bh, m), ("carp_manijas", bman, metal), ("carp_bocallaves", bll, negro)):
         bmesh.ops.recalc_face_normals(bm_, faces=bm_.faces)
         me = bpy.data.meshes.new(nombre); bm_.to_mesh(me); bm_.free()
         ob = bpy.data.objects.new(nombre, me); col.objects.link(ob); me.materials.append(mat)
-        if nombre in ("carp_puertas", "carp_marcos"):                   # cantos apenas redondeados: atrapan luz
+        if nombre == "carp_puertas":                                    # cantos apenas redondeados: atrapan luz
             bv = ob.modifiers.new("canto", "BEVEL"); bv.width = 0.003; bv.segments = 2
             bv.limit_method = "ANGLE"; bv.harden_normals = True
-    print(f"[materia] carpintería: {n} puertas con marco metálico, hoja lisa y manija de palanca [S8 10/12]")
+    print(f"[materia] carpintería: {n} puertas lisas sin marco, manija chica y bocallave (medidas contra S8 10)")
 
 

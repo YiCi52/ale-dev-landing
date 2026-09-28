@@ -306,7 +306,7 @@ for o in [o for o in esc.objects if o.type == "MESH" and o.name not in ("pradera
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     o.select_set(False)
     # el revoque de la caja es continuo: biselar sus piezas por separado dibuja juntas que no existen
-    if o.name.startswith(("sol", "herradura", "fa_", "antepecho", "cubierta", "losa", "pb_", "piloti", "cub_", "circ_", "cubierta")): continue
+    if o.name.startswith(("sol", "herradura", "fa_", "antepecho", "cubierta", "losa", "pb_", "piloti", "cub_", "circ_", "cubierta", "n1_tabique_dintel", "pb_muro_dintel")): continue
     bv = o.modifiers.new("bisel", "BEVEL"); bv.width = 0.015; bv.segments = 2; bv.limit_method = "ANGLE"
 
 # ── acabados de toda la obra (villa_acabados.py): lo aprendido en la prueba del rincón ─────
