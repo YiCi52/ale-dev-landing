@@ -19,7 +19,7 @@
 |---|---|---|---|
 | 0 | Investigación | `expediente/`: una ficha por recinto + `fuentes.md` + guion de la promenade + `planos.md` | ✅ cerrada 27-sep |
 | 1 | Planos | Los 3 niveles verificados contra los planos originales (PLANTA.md corregido) | ✅ cerrada 28-sep — muros en metros en `expediente/dwg-muros.json`; huella 19 × 21,5; orientación ⚠️ |
-| 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **en curso** — planta baja ✅ desde el DWG (`scripts/villa_obra.py`: 10 muros, 21 pilotis, vidrio curvo con montantes) · nivel principal ✅ (13 muros rellenos + 12 tabiques + 9 vidrios detectados de pares de líneas; rampa 2,6 m) · cubierta ✅ (5 muros del nivel 2: pantallas del solárium con su ventana sobre el eje de la rampa, caja de la escalera, antepechos de la rampa; losa con los huecos reales de terraza y rampa) · sigue: cierre de obra gris contra fotos S8/S9 |
+| 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **en curso** — planta baja ✅ desde el DWG (`scripts/villa_obra.py`: 10 muros, 21 pilotis, vidrio curvo con montantes) · nivel principal ✅ (13 muros rellenos + 12 tabiques + 9 vidrios detectados de pares de líneas; rampa 2,6 m) · cubierta ✅ (5 muros del nivel 2: pantallas del solárium con su ventana sobre el eje de la rampa, caja de la escalera, antepechos de la rampa; losa con los huecos reales de terraza y rampa) · alturas MEDIDAS en fachada 1 + corte A-A (la caja estaba 70 cm alta) · caja de escalera techada · sigue: **las rampas y la escalera caracol** (corte B-B), después fase 3 |
 | 3 | Materia | Materiales y color por recinto | parcial* |
 | 4 | Habitado | Muebles, objetos, plantas — solo con evidencia | parcial* |
 | 5 | Luz | Día y noche por recinto | parcial* |
@@ -91,3 +91,19 @@ terraza). **Se revisa contra el expediente** en su fase; no se da por bueno por 
 - **Pendiente:** la escalera caracol no está modelada; la losa de cubierta va cerrada sobre ella hasta que exista (un hueco sin escalera deja ver el interior).
 - **Metal:** abortó una vez con la escena completa y la misma escena pasó en CPU y luego en Metal. Intermitente; si se repite, `VILLA_CPU=1`.
 - Cámara de verificación nueva: `VILLA_CAM=aerea` (3/4 desde arriba).
+
+## Alturas medidas (28-sep) — de la fachada 1 y el corte A-A del DWG (24,8 px/m, ±5 cm)
+| Cota | Antes (a ojo) | Medida |
+|---|---|---|
+| Bajo la losa del nivel principal | 3,30 | **3,07** |
+| Piso acabado del nivel principal | 3,45 | **3,31** |
+| Ventana corrida | 3,85 → 5,05 (1,20) | **4,34 → 5,31 (0,97)** |
+| Cielo raso | 6,55 | **6,45** |
+| Cubierta acabada | 6,89 | **6,66** |
+| Remate de fachada | 7,60 | **6,88** (22 cm sobre la cubierta, no 1,05) |
+| Corona de las pantallas del solárium | 9,49 | **9,40** |
+| Ventana del solárium | 0,95 → 2,10 | **1,00 → 2,03** sobre la cubierta |
+| Caja de escalera | abierta, 2,6 | **techada, losa 9,10 → 9,30** |
+
+Consecuencia: la caja del nivel principal era 0,7 m más alta y la ventana corrida 23 cm más alta de lo real. Con las cotas medidas la proporción ya se lee como la casa.
+- **Metal:** la cámara `aerea` abortó 2 de 3 veces en GPU; en CPU pasa siempre (~24 s). Para verificación aérea usar `VILLA_CPU=1`.

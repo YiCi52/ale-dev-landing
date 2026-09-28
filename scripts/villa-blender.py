@@ -23,9 +23,14 @@ OUT = os.environ.get("VILLA_OUT", os.path.join(RAIZ, "artefactos-bake/prueba-vil
 # ── PLANTA.md §1 ──────────────────────────────────────────────────────────
 CRUJIA, VOLADIZO = 4.75, 1.25              # fase 1 (DWG): voladizo 1,25, no 1,125
 W, D = CRUJIA * 4, CRUJIA * 4 + VOLADIZO * 2   # 19.0 x 21.5
-H_PILOTIS, H_BANDA_INF, H_VENTANA, H_BANDA_SUP = 3.3, 0.55, 1.2, 1.5
-H_VOL = H_BANDA_INF + H_VENTANA + H_BANDA_SUP
-Y_LOSA, Y_TECHO = H_PILOTIS + 0.15, H_PILOTIS + H_VOL
+# Alturas MEDIDAS en la fachada 1 y el corte A-A del DWG (28-sep, 24,8 px/m, ±5 cm). Antes eran a ojo y la caja
+# quedaba 70 cm más alta, con la ventana corrida 23 cm más alta de lo real: 3,3 / 0,55 / 1,2 / 1,5 + antepecho 1,05.
+#   bajo la losa 3,07 · piso acabado 3,31 · ventana 4,34→5,31 · cielo raso 6,45 · cubierta acabada 6,66 · remate 6,88
+H_PILOTIS, H_BANDA_INF, H_VENTANA, H_BANDA_SUP = 3.07, 1.27, 0.97, 1.14
+H_VOL = H_BANDA_INF + H_VENTANA + H_BANDA_SUP          # hasta el cielo raso
+Y_LOSA, Y_TECHO = H_PILOTIS + 0.24, H_PILOTIS + H_VOL   # piso acabado 3,31 · cielo raso 6,45
+E_CUBIERTA, H_REMATE = 0.21, 0.43                      # losa de cubierta (acabado 6,66) · remate de fachada (6,88)
+H_PANTALLA = 2.74                                      # pantallas del solárium: coronan a 9,40
 T_TAB = 0.15
 
 # ── PLANTA.md §2: los tabiques, con sus huecos de puerta ──────────────────
@@ -141,14 +146,14 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,
 HUECOS_CUBIERTA = [(1.40, 9.5, -4.57, 4.78),          # terraza: jardín suspendido, abierto al cielo
                    (-1.25, 1.25, -6.08, 2.50)]         # rampa al solárium (nivel 2, pieza 8 por dentro)
 for n,(x0,x1,z0,z1) in enumerate(villa_obra.rects_con_huecos(-W/2+0.23, W/2-0.23, -D/2+0.23, D/2-0.23, HUECOS_CUBIERTA)):
-    caja(f"cubierta_{n}", x0, x1, Y_TECHO-0.01, Y_TECHO+0.34, z0, z1, M_BLANCO)
+    caja(f"cubierta_{n}", x0, x1, Y_TECHO-0.01, Y_TECHO+E_CUBIERTA, z0, z1, M_BLANCO)
 for nombre, x0,x1,z0,z1 in [("s",-W/2,W/2,D/2-0.22,D/2), ("n",-W/2,W/2,-D/2,-D/2+0.22),
                             ("e",W/2-0.22,W/2,-D/2+0.22,D/2-0.22), ("o",-W/2,-W/2+0.22,-D/2+0.22,D/2-0.22)]:
-    caja(f"antepecho_{nombre}", x0,x1, Y_TECHO+0.001, Y_TECHO+1.05, z0,z1, M_BLANCO)
+    caja(f"antepecho_{nombre}", x0,x1, Y_TECHO+0.001, Y_TECHO+H_REMATE, z0,z1, M_BLANCO)   # remate bajo: 22 cm sobre la cubierta
 
 # ── pantallas del solárium, caja de la escalera y muros de la rampa: DESDE EL PLANO (fase 2) ──
 # Antes: dos arcos a ojo (villaModel.ts) puestos sobre la terraza. Ahora: contornos del nivel 2 del DWG.
-villa_obra.cubierta(Y_TECHO + 0.34, 2.6, 1.05, M_BLANCO, esc.collection)
+villa_obra.cubierta(Y_TECHO + E_CUBIERTA, H_PANTALLA, 1.05, M_BLANCO, esc.collection)
 
 # ── terreno ───────────────────────────────────────────────────────────────
 bpy.ops.mesh.primitive_plane_add(size=160, location=(0,0,0)); bpy.context.object.name = "pradera"

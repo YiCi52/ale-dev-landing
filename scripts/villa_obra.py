@@ -177,9 +177,27 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
 
 # ── cubierta (fase 2, 28-sep) ─────────────────────────────────────────────
 # Hueco entre las dos pantallas del solárium, sobre el eje de la rampa: la "ventana" que enmarca el paisaje
-# al final del recorrido. En el DWG es un vacío de 1,75 m entre las piezas 0 y 1 del nivel 2. Alturas de
-# antepecho y dintel = interpretación (el plano no las da); se contrastan con las fotos S8/S9 en el cierre.
+# al final del recorrido. En el DWG es un vacío de 1,75 m entre las piezas 0 y 1 del nivel 2. Antepecho 1,00
+# y dintel 2,03 sobre la cubierta: medidos en la fachada 1 del DWG (28-sep).
 VENTANA_SOLARIUM = (-1.39, 0.36, 8.25, 8.40)
+# La llegada de la escalera caracol a la cubierta: una caja TECHADA (corte A-A del DWG: losa de 9,10 a 9,30),
+# más baja que las pantallas (9,40). Planta = la U de la pieza 2 del nivel 2, con su remate redondo.
+CAJA_ESCALERA = (-6.05, -2.25, 0.65, 2.45)
+ALTO_ESCALERA, E_TECHO_ESCALERA = 2.64, 0.20
+
+
+def _envolvente(pts):
+    """Envolvente convexa (monotone chain): el techo de la caja de escalera sigue su remate curvo."""
+    pts = sorted(set((round(x, 4), round(z, 4)) for x, z in pts))
+    giro = lambda o, a, b: (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    def media(seq):
+        h = []
+        for p in seq:
+            while len(h) >= 2 and giro(h[-2], h[-1], p) <= 0: h.pop()
+            h.append(p)
+        return h
+    abajo, arriba = media(pts), media(reversed(pts))
+    return abajo[:-1] + arriba[:-1]
 
 
 def rects_con_huecos(x0, x1, z0, z1, huecos):
@@ -211,11 +229,22 @@ def cubierta(z_piso, alto_pantalla, alto_antepecho, m_muro, col):
     union = lambda p: sum(1 for q in polis if q is not p and caja(p)[0] <= _centro(q)[0] <= caja(p)[1]
                           and caja(p)[2] <= _centro(q)[1] <= caja(p)[3]) >= 2
     muros = [p for p in polis if not union(p)]
+    ex0, ex1, ez0, ez1 = CAJA_ESCALERA
     for n, p in enumerate(muros):
         rampa = caja(p)[0] > -1.5 and caja(p)[1] < 1.5
-        alto = alto_antepecho if rampa else alto_pantalla
-        _prisma(f"cub_{'rampa' if rampa else 'pantalla'}_{n}", p, z_piso, z_piso + alto, m_muro, col)
+        escalera = ex0 <= _centro(p)[0] <= ex1 and ez0 <= _centro(p)[1] <= ez1
+        # la caja de escalera: muros hasta DEBAJO de su losa (tapas coplanares = negro en Cycles)
+        alto = alto_antepecho if rampa else ALTO_ESCALERA - E_TECHO_ESCALERA if escalera else alto_pantalla
+        tipo = "rampa" if rampa else "escalera" if escalera else "pantalla"
+        _prisma(f"cub_{tipo}_{n}", p, z_piso, z_piso + alto, m_muro, col)
+        if escalera:
+            dentro = [q for q in p if ex0 - 0.01 <= q[0] <= ex1 + 0.01 and ez0 - 0.01 <= q[1] <= ez1 + 0.01]
+            env = _envolvente(dentro); cx, cz = _centro(env)                # vuelo de 3 cm: sin caras coplanares
+            env = [(x + 0.03 * (x - cx) / max(math.dist((x, z), (cx, cz)), 1e-6),
+                    z + 0.03 * (z - cz) / max(math.dist((x, z), (cx, cz)), 1e-6)) for x, z in env]
+            _prisma("cub_escalera_techo", env, z_piso + ALTO_ESCALERA - E_TECHO_ESCALERA,
+                    z_piso + ALTO_ESCALERA, m_muro, col)
     x0, x1, a, b = VENTANA_SOLARIUM
-    _prisma("cub_ventana_antepecho", [(x0, a), (x1, a), (x1, b), (x0, b)], z_piso, z_piso + 0.95, m_muro, col)
-    _prisma("cub_ventana_dintel", [(x0, a), (x1, a), (x1, b), (x0, b)], z_piso + 2.10, z_piso + alto_pantalla, m_muro, col)
+    _prisma("cub_ventana_antepecho", [(x0, a), (x1, a), (x1, b), (x0, b)], z_piso, z_piso + 1.00, m_muro, col)
+    _prisma("cub_ventana_dintel", [(x0, a), (x1, a), (x1, b), (x0, b)], z_piso + 2.03, z_piso + alto_pantalla, m_muro, col)
     print(f"[villa_obra] cubierta: {len(muros)} muros (pantallas + rampa) · ventana del solárium")
