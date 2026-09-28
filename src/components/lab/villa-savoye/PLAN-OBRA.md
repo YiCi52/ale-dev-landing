@@ -128,3 +128,12 @@ Consecuencia: la caja del nivel principal era 0,7 m más alta y la ventana corri
 - **Descargas (OK de Alejandro):** HDRI `charolettenbrunn_park_4k` (prado abierto, cambia el bosque) y escaneo `concrete_floor_worn_001`. El pasto de las juntas reusa `leafy_grass`.
 - **Losa:** el escaneo es oscuro (albedo ~0,15, medido con `VILLA_DEBUG_PISO`): aporta variación, el tono lo fija un gris cálido de 0,50. Cada loseta lee la foto corrida al azar.
 - Toma final: `VILLA_HDR=…charolettenbrunn_park_4k.hdr VILLA_HDRI_GIRO=145 VILLA_SOL_AZ=170 VILLA_SOL_EL=28`, 192 muestras, 4 min en Metal.
+
+## Pulido de la obra gris en TODA la casa (28-sep, opción B aprobada)
+- `villa_acabados.py` (antes solo del rincón): revoque sin mosaicos en blanco y verde, mugre sobre los 3 pisos, chorreaduras, losetas escaneadas en la cubierta, biseles en cubierta/rampa/escalera. `villa_lookdev.py` quedó solo con la cámara y el retoque del rincón.
+- Pantalla del solárium en una pieza desde la obra (`villa_obra.pantalla_continua`), no solo en el rincón.
+- **Tabiques duplicados** del DWG (pares detectados dos veces) filtrados por solape: 12 → 9, sin cuerpos metidos uno en otro.
+- **La "caja" de la terraza era la MESA FIJA:** 7 pares de líneas del nivel 1 en la terraza estaban subidos como muros de piso a techo. Ahora mesa a 0,72 m con tapa de 8 cm (x 2,6…4,9 · z −3,45…−2,4). Se quitó la mesa mal ubicada de `villa_detalle`. ⚠️ La jardinera de `villa_detalle` (x 1,0…8,8 · z −4,5…−3,8) se cruza con la pata de la mesa: revisar en la fase 4.
+- **Vidriera del salón a la terraza** (9 × 3 m, corrediza, [S5][S6]): el DWG no la dibuja; va por el expediente, x 1,40…9,30 en z 4,78, 4 paños con marcos de acero oscuro.
+- Cada toma con su cielo: exterior/aérea contra el bosque (ballawley), rincón contra el prado (charolettenbrunn) — el prado desde la cámara de aproximación muestra casas y un muro de piedra.
+- Pendiente anotado: la cinta de ventanas del lado de la TERRAZA en la Villa real es un vano sin vidrio; hoy lleva vidrio como el resto.

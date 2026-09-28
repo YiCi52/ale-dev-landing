@@ -16,6 +16,12 @@ import bpy, math, os, sys
 RAIZ = os.getcwd()
 ASSETS = os.path.expanduser("~/CastilloStudio/assets/polyhaven")   # Poly Haven CC0, fuera del repo
 MODO = os.environ.get("VILLA_MODO", "dia")          # "dia" | "noche"
+# Cada toma con su cielo (28-sep): el exterior se ve mejor contra el bosque; el rincón del solárium mira por su
+# ventana a un prado abierto (el otro HDRI muestra casas y un muro de piedra desde la cámara de aproximación).
+if os.environ.get("VILLA_CAM") == "rincon":
+    for k, v in (("VILLA_HDR", os.path.join(ASSETS, "charolettenbrunn_park_4k.hdr")), ("VILLA_HDRI_GIRO", "145"),
+                 ("VILLA_SOL_AZ", "170"), ("VILLA_SOL_EL", "28")):
+        os.environ.setdefault(k, v)
 HDR = os.environ.get("VILLA_HDR", os.path.join(ASSETS, "ballawley_park_4k.hdr"))
 if not os.path.exists(HDR): HDR = os.path.join(RAIZ, "public/lab/villa-savoye/sky_1k.hdr")
 OUT = os.environ.get("VILLA_OUT", os.path.join(RAIZ, "artefactos-bake/prueba-villa.png"))
@@ -245,7 +251,7 @@ def pbr(m, prefijo, metros, tinte=None, fuerza_normal=0.7):
     nm = nt.nodes.new("ShaderNodeNormalMap"); nm.inputs["Strength"].default_value = fuerza_normal
     nt.links.new(nn.outputs["Color"], nm.inputs["Color"]); nt.links.new(nm.outputs["Normal"], b.inputs["Normal"])
 
-pbr(M_BLANCO, "painted_plaster_wall", 2.5, tinte=(0.84, 0.82, 0.76), fuerza_normal=0.35)
+# M_BLANCO y M_VERDE: villa_acabados (revoque sin mosaicos, en coordenadas de mundo), más abajo
 pbr(bpy.data.materials["pradera"], "leafy_grass", 2.0, tinte=(0.13, 0.22, 0.06), fuerza_normal=1.0)   # la foto trae hojas secas: el prado de Poissy es verde
 pbr(M_GRAVILLA, "gravel_floor", 1.6, tinte=(0.58, 0.55, 0.49), fuerza_normal=1.0)
 
@@ -262,6 +268,10 @@ for o in [o for o in esc.objects if o.type == "MESH" and o.name not in ("pradera
     # el revoque de la caja es continuo: biselar sus piezas por separado dibuja juntas que no existen
     if o.name.startswith(("sol", "herradura", "fa_", "antepecho", "cubierta", "losa", "pb_", "piloti", "cub_", "circ_", "cubierta")): continue
     bv = o.modifiers.new("bisel", "BEVEL"); bv.width = 0.015; bv.segments = 2; bv.limit_method = "ANGLE"
+
+# ── acabados de toda la obra (villa_acabados.py): lo aprendido en la prueba del rincón ─────
+import villa_acabados
+villa_acabados.aplicar(esc, ASSETS, M_BLANCO, M_VERDE, PISOS)
 
 # ── luz: el mismo HDRI del lab + sol calido ───────────────────────────────
 mundo = bpy.data.worlds.new("cielo"); esc.world = mundo; mundo.use_nodes = True
@@ -396,7 +406,7 @@ esc.render.image_settings.file_format = "PNG"
 esc.render.filepath = OUT
 if os.environ.get("VILLA_CAM") == "rincon":               # prueba de techo de calidad (scripts/villa_lookdev.py)
     import villa_lookdev
-    villa_lookdev.aplicar(esc, cam, cam_d, ASSETS, M_BLANCO, Y_TECHO + E_CUBIERTA)
+    villa_lookdev.aplicar(esc, cam, cam_d, Y_TECHO + E_CUBIERTA)
 print(f"[villa] objetos: {len(esc.objects)} · renderizando…")
 bpy.ops.render.render(write_still=True)
 print(f"[villa] ✓ {OUT}")

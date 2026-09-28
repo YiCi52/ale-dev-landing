@@ -231,8 +231,7 @@ def terraza(Y_LOSA, M, col):
             t = (k + 0.5) / k_n
             cx, cy = (x0 + (x1 - x0) * t, (y0 + y1) / 2) if (x1 - x0) > (y1 - y0) else ((x0 + x1) / 2, y0 + (y1 - y0) * t)
             _mata(f"mu_mata_{n}_{k}", (cx, cy, z + 0.45), 0.22 + 0.06 * math.sin(k * 2.3), M, col)
-    cojin("mu_mesa_terraza", 4.0, 6.2, -1.2, -0.4, z + 0.70, z + 0.78, M["hormigon_claro"], col, 0.01)
-    cojin("mu_mesa_terraza_pie", 4.95, 5.25, -0.95, -0.65, z, z + 0.70, M["hormigon_claro"], col, 0.01)
+    # la mesa fija ya no va aquí: sale del DWG (villa_obra.nivel_principal), en su sitio real x 2,6…4,9 · z −3,45…−2,4
 
 
 def _mata(nombre, loc, r, M, col):

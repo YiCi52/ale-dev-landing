@@ -169,6 +169,48 @@ def tabiques_de_lineas(nivel, W, D, solidos, margen_fachada=0.4, sep=(0.10, 0.30
     return muros
 
 
+TERRAZA = (1.40, 9.5, -4.62, 4.78)                 # x0, x1, z0, z1 del jardín suspendido
+MESA_Z0, MESA_Z1, H_MESA, E_MESA = -3.45, -2.40, 0.72, 0.08
+
+
+def vidriera_terraza(z0, z1, m_vidrio, col, paneles=4):
+    """La vidriera corrediza del salón a la terraza: 9 × 3 m [S5][S6]. El DWG NO la dibuja (su planta no trae
+    nada en z 4,78 entre x 1,40 y 9,30); va por el expediente, en el borde de la terraza, piso a cielo raso."""
+    x0, x1 = TERRAZA[0], 9.30; z = TERRAZA[3]
+    _prisma("n1_vidriera_terraza", [(x0, z - 0.015), (x1, z - 0.015), (x1, z + 0.015), (x0, z + 0.015)],
+            z0, z1, m_vidrio, col)
+    m = bpy.data.materials.get("pb_montante")                 # el mismo acero oscuro de los montantes del vestíbulo
+    me = bpy.data.meshes.new("n1_vidriera_marcos"); bm = bmesh.new()
+    def barra(a, b, c, d, h0, h1):
+        r = bmesh.ops.create_cube(bm, size=1.0)
+        for v in r["verts"]:
+            v.co = ((a + b) / 2 + v.co.x * (b - a), (c + d) / 2 + v.co.y * (d - c), (h0 + h1) / 2 + v.co.z * (h1 - h0))
+    paso = (x1 - x0) / paneles
+    for k in range(paneles + 1):                               # montantes
+        x = x0 + k * paso; barra(x - 0.035, x + 0.035, z - 0.05, z + 0.05, z0, z1)
+    barra(x0, x1, z - 0.05, z + 0.05, z0, z0 + 0.08)            # riel de abajo
+    barra(x0, x1, z - 0.05, z + 0.05, z1 - 0.10, z1)            # riel de arriba
+    bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(me.name, me); col.objects.link(o)
+    if m: me.materials.append(m)
+
+
+def _solape(r, q):
+    """Fracción del rectángulo MÁS CHICO que queda dentro del otro."""
+    ax = max(0.0, min(r[1], q[1]) - max(r[0], q[0])); az = max(0.0, min(r[3], q[3]) - max(r[2], q[2]))
+    menor = min((r[1] - r[0]) * (r[3] - r[2]), (q[1] - q[0]) * (q[3] - q[2]))
+    return ax * az / menor if menor > 0 else 0.0
+
+
+def _sin_solapes(rects, previos=()):
+    """Los pares de líneas del DWG se detectan dos veces (líneas triples, capas repetidas): cuerpos metidos uno
+    en otro = caras coplanares = manchas negras y bordes dentados en el render. Se queda el primero."""
+    fuera = []
+    for r in rects:
+        if all(_solape(r, q) < 0.3 for q in [*previos, *fuera]): fuera.append(r)
+    return fuera
+
+
 def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
     solidos = [p for p in _cargar("dwg-muros-solidos.json")["niveles"]["nivel1"] if _area(p) >= 0.05]
     # Fuera solo las piezas que viven ENTERAS en la franja de fachada (esquineros): los tabiques que
@@ -177,13 +219,24 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
     interiores = [p for p in solidos if not all(en_franja(x, z) for x, z in p)]
     for n, p in enumerate(interiores):
         _prisma(f"n1_muro_{n}", p, z0, z1, m_muro, col)
-    rects = [r for r in tabiques_de_lineas("nivel1", W, D, solidos) if not villa_circulacion.es_muro_de_rampa(*r)]
+    rects = _sin_solapes([r for r in tabiques_de_lineas("nivel1", W, D, solidos) if not villa_circulacion.es_muro_de_rampa(*r)])
+    # En la TERRAZA los pares de líneas no son muros: son la mesa fija de concreto (el nivel 2 la muestra como
+    # pieza rellena: x 2,6…4,9 · z −3,7…−2,4). Se levantan a altura de mesa y se tapan con su losa.
+    mesa = [r for r in rects if r[0] >= TERRAZA[0] and r[2] >= TERRAZA[2] and r[3] <= MESA_Z1 + 0.05]
+    rects = [r for r in rects if r not in mesa]
+    for n, (x0, x1, a, b) in enumerate(mesa):
+        _prisma(f"n1_mesa_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z0 + H_MESA - E_MESA, m_muro, col)
+    if mesa:
+        mx0, mx1 = min(r[0] for r in mesa), max(r[1] for r in mesa)
+        _prisma("n1_mesa_tapa", [(mx0, MESA_Z0), (mx1, MESA_Z0), (mx1, MESA_Z1), (mx0, MESA_Z1)],
+                z0 + H_MESA - E_MESA, z0 + H_MESA, m_muro, col)
     for n, (x0, x1, a, b) in enumerate(rects):
         _prisma(f"n1_tabique_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z1, m_muro, col)
-    vidrios = tabiques_de_lineas("nivel1", W, D, solidos, sep=(0.03, 0.08))
+    vidrios = _sin_solapes(tabiques_de_lineas("nivel1", W, D, solidos, sep=(0.03, 0.08)), previos=rects)
     for n, (x0, x1, a, b) in enumerate(vidrios):
         _prisma(f"n1_vidrio_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z1, m_vidrio or m_muro, col)
-    print(f"[villa_obra] nivel principal: {len(interiores)} muros rellenos · {len(rects)} tabiques · {len(vidrios)} vidrios")
+    if m_vidrio: vidriera_terraza(z0, z1, m_vidrio, col)
+    print(f"[villa_obra] nivel principal: {len(interiores)} muros rellenos · {len(rects)} tabiques · {len(vidrios)} vidrios · mesa de terraza ({len(mesa)} piezas)")
     return interiores, rects
 
 
@@ -256,7 +309,28 @@ def cubierta(z_piso, alto_pantalla, alto_antepecho, m_muro, col):
                     z + 0.03 * (z - cz) / max(math.dist((x, z), (cx, cz)), 1e-6)) for x, z in env]
             _prisma("cub_escalera_techo", env, z_piso + ALTO_ESCALERA - E_TECHO_ESCALERA,
                     z_piso + ALTO_ESCALERA, m_muro, col)
-    x0, x1, a, b = VENTANA_SOLARIUM
-    _prisma("cub_ventana_antepecho", [(x0, a), (x1, a), (x1, b), (x0, b)], z_piso, z_piso + 1.00, m_muro, col)
-    _prisma("cub_ventana_dintel", [(x0, a), (x1, a), (x1, b), (x0, b)], z_piso + 2.03, z_piso + alto_pantalla, m_muro, col)
+    pantalla_continua(col, z_piso, alto_pantalla, 1.00, 2.03)
     print(f"[villa_obra] cubierta: {len(muros)} muros (pantallas + rampa) · ventana del solárium")
+
+
+def pantalla_continua(col, z_piso, alto, alto_antepecho, alto_dintel):
+    """Las dos pantallas del solárium + el paño de la ventana: UN muro. Como piezas sueltas, el bisel dibujaba
+    juntas que no existen (lo vio Alejandro en el rincón). Unión booleana y la ventana recortada después.
+    Antepecho 1,00 y dintel 2,03 sobre la cubierta: medidos en la fachada 1 del DWG."""
+    piezas = [o for o in col.objects if o.name.startswith("cub_pantalla")]
+    if not piezas: return
+    x0, x1, a, b = VENTANA_SOLARIUM
+    base = piezas[0]
+    pano = _prisma("cub_pano", [(x0 - 0.002, a), (x1 + 0.002, a), (x1 + 0.002, b), (x0 - 0.002, b)],
+                   z_piso, z_piso + alto, base.data.materials[0], col)
+    bpy.context.view_layer.objects.active = base
+    for o in piezas[1:] + [pano]:
+        m = base.modifiers.new("union", "BOOLEAN"); m.operation = "UNION"; m.solver = "EXACT"; m.object = o
+        bpy.ops.object.modifier_apply(modifier=m.name)
+    hueco = _prisma("cub_hueco", [(x0, a - 0.3), (x1, a - 0.3), (x1, b + 0.3), (x0, b + 0.3)],
+                    z_piso + alto_antepecho, z_piso + alto_dintel, base.data.materials[0], col)
+    m = base.modifiers.new("ventana", "BOOLEAN"); m.operation = "DIFFERENCE"; m.solver = "EXACT"; m.object = hueco
+    bpy.ops.object.modifier_apply(modifier=m.name)
+    for o in piezas[1:] + [pano, hueco]: bpy.data.objects.remove(o, do_unlink=True)
+    base.name = "cub_pantalla_solarium"; suavizar_curvas(base.data)
+    print(f"[villa_obra] pantalla del solárium en una pieza, con su ventana ({len(base.data.polygons)} caras)")
