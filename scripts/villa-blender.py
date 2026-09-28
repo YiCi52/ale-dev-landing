@@ -143,21 +143,30 @@ circ.tapas_escalera(H_PILOTIS, Y_LOSA, M_PISO, esc.collection, "losa_nobile_tapa
 # La polychromie (rosa, azul) vuelve en la fase 3 (materia): aquí todo es obra gris.
 villa_obra.nivel_principal(Y_LOSA, Y_TECHO - 0.01, W, D, M_BLANCO, esc.collection, M_VIDRIO)
 
-TERRAZA_VANO = (-4.60, 4.78)                           # tramo de la fachada este que da a la terraza
+# Vanos SIN vidrio de la cinta: todo lo que da al jardín suspendido y a su parte techada, el KIOSQUE
+# (planta oficial CMN, recintos-nivel-1.md). Este: de la esquina maciza del kiosque (z −9,45) hasta el salón.
+# Norte: el frente del kiosque, del muro del boudoir (x 4,90) a la esquina maciza (x 9,30).
+VANOS = {"este": (-9.45, 4.78), "norte": (4.90, 9.30)}
 # ── fachadas: banda inferior, cinta de vidrio continua, banda superior ────
 yv0, yv1 = H_PILOTIS + H_BANDA_INF, H_PILOTIS + H_BANDA_INF + H_VENTANA
 for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,-D/2,-D/2+0.19),
                                ("este",W/2-0.19,W/2,-D/2+0.19,D/2-0.19), ("oeste",-W/2,-W/2+0.19,-D/2+0.19,D/2-0.19)]:
-    caja(f"fa_{nombre}_inf", x0,x1, H_PILOTIS, yv0, z0,z1, M_BLANCO)
-    caja(f"fa_{nombre}_sup", x0,x1, yv1, Y_TECHO, z0,z1, M_BLANCO)
+    # la fachada este se parte donde empieza el salón (z 4,72): su cara interior, del lado del estar, es ROSA
+    # [CMN: "rosa junto al estar"; S8 28–29: el muro rosa lleva la cinta de ventanas]
+    cortes_f = [(z0, 4.72), (4.72, z1)] if nombre == "este" else [(z0, z1)]
+    for n_f, (f0, f1) in enumerate(cortes_f):
+        caja(f"fa_{nombre}_inf_{n_f}", x0,x1, H_PILOTIS, yv0, f0,f1, M_BLANCO)
+        caja(f"fa_{nombre}_sup_{n_f}", x0,x1, yv1, Y_TECHO, f0,f1, M_BLANCO)
     # En la TERRAZA la cinta sigue, pero es un VANO sin vidrio con "baby pilotis" [S4]: el paisaje se ve desde
     # afuera, al aire libre. Solo la fachada este toca la terraza (z −4,60…4,78).
-    vano = TERRAZA_VANO if nombre == "este" else None
+    vano = VANOS.get(nombre)
     # vidrio de 12 mm en el plano de los montantes (antes: un bloque macizo de 7 a 19 cm que refractaba como lupa)
     largo_x_ = (x1 - x0) > (z1 - z0); cz_v, cx_v = (z0 + z1) / 2, (x0 + x1) / 2
-    tramos_vid = [(z0, z1)] if not vano else [(z0, vano[0]), (vano[1], z1)]
+    a_v, b_v = (x0, x1) if largo_x_ else (z0, z1)
+    tramos_vid = [(a_v, b_v)] if not vano else [(a_v, vano[0]), (vano[1], b_v)]
     for n_t, (t0, t1) in enumerate(tramos_vid):
-        if largo_x_: caja(f"fa_{nombre}_vid_{n_t}", x0, x1, yv0, yv1, cz_v - 0.006, cz_v + 0.006, M_VIDRIO)
+        if t1 - t0 < 0.05: continue
+        if largo_x_: caja(f"fa_{nombre}_vid_{n_t}", t0, t1, yv0, yv1, cz_v - 0.006, cz_v + 0.006, M_VIDRIO)
         else:        caja(f"fa_{nombre}_vid_{n_t}", cx_v - 0.006, cx_v + 0.006, yv0, yv1, t0, t1, M_VIDRIO)
     # montantes de carpintería cada ~1.1 m (mismo paso que villaModel.ts); en el vano no hay carpintería
     largo_x = (x1 - x0) > (z1 - z0)
@@ -173,7 +182,8 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,
         else:       caja(f"mont_{nombre}_{k}", cx_-0.035, cx_+0.035, yv0, yv1, u-0.025, u+0.025, M_CARP)
     if vano:                                                   # baby pilotis: en los ejes de la estructura (interpretación)
         for n_p, u in enumerate([k * CRUJIA / 2 for k in range(-4, 5) if vano[0] + 0.3 < k * CRUJIA / 2 < vano[1] - 0.3]):
-            bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.05, depth=yv1 - yv0, location=((x0 + x1) / 2, u, (yv0 + yv1) / 2))
+            loc = (u, (z0 + z1) / 2, (yv0 + yv1) / 2) if largo_x else ((x0 + x1) / 2, u, (yv0 + yv1) / 2)
+            bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.05, depth=yv1 - yv0, location=loc)
             o = bpy.context.object; o.name = f"fa_baby_piloti_{n_p}"; o.data.materials.append(M_BLANCO)
             bpy.ops.object.shade_smooth()
 

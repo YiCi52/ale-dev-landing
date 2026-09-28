@@ -168,3 +168,11 @@ Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
 - **Retoque del compositor** (brillo, aberración, viñeta) en todas las tomas de foto, no solo en el rincón (`VILLA_RETOQUE=0` lo apaga).
 - **Recintos** (`RECINTOS` en `villa_materia.py`): salón, cocina y terraza ✅; los demás del nivel principal tienen forma segura pero USO ❓ (qué dormitorio es de quién, dónde está el baño con el diván) → se confirma antes de pintarlos.
 - Depuración: `VILLA_INSPECT="x,y,z"` lista los objetos cerca de un punto y sus materiales por cara, sin renderizar.
+
+### Fase 3, segunda tanda (28-sep) — recintos aprobados por Alejandro (`expediente/recintos-nivel-1.md`, planta CMN 2021)
+- **Salón corregido:** ROSA = cara interior de la fachada este en el tramo del salón (el extremo del ESTAR; la foto S8 28 muestra el rosa con la cinta de ventanas) · AZUL = paño junto a la vidriera, lado COMEDOR · resto blanco [CMN]. La primera tanda había puesto el rosa en el muro salón/cocina: al revés. La fachada este se parte en z 4,72 para pintar solo su tramo del salón.
+- **KIOSQUE** (parte techada del jardín): la cinta sin vidrio también en sus dos lados (este z −9,45…4,78; norte x 4,90…9,30) con baby pilotis; piso de losas de terraza. El DWG ya lo dejaba abierto hacia la terraza.
+- **Baño n.º 14:** tabique z −4,75…−4,62 entre el cuarto del hijo y el baño (lo dibuja el CMN, no el DWG); puerta x −7,05…−6,25 = interpretación.
+- **Boudoir** azul profundo · **pasillo al hijo** bleu charron · **parqué** en el cuarto de huéspedes. Los demás dormitorios quedan BLANCOS: su color no tiene fuente.
+- Renders: `f3-salon-estar.png` (≈ S8 28/29), `f3-kiosque.png` (≈ S9 17/18/26), `f3-planta-n1.png`.
+- Fase 4 (anotado): la mesa de la terraza vista de cerca se lee como cajón; el baño de los padres (bañera, diván, claraboya) y los muebles fijos (tablero del boudoir, escritorio del hijo, clóset de huéspedes).

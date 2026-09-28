@@ -262,6 +262,11 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
         _prisma(f"n1_vidrio_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z1, m_vidrio or m_muro, col)
     if m_vidrio: vidriera_terraza(z0, z1, m_vidrio, col)
     columnas = columnas_nivel(z0, z1, W, D, interiores, rects, m_muro, col)
+    # Tabique del BAÑO n.º 14 (compartido hijo/huéspedes): la planta oficial del CMN lo dibuja entre el cuarto del
+    # hijo y el baño; el DWG no. Puerta hacia el cuarto del hijo junto al pasillo: posición = interpretación.
+    for n, (a0, a1) in enumerate([(-9.30, -7.05), (-6.25, -6.05)]):
+        _prisma(f"n1_tabique_bano14_{n}", [(a0, -4.75), (a1, -4.75), (a1, -4.62), (a0, -4.62)], z0, z1, m_muro, col)
+    _prisma("n1_tabique_bano14_dintel", [(-7.05, -4.75), (-6.25, -4.75), (-6.25, -4.62), (-7.05, -4.62)], z0 + 2.10, z1, m_muro, col)
     print(f"[villa_obra] nivel principal: {len(interiores)} muros rellenos · {len(rects)} tabiques · {len(vidrios)} vidrios · mesa de terraza ({len(mesa)} piezas)")
     return interiores, rects
 

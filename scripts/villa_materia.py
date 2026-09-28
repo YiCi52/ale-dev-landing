@@ -119,17 +119,54 @@ def rampa_diagonal():
 
 
 def salon(y_losa, y_techo):
-    """Rosa terracota: el muro corto del fondo (entre salón y cocina) mirando al salón. Azul: el paño junto a la
-    vidriera, del lado de adentro. Solo muros interiores del nivel principal (n1_*)."""
+    """CMN: "muro azul junto al comedor, muro rosa junto al estar, el resto blanco".
+    ROSA = la cara interior de la fachada este en el tramo del salón (el extremo del estar; en las fotos S8 28–29 el
+    muro rosa lleva la cinta de ventanas, o sea que es fachada). AZUL = el paño junto a la vidriera, del lado del
+    comedor. 28-sep: la primera versión puso el rosa en el muro del fondo (salón/cocina): estaba al revés."""
     (x0, x1, z0, z1), _ = RECINTOS["salon"]
     rosa = pintura("m_rosa_terracota", (0.62, 0.34, 0.27))
     azul = pintura("m_azul_polychromie", (0.30, 0.47, 0.55))
     en_altura = lambda c: y_losa - 0.05 < c.z < y_techo + 0.05
-    n_r = sum(_asignar_caras(o, rosa, lambda c, nn: en_altura(c) and nn.x > 0.9 and abs(c.x - x0) < 0.35
-                             and z0 < c.y < z1) for o in _objetos(("n1_muro", "n1_tabique")))
+    n_r = sum(_asignar_caras(o, rosa, lambda c, nn: nn.x < -0.9 and c.y > z0 and c.x > 9.0)
+              for o in _objetos(("fa_este_inf_1", "fa_este_sup_1")))
     n_a = sum(_asignar_caras(o, azul, lambda c, nn: en_altura(c) and nn.y > 0.9 and abs(c.y - z0) < 0.35
                              and x0 < c.x < 1.40) for o in _objetos(("n1_muro", "n1_tabique")))
-    print(f"[materia] salón: {n_r} caras rosa terracota · {n_a} caras azul")
+    print(f"[materia] salón: {n_r} caras rosa terracota (fachada del estar) · {n_a} caras azul (comedor)")
+
+
+def _mira_hacia(rect, y_losa, y_techo):
+    """Caras verticales del nivel principal que miran HACIA el interior del rectángulo."""
+    x0, x1, z0, z1 = rect
+    return lambda c, nn: (y_losa - 0.05 < c.z < y_techo + 0.05 and abs(nn.z) < 0.3
+                          and x0 - 0.3 < c.x < x1 + 0.3 and z0 - 0.3 < c.y < z1 + 0.3
+                          and x0 < c.x + nn.x * 0.5 < x1 and z0 < c.y + nn.y * 0.5 < z1)
+
+
+def cuartos(y_losa, y_techo, col):
+    """Solo lo documentado (expediente/recintos-nivel-1.md): boudoir azul profundo [Carnets d'Igor]; pasillo al
+    cuarto del hijo "bleu charron" [eg-xiste]; parqué en el cuarto de huéspedes [CMN]; el kiosque con las losas
+    de la terraza [CMN]. Lo que no tiene fuente (color de los demás dormitorios) queda blanco."""
+    boudoir = pintura("m_azul_profundo", (0.10, 0.17, 0.34))
+    charron = pintura("m_bleu_charron", (0.20, 0.33, 0.50))
+    n_b = sum(_asignar_caras(o, boudoir, _mira_hacia(RECINTOS["cuarto_b"][0], y_losa, y_techo))
+              for o in _objetos(("n1_muro", "n1_tabique")))
+    n_p = sum(_asignar_caras(o, charron, _mira_hacia((-5.9, -5.0, -4.4, 0.6), y_losa, y_techo))
+              for o in _objetos(("n1_muro", "n1_tabique")))
+    z = y_losa + 0.002
+    parque = baldosa("m_parque", (0.40, 0.26, 0.15), (0.34, 0.21, 0.12), (0.22, 0.14, 0.08), 0.07, 0.45, bump=0.1)
+    _losa_piso("mu_piso_huespedes", -9.30, -6.05, -3.13, 1.62, z, parque, col)
+    losa_t = bpy.data.materials.get("mu_losa_terraza")
+    if losa_t: _losa_piso("mu_piso_kiosque", 4.93, 9.30, -10.56, -4.75, z, losa_t, col)
+    print(f"[materia] boudoir azul profundo ({n_b} caras) · pasillo bleu charron ({n_p}) · parqué huéspedes · piso del kiosque")
+
+
+def _losa_piso(nombre, x0, x1, z0, z1, h, material, col):
+    me = bpy.data.meshes.new(nombre); bm = bmesh.new()
+    r = bmesh.ops.create_cube(bm, size=1.0)
+    for v in r["verts"]:
+        v.co = ((x0 + x1) / 2 + v.co.x * (x1 - x0), (z0 + z1) / 2 + v.co.y * (z1 - z0), h + 0.005 + v.co.z * 0.01)
+    bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(nombre, me); col.objects.link(o); me.materials.append(material)
 
 
 def cocina(y_losa, y_techo):
@@ -185,4 +222,4 @@ def cielo_raso_blanco():
 
 def aplicar(col, y_losa, y_techo, h_pilotis=3.07):
     piso_vestibulo(col); rampa_diagonal(); salon(y_losa, y_techo); cocina(y_losa, y_techo)
-    verde_solo_afuera(h_pilotis); cielo_raso_blanco()
+    verde_solo_afuera(h_pilotis); cielo_raso_blanco(); cuartos(y_losa, y_techo, col)
