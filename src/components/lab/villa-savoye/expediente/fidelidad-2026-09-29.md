@@ -1,0 +1,81 @@
+# Villa Savoye · pasada de fidelidad (29-sep-2026)
+
+**Qué se comparó**
+- **Las fotos del museo** (Archweb): las 78 interiores (S8) y 36 de las 56 exteriores (S9).
+- **El plano**: todas las líneas de la capa de vidrio y de línea fina del DWG, nivel por nivel, contra lo construido.
+- **Nueve vistas del modelo**, cada una con la cámara puesta en el ángulo aproximado de una foto clave. Los renders van adjuntos aparte y se llaman igual que la foto: `s8-58-salon-oeste`, `s9-13-terraza`, etc.
+
+**Cómo leer las etiquetas**
+- **Gravedad:** 🔴 alta (cambia la lectura de la casa), 🟠 media (se nota al mirar), 🟡 baja (es detalle).
+- **Causa:**
+  - **P**: plano mal leído.
+  - **I**: interpretación mía que la foto contradice.
+  - **F**: falta, no se había hecho.
+  - **Fase**: le toca a una fase que todavía no llega.
+
+---
+
+## Resumen
+
+La estructura está bien. La huella, los niveles, las alturas, las escaleras, la cubierta con el solárium, el vano de la terraza y el baño ya revisado coinciden con plano y fotos.
+
+Los errores se concentran en tres cosas:
+1. **La rampa del piso principal está encerrada entre dos muros de piso a techo.** En la casa real es abierta hacia el hall y tiene ventanas hacia la terraza.
+2. **Colores de muro en el lugar equivocado.** El azul del salón y los azules del boudoir están mal ubicados.
+3. **Piezas icónicas que faltan:** la chimenea del salón, las ventanas del bloque de servicio de la planta baja y el mesón bajo la ventana del salón.
+
+El patrón es el mismo de la escalera: **el plano está cortado a 1 m de altura, así que un antepecho o un muro con ventana arriba se dibujan igual que un muro entero.** Lo leí como muro entero en varios sitios.
+
+| # | Hallazgo | Grav. | Causa | Evidencia |
+|---|---|---|---|---|
+| 1 | Rampa del piso principal encerrada entre dos muros de piso a techo. En la real, hacia el hall es un **antepecho con pasamanos negro** y hacia la terraza es **antepecho + ventanas de barras horizontales** hasta el techo | 🔴 | P | Fotos S8 2, 3, 6, 20, 31, 45, 54, 71 · S9 15, 22, 24 · render `s8-20-rampa-n1` |
+| 2 | **Azul del salón en el muro equivocado.** Va en el muro corto del fondo, lado cocina/comedor, que es el que tiene la puerta (x −4,65). Yo lo puse en un paño junto a la vidriera. El rosa del otro extremo está bien | 🔴 | I | Fotos S8 58, 75 + planta CMN ("azul junto al comedor") · render `s8-58-salon-oeste` |
+| 3 | **Falta la chimenea del salón**: un bloque suelto de ladrillo con marco y tapa de concreto oscuro, junto a una columna cerca de la vidriera | 🔴 | F | Fotos S8 30, 34, 35, 36, 56, 57, 63, 64, 65 |
+| 4 | **El bloque de servicio de la planta baja no tiene ventanas.** El verde lleva ventanas con marco de cuadrícula | 🔴 | P/F | Fotos S9 3, 4 · DWG nivel 0: 4 líneas de vidrio en x −6,35…−6,15 · render `s9-03-fachada` |
+| 5 | **Boudoir: solo el muro de la puerta es azul**; los otros tres son blancos. Yo pinté los cuatro | 🟠 | I | Fotos S8 10, 51 · render `f3-boudoir` |
+| 6 | **Cocina con azulejo hasta el techo.** En la foto el azulejo solo cubre el salpicadero, hasta unos 1,4 m; arriba el muro es blanco | 🟠 | I | Fotos S8 17, 19, 25 · render `s8-17-cocina` |
+| 7 | **La ventana del kiosque que da afuera (lado 2) lleva vidrio.** Solo el lado este es vano abierto. Hoy los dos están abiertos | 🟠 | I | Fotos S9 18, 26 · render `s9-18-kiosque` |
+| 8 | **Escalera: las huellas son oscuras** (gris-negro) con contrahuellas blancas. Hoy todo es blanco | 🟠 | F | Fotos S8 38, 41, 42 |
+| 9 | **Mesón corrido bajo la ventana del salón**, con tapa oscura sobre los radiadores; es donde van los "placares bajo las ventanas" [S3]. Falta | 🟠 | F | Fotos S8 34, 58, 63 |
+| 10 | **Pasillos del piso principal con piso oscuro** (gris). Yo elegí baldosa clara porque no había fuente, pero estas fotos sí lo muestran. El hall junto a la escalera sí es claro | 🟠 | I | Fotos S8 9, 15, 20, 31 (oscuro) · S8 54 (hall claro) |
+| 11 | **Losas de la terraza demasiado blancas y limpias.** En la foto son grises, de concreto, con juntas marcadas | 🟠 | F | Fotos S9 8, 13, 14, 19, 30 · render `s9-13-terraza` |
+| 12 | **Mesa de la terraza**: en la foto es un tablero blanco delgado sobre un apoyo delgado. La nuestra se lee como cajón | 🟠 | P | Fotos S9 13, 14, 19, 20, 28, 29, 30 |
+| 13 | **Arbustos de las jardineras parecen piedras escarchadas** | 🟠 | F | Fotos S9 8, 13, 17 · render `s9-18-kiosque` |
+| 14 | **Chimenea de la cubierta muy baja.** En la foto sobresale bastante por encima de las pantallas | 🟡 | I | Foto S9 27 · render `s9-27-solarium` |
+| 15 | **Falta la banca/mesa corrida del solárium**, pegada a la pantalla curva | 🟡 | F | Foto S9 10 |
+| 16 | **La vidriera del salón arranca en x 0,07 según el DWG**; la nuestra arranca en 1,40 | 🟡 | P | DWG nivel 1, capa de vidrio: línea en z 4,65/4,75 de x 0,07 a 9,30 |
+| 17 | **Color de la carpintería de la ventana corrida**: por dentro se ve gris claro/blanca; la nuestra es café. Por fuera se ve oscura | 🟡 | ? | Fotos S8 23, 24, 27, 33, 62 contra S9 1, 3. Contradice PLANTA.md (café, fotos ArchEyes): **por confirmar** |
+| 18 | **Suite con un muro rosa pálido** (el de la izquierda) | 🟡 | ? | Foto S8 5 · fuente escrita sin encontrar: **por confirmar** |
+
+**Lo que ya es de fases que vienen** (no son errores de lo hecho):
+- Muebles de la cocina (mesa central, mesones con azulejo, lavaplatos doble, gabinetes de puertas corredizas grises, pasaplatos). Fotos S8 17, 19, 22–25, 37, 39.
+- Barandas de la rampa: negra por dentro, gris claro por fuera. Fotos S8 2, 3 · S9 7, 9.
+- Los muebles fijos de los cuartos.
+- **La luz.** El vestíbulo y la cocina salen casi negros (renders `s8-01-vestibulo` y `s8-17-cocina`), así que no se pudieron comparar bien. Eso es de la fase 5.
+
+---
+
+## Lo que coincide (no tocar)
+
+- **Volumen:** huella 19 × 21,5, pilotis, alturas medidas, caja blanca sobre planta baja verde retranqueada (S9 1, 3, 23).
+- **Vestíbulo:** herradura de vidrio con montantes oscuros apretados (S9 5).
+- **Cubierta:** dos pantallas curvas con la ventana del solárium y la caja de la escalera (S9 27, 16).
+- **Terraza:** vano sin vidrio con columnas delgadas del lado este, y kiosque techado (S9 13, 14, 17, 18, 26).
+- **Salón:** rosa en el extremo del estar, luminaria lineal colgada, LC2 y LC4 de pony, LC6 de vidrio (S8 50, 56–60, 75).
+- **Escalera:** exenta, banda helicoidal, centro abierto con baranda negra (S8 4, 11, 38, 49).
+- **Baño de los padres**, ya revisado contra S8 7.
+- **Pisos:** parqué en cuadros en dormitorios (S8 10, 12, 51); baldosa beige en el salón; baldosa tostada en la cocina (S8 17, 19).
+- **Puertas:** gris-café lisas, sin marco (S8 10).
+
+---
+
+## Orden propuesto para corregir
+
+1. **Rampa del piso principal** (#1): la corrección de más impacto, y la cámara del recorrido pasa por ahí.
+2. **Colores**, en un solo paso: azul del salón (#2), boudoir (#5), cocina (#6) y pasillos (#10).
+3. **Piezas que faltan:** chimenea del salón (#3), ventanas del bloque de servicio (#4), mesón del salón (#9).
+4. **Kiosque, escalera y terraza:** vidrio del kiosque (#7), huellas oscuras (#8), losas (#11), mesa (#12), arbustos (#13).
+5. **Detalles:** #14, #15 y #16.
+6. **Para confirmar con Alejandro o más fuentes:** #17 y #18.
+
+Cada corrección se verifica con un render desde el mismo ángulo de la foto antes de darla por hecha.
