@@ -121,27 +121,49 @@ def _caja(bm, x0, x1, z0, z1, h0, h1):
         v.co = ((x0 + x1) / 2 + v.co.x * (x1 - x0), (z0 + z1) / 2 + v.co.y * (z1 - z0), (h0 + h1) / 2 + v.co.z * (h1 - h0))
 
 
+GARGANTA = 0.16                                        # espesor de la losa de la escalera, medido en vertical
+
+
+def _peldano_liso(bm, pts, s_pts, top, base, r):
+    """Un peldaño cuya cara de ABAJO sigue la losa inclinada continua de la escalera (bajo(s) = base + s·r − garganta):
+    la escalera real tiene el intradós liso [S8 4/11]; con bloques sueltos salía un serrucho por debajo."""
+    from mathutils.geometry import tessellate_polygon
+    bajo = [max(base + sv * r - GARGANTA, base) for sv in s_pts]
+    ab = [bm.verts.new((x, z, b)) for (x, z), b in zip(pts, bajo)]; ar = [bm.verts.new((x, z, top)) for x, z in pts]
+    for i, j, k in tessellate_polygon([[(x, z, 0.0) for x, z in pts]]):
+        for tri in ((ab[k], ab[j], ab[i]), (ar[i], ar[j], ar[k])):
+            try: bm.faces.new(tri)
+            except ValueError: pass
+    n = len(pts)
+    for k in range(n):
+        try: bm.faces.new((ab[k], ab[(k + 1) % n], ar[(k + 1) % n], ar[k]))
+        except ValueError: pass
+
+
 def escalera(pisos, material, col):
-    """Por entrepiso: 6 peldaños por el tramo sur hacia el este, 6 compensadas en el semicírculo, 6 de vuelta."""
+    """Por entrepiso: 6 peldaños por el tramo sur hacia el este, 6 compensadas en el semicírculo, 6 de vuelta.
+    `s` = posición en peldaños a lo largo del recorrido (0 al arranque, 18 al llegar)."""
     cx, cz = ESC_CENTRO
     huella = (cx - ESC_X0) / PELDANOS_RECTOS
     def construir(bm):
         for base, techo in zip(pisos, pisos[1:]):
-            cont = PELDANOS_RECTOS * 2 + COMPENSADAS
-            r = (techo - base) / cont
-            grueso = r + 0.15                                      # peldaño macizo con 15 cm de losa debajo
+            r = (techo - base) / (PELDANOS_RECTOS * 2 + COMPENSADAS)
+            (a0, a1), (b0, b1) = ESC_TRAMO_A, ESC_TRAMO_B
             for k in range(PELDANOS_RECTOS):                        # tramo A: hacia +x
-                top = base + (k + 1) * r
-                _caja(bm, ESC_X0 + k * huella, ESC_X0 + (k + 1) * huella, *ESC_TRAMO_A, top - grueso, top)
+                xa, xb = ESC_X0 + k * huella, ESC_X0 + (k + 1) * huella
+                _peldano_liso(bm, [(xa, a0), (xb, a0), (xb, a1), (xa, a1)], [k, k + 1, k + 1, k], base + (k + 1) * r, base, r)
             for k in range(COMPENSADAS):                            # semicírculo: de −90° a +90°
-                top = base + (PELDANOS_RECTOS + k + 1) * r
-                a0 = -math.pi / 2 + math.pi * k / COMPENSADAS; a1 = a0 + math.pi / COMPENSADAS
-                _cuna(bm, cx, cz, ESC_R - 0.01, a0, a1, top - grueso, top)   # 1 cm del muro curvo: sin caras coplanares
+                s0 = PELDANOS_RECTOS + k
+                angs = [-math.pi / 2 + math.pi * (k + t / 4) / COMPENSADAS for t in range(5)]
+                arco = [(cx + (ESC_R - 0.01) * math.cos(a), cz + (ESC_R - 0.01) * math.sin(a)) for a in angs]
+                _peldano_liso(bm, [(cx, cz)] + arco, [s0 + 0.5] + [s0 + t / 4 for t in range(5)],
+                              base + (s0 + 1) * r, base, r)
             for k in range(PELDANOS_RECTOS):                        # tramo B: de vuelta hacia −x
-                top = base + (PELDANOS_RECTOS + COMPENSADAS + k + 1) * r
-                _caja(bm, cx - (k + 1) * huella, cx - k * huella, *ESC_TRAMO_B, top - grueso, top)
+                s0 = PELDANOS_RECTOS + COMPENSADAS + k
+                xa, xb = cx - k * huella, cx - (k + 1) * huella
+                _peldano_liso(bm, [(xb, b0), (xa, b0), (xa, b1), (xb, b1)], [s0 + 1, s0, s0, s0 + 1], base + (s0 + 1) * r, base, r)
     _malla("circ_escalera", construir, material, col)
-    print(f"[villa_circulacion] escalera en U: {len(pisos) - 1} entrepisos · 18 contrahuellas cada uno")
+    print(f"[villa_circulacion] escalera en U: {len(pisos) - 1} entrepisos · 18 contrahuellas · intradós liso")
 
 
 def tapas_escalera(h0, h1, material, col, nombre):
@@ -175,7 +197,7 @@ def es_muro_de_rampa(x0, x1, z0, z1):
 # vestíbulo, con el espacio abierto por debajo— y esas piezas son su antepecho, que sube con los peldaños.
 # Mismo error que el muro central de la rampa. Aquí: cada vértice del contorno del plano sube a la altura del
 # peldaño que tiene al lado (+1 m de antepecho) y baja 30 cm por debajo (la zanca).
-ZANCA, ANTEPECHO = 0.30, 1.00
+ZANCA, ANTEPECHO = 0.34, 1.00                       # zanca = contrahuella + garganta: sigue el intradós
 
 
 def es_de_escalera(x0, x1, z0, z1):
@@ -213,7 +235,7 @@ def _prisma_alabeado(bm, poli, bajo, alto):
         except ValueError: pass
 
 
-def antepechos_escalera(pisos, material, col):
+def antepechos_escalera(pisos, material, col, alto_espina=9.10):
     ruta = os.path.join(os.getcwd(), "src/components/lab/villa-savoye/expediente/dwg-muros-solidos.json")
     niveles = json.load(open(ruta, encoding="utf-8"))["niveles"]
     def construir(bm):
@@ -223,8 +245,12 @@ def antepechos_escalera(pisos, material, col):
                 if not es_de_escalera(min(xs), max(xs), min(zs), max(zs)): continue
                 ojo = max(zs) - min(zs) < 0.3                      # el muro de ojo, entre los dos tramos
                 if ojo:
-                    bajo = lambda x, z, b=base, t=techo: max(_peldano(x, z, b, t, "A") - ZANCA, b)
-                    alto = lambda x, z, b=base, t=techo: _peldano(x, z, b, t, "B") + ANTEPECHO
+                    # ESPINA: el DWG la corta en TODOS los niveles (planta baja y principal) → muro continuo del suelo
+                    # a la losa de la caja de escalera. Alabeada entre dos tramos formaba un moño retorcido (corte
+                    # del 28-sep que pidió Alejandro). Interpretación consistente con el plano.
+                    if nivel != "nivel0": continue
+                    bajo = lambda x, z: pisos[0]
+                    alto = lambda x, z: alto_espina
                 else:
                     bajo = lambda x, z, b=base, t=techo: max(_peldano(x, z, b, t) - ZANCA, b)
                     alto = lambda x, z, b=base, t=techo: _peldano(x, z, b, t) + ANTEPECHO

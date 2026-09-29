@@ -279,7 +279,8 @@ def cielo_raso_blanco():
     """La cara de abajo de la losa (techo del porche y del vestíbulo) era ocre: la losa entera tenía el material
     del piso del salón. Por debajo es revoque blanco."""
     blanco = bpy.data.materials.get("blanco")
-    n = sum(_asignar_caras(o, blanco, lambda c, nn: nn.z < -0.5) for o in _objetos(("losa_nobile",)))
+    # y los cantos de la losa en los huecos de escalera y rampa (se veían ocres, del color del piso del salón)
+    n = sum(_asignar_caras(o, blanco, lambda c, nn: nn.z < 0.5) for o in _objetos(("losa_nobile",)))
     print(f"[materia] cielo raso de planta baja en blanco ({n} caras)")
 
 

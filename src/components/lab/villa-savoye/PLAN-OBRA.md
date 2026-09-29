@@ -194,3 +194,7 @@ Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
 - **La "línea" sobre la puerta:** era una ranura entre el dintel y el canto biselado del muro, no el grueso. Dintel sin bisel, caras medidas por bisección y 3 cm metido dentro de cada jamba (mismo material en coordenadas de mundo: el solape no se ve).
 - **Hall y pasillos del nivel principal:** sin fuente; **Alejandro dejó la elección a Claude**. Elegido: baldosa clara de 20 cm, pariente de la del vestíbulo (las circulaciones de S8 1/13 son cerámica clara). Marcado como INTERPRETACIÓN en el código.
 - **Fase 3 CERRADA** (Alejandro, 28-sep: "ahora sí me convence").
+
+### Escalera corregida (28-sep, la vio Alejandro "re rara")
+- Cortes (`VILLA_CAM=corte VILLA_CORTE_Z=1.15/1.95`) mostraron: intradós en serrucho (bloques sueltos) y la espina central alabeada entre dos tramos (forma de moño).
+- Ahora: cada peldaño tiene la cara de abajo sobre la losa inclinada continua (garganta 16 cm) → intradós liso como en S8 4/11; la ESPINA es un muro continuo del suelo a la losa de la caja de escalera (el DWG la corta en todos los niveles → interpretación consistente); zanca de los antepechos = contrahuella + garganta; cantos de la losa en los huecos, blancos (eran ocres).

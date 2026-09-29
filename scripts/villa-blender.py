@@ -206,7 +206,7 @@ circ.tapas_escalera(Y_TECHO - 0.01, Y_TECHO + E_CUBIERTA, M_BLANCO, esc.collecti
 PISOS = [0.0, Y_LOSA, Y_TECHO + E_CUBIERTA]            # suelo · nivel principal · cubierta
 circ.rampa(PISOS, M_BLANCO, esc.collection)
 circ.escalera(PISOS, M_BLANCO, esc.collection)
-circ.antepechos_escalera(PISOS, M_BLANCO, esc.collection)
+circ.antepechos_escalera(PISOS, M_BLANCO, esc.collection, Y_TECHO + E_CUBIERTA + villa_obra.ALTO_ESCALERA - villa_obra.E_TECHO_ESCALERA)
 
 # ── terreno ───────────────────────────────────────────────────────────────
 bpy.ops.mesh.primitive_plane_add(size=160, location=(0,0,0)); bpy.context.object.name = "pradera"
