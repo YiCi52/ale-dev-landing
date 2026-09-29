@@ -209,6 +209,20 @@ def cuartos(y_losa, y_techo, col):
     print(f"[materia] boudoir azul profundo ({n_b} caras) · pasillo bleu charron ({n_p}) · parqué huéspedes · piso del kiosque")
 
 
+def circulacion(y_losa, col):
+    """Hall y pasillos del nivel principal. NINGUNA fuente documenta su piso: Alejandro dejó la elección a Claude
+    (28-sep). Elegido: la misma baldosa clara del vestíbulo de abajo, un poco más cálida. Razón: la rampa y la
+    escalera conectan los dos halls, y en las fotos de circulaciones (S8 1/13) el piso es cerámica clara, no
+    parqué ni el ocre del salón. INTERPRETACIÓN, no dato."""
+    import villa_obra, villa_circulacion as circ
+    z = y_losa + 0.002
+    m = baldosa("m_circulacion", (0.72, 0.69, 0.63), (0.68, 0.65, 0.60), (0.50, 0.48, 0.45), 0.20, 0.35)
+    piezas = villa_obra.rects_con_huecos(-5.9, 1.40, 0.6, 4.72, [circ.HUECO_RAMPA, *circ.HUECOS_ESCALERA])
+    piezas += [(-5.9, -5.0, -4.4, 0.6), (-3.1, -1.45, -2.0, 0.6)]           # pasillo al hijo · entrada de la suite
+    for k, r in enumerate(piezas): _losa_piso(f"mu_piso_circulacion_{k}", *r, z, m, col)
+    print(f"[materia] hall y pasillos: baldosa clara ({len(piezas)} piezas) — elección de Claude, sin fuente")
+
+
 def _losa_piso(nombre, x0, x1, z0, z1, h, material, col):
     me = bpy.data.meshes.new(nombre); bm = bmesh.new()
     r = bmesh.ops.create_cube(bm, size=1.0)
@@ -272,7 +286,7 @@ def cielo_raso_blanco():
 def aplicar(col, y_losa, y_techo, h_pilotis=3.07):
     dinteles(col, (h_pilotis - 0.2, y_techo - 0.01), pisos=(0.05, y_losa + 0.012))    # antes de pintar: la pintura los alcanza
     piso_vestibulo(col); rampa_diagonal(y_losa); salon(y_losa, y_techo); cocina(y_losa, y_techo)
-    verde_solo_afuera(h_pilotis); cielo_raso_blanco(); cuartos(y_losa, y_techo, col); puertas(col, (0.05, y_losa + 0.012))
+    verde_solo_afuera(h_pilotis); cielo_raso_blanco(); cuartos(y_losa, y_techo, col); circulacion(y_losa, col); puertas(col, (0.05, y_losa + 0.012))
 
 
 def _circuncentro(a, b, c):
