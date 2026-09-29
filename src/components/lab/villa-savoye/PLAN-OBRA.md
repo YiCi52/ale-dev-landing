@@ -221,3 +221,11 @@ Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
 - Cámara de verificación del baño: `VILLA_CAM=libre VILLA_CAM_POS="-1.6,-5.3,4.2" VILLA_CAM_MIRA="-3.6,-4.9,3.75" VILLA_CAM_LENTE=18` (≈ S8 7). Ojo: x −1,25…−1,4 es el muro de la rampa, la cámara no puede ir ahí.
 - **Baño releído contra S8 7 lado a lado (29-sep, pedido por Alejandro "¿seguro así es?"):** la tina va JUNTO al diván (franja azul delgada) con la cabecera cerca del muro del fondo; plataforma en L (deja piso blanco atrás a la izquierda); radiador contra el muro lateral, WC/bidé y lavamanos de pedestal atrás a la izquierda; diván ALTO contra el muro del fondo y bajando al nivel de la plataforma (estaba al revés); azulejo de muro en retícula sin trabar; piso blanco de 15 cm. ⚠️ Conflicto: el CMN (planta esquemática ±0,3 m) ponía la tina en x −4,65…−4,0 → gana la foto.
 - **Mosaico vidriado** (`villa_bano._mosaico`): tono por tesela con curva en S (algunas bien distintas), brillo del esmalte por tesela (0,06–0,22) + capa de vidriado, teselas desniveladas y junta hundida.
+
+## MÉTODO DESDE EL 29-SEP (lección L-052, obligatorio en esta obra y en los labs siguientes)
+1. Al empezar un recinto: inventario de las fotos que lo muestran (S8/S9 por número).
+2. Por elemento: planta + sección (corte, fachada o foto) + foto de ESE elemento. El DWG corta a 1 m: dos líneas paralelas pueden ser muro, antepecho, muro con ventana, mueble fijo o puerta cerrada. No se extruye a techo sin sección.
+3. Color y material: por foto con orientación. Foto directa > texto; el conflicto se anota.
+4. "Sin fuente" solo tras revisar todas las fotos del recinto; si se elige, se marca INTERPRETACIÓN.
+5. El recinto se cierra con un render desde el ángulo de una foto real, lado a lado.
+Correcciones en curso: `expediente/fidelidad-2026-09-29.md` (orden: rampa → colores → piezas que faltan → kiosque/escalera/terraza → detalles; cocina DESPUÉS de la fase 5, decisión de Alejandro).
