@@ -220,7 +220,7 @@ def cuartos(y_losa, y_techo, col):
     # milímetro más arriba porque se monta sobre el parqué de la suite)
     tostada = baldosa("m_baldosa_cocina", (0.50, 0.36, 0.24), (0.46, 0.33, 0.22), (0.30, 0.25, 0.20), 0.20, 0.4)
     _losa_piso("mu_piso_cocina", -9.30, -4.79, 4.86, 10.56, z, tostada, col)
-    banio = baldosa("m_baldosa_bano", (0.84, 0.84, 0.81), (0.80, 0.80, 0.78), (0.62, 0.62, 0.60), 0.10, 0.2)
+    banio = baldosa("m_baldosa_bano", (0.84, 0.84, 0.81), (0.80, 0.80, 0.78), (0.62, 0.62, 0.60), 0.15, 0.2)   # blanca de 15 cm [S8 7]
     _losa_piso("mu_piso_bano14", -9.30, -6.05, -4.62, -3.28, z, banio, col)
     _losa_piso("mu_piso_bano_suite", -4.65, -2.30, -6.10, -3.30, z + 0.003, banio, col)
     losa_t = bpy.data.materials.get("mu_losa_terraza")
