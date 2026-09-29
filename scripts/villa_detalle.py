@@ -41,16 +41,45 @@ def _cuero(nombre, rgb):
     return m
 
 
+def _pony(nombre):
+    """Piel de vaca (pony) de la LC4 del museo [S8 28–30]: blanca con manchas café oscuro de borde irregular, pelo corto
+    (poco brillo, sin la capa satinada del cuero)."""
+    m, b = _principled(nombre, (0.78, 0.74, 0.68), 0.7)
+    nt = m.node_tree; tc = nt.nodes.new("ShaderNodeTexCoord")
+    mancha = nt.nodes.new("ShaderNodeTexNoise"); mancha.inputs["Scale"].default_value = 2.2
+    mancha.inputs["Detail"].default_value = 6.0; mancha.inputs["Roughness"].default_value = 0.62
+    nt.links.new(tc.outputs["Object"], mancha.inputs["Vector"])
+    corte = nt.nodes.new("ShaderNodeValToRGB")
+    corte.color_ramp.elements[0].position = 0.50; corte.color_ramp.elements[0].color = (0.78, 0.74, 0.68, 1)
+    corte.color_ramp.elements[1].position = 0.53; corte.color_ramp.elements[1].color = (0.07, 0.045, 0.03, 1)
+    nt.links.new(mancha.outputs["Fac"], corte.inputs["Fac"]); nt.links.new(corte.outputs["Color"], b.inputs["Base Color"])
+    pelo = nt.nodes.new("ShaderNodeTexNoise"); pelo.inputs["Scale"].default_value = 400.0
+    nt.links.new(tc.outputs["Object"], pelo.inputs["Vector"])
+    bp = nt.nodes.new("ShaderNodeBump"); bp.inputs["Strength"].default_value = 0.12
+    nt.links.new(pelo.outputs["Fac"], bp.inputs["Height"]); nt.links.new(bp.outputs["Normal"], b.inputs["Normal"])
+    b.inputs["Sheen Weight"].default_value = 0.4
+    return m
+
+
+def _vidrio_mesa(nombre):
+    m, b = _principled(nombre, (0.85, 0.92, 0.9), 0.02)
+    b.inputs["Transmission Weight"].default_value = 1.0; b.inputs["IOR"].default_value = 1.52
+    return m
+
+
 def materiales():
     return {
         "cromo": _principled("mu_cromo", (0.92, 0.92, 0.93), 0.07, 1.0)[0],
         "acero_negro": _principled("mu_acero_negro", (0.02, 0.02, 0.022), 0.35, 0.6)[0],
         "cognac": _cuero("mu_cognac", (0.33, 0.10, 0.035)),
         "cuero_negro": _cuero("mu_cuero_negro", (0.018, 0.016, 0.015)),
+        "pony": _pony("mu_pony"),
+        "vidrio_mesa": _vidrio_mesa("mu_vidrio_mesa"),
         "haya": _principled("mu_haya", (0.23, 0.11, 0.045), 0.38)[0],      # madera curvada Thonet
         "lana": _principled("mu_lana", (0.62, 0.57, 0.48), 0.95)[0],
         "nogal": _principled("mu_nogal", (0.10, 0.055, 0.03), 0.3)[0],
-        "rejilla": _principled("mu_rejilla", (0.80, 0.79, 0.76), 0.5, 0.3)[0],
+        "rejilla": _principled("mu_rejilla", (0.52, 0.53, 0.53), 0.45, 0.3)[0],      # radiadores GRISES [S8]
+        "canaleta": _principled("mu_canaleta", (0.62, 0.63, 0.64), 0.3, 0.8)[0],
         "hormigon_claro": _principled("mu_hormigon_claro", (0.72, 0.70, 0.66), 0.9)[0],
         "follaje": _principled("mu_follaje", (0.12, 0.16, 0.10), 0.7)[0],
         "flor": _principled("mu_lavanda", (0.30, 0.22, 0.45), 0.8)[0],
@@ -117,7 +146,9 @@ def lc2(nombre, loc, rot, M, col):
     x0, x1, y0, y1 = -w / 2, w / 2, -d / 2, d / 2
     zb, zt = 0.17, 0.62
     p = [tubo(f"{nombre}_marco_bajo", [(x0, y0, zb), (x1, y0, zb), (x1, y1, zb), (x0, y1, zb), (x0, y0, zb)], r, M["cromo"], col),
-         tubo(f"{nombre}_marco_alto", [(x0, y0, zt), (x1, y0, zt), (x1, y1, zt), (x0, y1, zt), (x0, y0, zt)], r, M["cromo"], col)]
+         # arriba el marco es una U ABIERTA AL FRENTE (brazos + respaldo): cerrado, su lado delantero cruzaba el
+         # asiento a 62 cm (la "barra que atraviesa la silla" que vio Alejandro)
+         tubo(f"{nombre}_marco_alto", [(x0, y0, zt), (x0, y1, zt), (x1, y1, zt), (x1, y0, zt)], r, M["cromo"], col)]
     for (x, y) in [(x0, y0), (x1, y0), (x0, y1), (x1, y1)]:
         p.append(tubo(f"{nombre}_pata", [(x, y, 0.0), (x, y, zt)], r, M["cromo"], col))
     ga = 0.13                                   # grueso del cojín de brazo
@@ -160,7 +191,7 @@ def lc4(nombre, loc, rot, M, col):
     bm.to_mesh(me); bm.free()
     o.modifiers.new("suave", "SUBSURF").levels = 2
     for pg in me.polygons: pg.use_smooth = True
-    me.materials.append(M["cuero_negro"]); p.append(o)
+    me.materials.append(M["pony"]); p.append(o)                          # la del museo es de piel de pony [S8]
     p.append(cojin(f"{nombre}_almohada", -0.8, -0.62, -0.2, 0.2, 0.70, 0.84, M["cuero_negro"], col, 0.06))
     return _agrupar(p, nombre, loc, rot, col)
 
@@ -179,7 +210,8 @@ def thonet(nombre, loc, rot, M, col):
 
 def mesa(nombre, loc, rot, M, col, largo=2.1, fondo=0.82):
     """Mesa de comedor: tablero de nogal sobre caballetes de tubo negro (la LC6 es de esta familia)."""
-    p = [cojin(f"{nombre}_tablero", -largo / 2, largo / 2, -fondo / 2, fondo / 2, 0.70, 0.73, M["nogal"], col, 0.006)]
+    # LC6 del museo [S8 28–30]: tablero de VIDRIO grueso sobre base de acero negro
+    p = [cojin(f"{nombre}_tablero", -largo / 2, largo / 2, -fondo / 2, fondo / 2, 0.71, 0.73, M["vidrio_mesa"], col, 0.003)]
     for x in (-largo / 2 + 0.25, largo / 2 - 0.25):
         p.append(tubo(f"{nombre}_caballete", [(x, -fondo / 2 + 0.08, 0.0), (x, -fondo / 2 + 0.08, 0.70),
                                                (x, fondo / 2 - 0.08, 0.70), (x, fondo / 2 - 0.08, 0.0)], 0.016, M["acero_negro"], col))
@@ -212,13 +244,14 @@ def salon(Y_LOSA, Y_TECHO, D, M, col):
     for k in range(70):
         x = -4.6 + (13.9 * k / 69)
         cojin(f"mu_radiador_aleta_{k}", x - 0.012, x + 0.012, yr - 0.065, yr - 0.045, z + 0.14, z + 0.48, M["rejilla"], col, 0.002)
-    # luminarias de techo: esferas opalinas (a la noche son la fuente visible; de día, apagadas pero presentes)
-    for n, (x, y) in enumerate([(-2.2, 8.4), (4.1, 7.65), (7.4, 6.4), (0.9, 9.4)]):
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.14, location=(x, y, Y_TECHO - 0.35))
-        o = bpy.context.object; o.name = f"mu_globo_{n}"
-        for c in o.users_collection: c.objects.unlink(o)
-        col.objects.link(o); o.data.materials.append(M["luz_calida"]); bpy.ops.object.shade_smooth()
-        tubo(f"mu_globo_vara_{n}", [(x, y, Y_TECHO - 0.21), (x, y, Y_TECHO)], 0.006, M["acero_negro"], col)
+    # LUMINARIA: tubo lineal suspendido de varillas que corre a lo largo del salón [S3 "en forme de gouttière";
+    # S8 28–30]. Los globos de antes estaban MAL (nivel-1-principal.md). Canaleta metálica abierta arriba (luz
+    # indirecta al cielo raso) con el tubo emisor adentro. Largo y posición = lectura de las fotos (interpretación).
+    yl, zl, x0l, x1l = 7.9, Y_TECHO - 0.45, -3.8, 8.6
+    cojin("mu_canaleta", x0l, x1l, yl - 0.07, yl + 0.07, zl - 0.06, zl, M["canaleta"], col, 0.004)
+    cojin("mu_canaleta_luz", x0l + 0.05, x1l - 0.05, yl - 0.05, yl + 0.05, zl - 0.005, zl + 0.004, M["luz_calida"], col, 0.002)
+    for n, x in enumerate([x0l + 0.4, (x0l + x1l) / 2, x1l - 0.4]):
+        tubo(f"mu_canaleta_vara_{n}", [(x, yl, zl), (x, yl, Y_TECHO)], 0.005, M["acero_negro"], col)
 
 
 def terraza(Y_LOSA, M, col):

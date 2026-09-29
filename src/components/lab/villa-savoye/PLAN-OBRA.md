@@ -21,7 +21,7 @@
 | 1 | Planos | Los 3 niveles verificados contra los planos originales (PLANTA.md corregido) | ✅ cerrada 28-sep — muros en metros en `expediente/dwg-muros.json`; huella 19 × 21,5; orientación ⚠️ |
 | 2 | Obra gris | Planta baja → nivel principal → cubierta, cada una verificada contra fotos | **en curso** — planta baja ✅ desde el DWG (`scripts/villa_obra.py`: 10 muros, 21 pilotis, vidrio curvo con montantes) · nivel principal ✅ (13 muros rellenos + 12 tabiques + 9 vidrios detectados de pares de líneas; rampa 2,6 m) · cubierta ✅ (5 muros del nivel 2: pantallas del solárium con su ventana sobre el eje de la rampa, caja de la escalera, antepechos de la rampa; losa con los huecos reales de terraza y rampa) · alturas MEDIDAS en fachada 1 + corte A-A (la caja estaba 70 cm alta) · caja de escalera techada · rampa ✅ (2 entrepisos, tramos lado a lado + descanso, muro central con remate inclinado) · escalera ✅ (en U con compensadas, NO caracol) · **obra gris cerrada** → fase 3 |
 | 3 | Materia | Materiales y color por recinto | ✅ **cerrada 28-sep** — `scripts/villa_materia.py` (recintos del CMN, pisos, colores, vidrio, puertas medidas contra S8 10) |
-| 4 | Habitado | Muebles, objetos, plantas — solo con evidencia | parcial* |
+| 4 | Habitado | Muebles, objetos, plantas — solo con evidencia | **en curso** (28-sep) — salón |
 | 5 | Luz | Día y noche por recinto | parcial* |
 | 6 | Recorrido | Guion de estaciones → tramos renderizados → vistas restringidas por estación | — |
 | 7 | Web + interacción | Página, puntos con historia, hover de material | — |
@@ -201,3 +201,9 @@ Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
 - **Escalera como UN sólido continuo por tramo (28-sep):** `_tramo_continuo` arma arriba el perfil de peldaños y abajo el intradós continuo muestreado (2 por peldaño recto, 6 por compensada), con los costados triangulados; sombreado suave con aristas vivas > 35°. Se acabaron las franjas en la hélice ("se notan las partes pegadas", Alejandro).
 - **Escalera según las FOTOS (28-sep, S8 3/4/11/13), no solo el plano:** banda helicoidal exterior (sube con los peldaños +1 m y por debajo sigue el intradós) con pasamanos negro encima; el "muro de ojo" del DWG NO es muro: el centro es un hueco con baranda metálica negra (pasamanos + un barrote por peldaño). Probado y descartado: espina alabeada (moño) y muro exterior desde el piso (tambor cerrado). Baranda negra en el borde del hueco del piso principal junto al semicírculo = interpretación.
 - Pendiente (visto en S8 4): zócalo gris al pie de la banda; claraboya sobre la escalera (la caja de cubierta la tiene) → fase 5.
+- **Escalera, pendiente para la fase 6:** a Alejandro no le termina de convencer cómo conectan las barandas, pero puede ser el ángulo de cámara. Se revisa en el recorrido; si se ve raro ahí, se cambia.
+
+## Fase 4 — Habitado, primera tanda: el salón (28-sep)
+- **LC2:** el marco de arriba es una U abierta al frente (brazos + respaldo); cerrado, cruzaba el asiento (observación de Alejandro).
+- **Luminaria:** canaleta lineal metálica suspendida de 3 varillas, con tubo emisor, a lo largo del salón [S3 "en forme de gouttière", S8 28–30]; reemplaza los globos (estaban MAL). Largo/posición = lectura de fotos.
+- **LC4** en piel de pony (blanca con manchas café) [S8]; **LC6** con tablero de vidrio [S8]; **radiadores** grises [S8].
