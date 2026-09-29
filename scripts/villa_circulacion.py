@@ -221,6 +221,7 @@ def es_muro_de_rampa(x0, x1, z0, z1):
 # vestíbulo, con el espacio abierto por debajo— y esas piezas son su antepecho, que sube con los peldaños.
 # Mismo error que el muro central de la rampa. Aquí: cada vértice del contorno del plano sube a la altura del
 # peldaño que tiene al lado (+1 m de antepecho) y baja 30 cm por debajo (la zanca).
+LOSA_SOBRE = 0.24                                    # la losa que remata cada muro (3,07–3,31 / 6,44–6,66)
 ZANCA, ANTEPECHO = 0.34, 1.00                       # zanca = contrahuella + garganta: sigue el intradós
 
 
@@ -269,16 +270,68 @@ def antepechos_escalera(pisos, material, col, alto_espina=9.10):
                 if not es_de_escalera(min(xs), max(xs), min(zs), max(zs)): continue
                 ojo = max(zs) - min(zs) < 0.3                      # el muro de ojo, entre los dos tramos
                 if ojo:
-                    # ESPINA: el DWG la corta en TODOS los niveles (planta baja y principal) → muro continuo del suelo
-                    # a la losa de la caja de escalera. Alabeada entre dos tramos formaba un moño retorcido (corte
-                    # del 28-sep que pidió Alejandro). Interpretación consistente con el plano.
-                    if nivel != "nivel0": continue
-                    bajo = lambda x, z: pisos[0]
-                    alto = lambda x, z: alto_espina
-                else:
-                    bajo = lambda x, z, b=base, t=techo: max(_peldano(x, z, b, t) - ZANCA, b)
-                    alto = lambda x, z, b=base, t=techo: _peldano(x, z, b, t) + ANTEPECHO
+                    # El "muro de ojo" del DWG NO es muro: en las fotos S8 3/4/11 el centro de la escalera es un HUECO
+                    # con baranda metálica negra (ver barandas()). 28-sep: probado como muro alabeado (moño) y como
+                    # muro de piso a techo (tapaba la escalera); las dos cosas eran lecturas del plano sin la foto.
+                    continue
+                # BANDA HELICOIDAL: el muro exterior sube con los peldaños (+1 m, con pasamanos encima) y por debajo
+                # sigue el intradós [S8 4]. Probado "desde el piso" (28-sep): cerraba la escalera en un tambor.
+                bajo = lambda x, z, b=base, t=techo: max(_peldano(x, z, b, t) - ZANCA, b)
+                alto = lambda x, z, b=base, t=techo: _peldano(x, z, b, t) + ANTEPECHO
                 _prisma_alabeado(bm, p, bajo, alto)
     o = _malla("circ_escalera_antepechos", construir, material, col)
     import villa_obra; villa_obra.suavizar_curvas(o.data)
     print("[villa_circulacion] escalera exenta: antepechos que suben con los peldaños (fotos S8)")
+
+
+# ── barandas metálicas negras (fotos S8 3/4/11/13) ─────────────────────────────────────────────────────────
+def _material_negro():
+    m = bpy.data.materials.get("m_baranda") or bpy.data.materials.new("m_baranda"); m.use_nodes = True
+    b = next(n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    b.inputs["Base Color"].default_value = (0.02, 0.02, 0.022, 1); b.inputs["Roughness"].default_value = 0.35
+    b.inputs["Metallic"].default_value = 0.4
+    return m
+
+
+def _tubo(nombre, puntos, radio, material, col):
+    cu = bpy.data.curves.new(nombre, "CURVE"); cu.dimensions = "3D"
+    cu.bevel_depth = radio; cu.bevel_resolution = 3; cu.use_fill_caps = True
+    sp = cu.splines.new("POLY"); sp.points.add(len(puntos) - 1)
+    for p, q in zip(sp.points, puntos): p.co = (*q, 1)
+    o = bpy.data.objects.new(nombre, cu); col.objects.link(o); cu.materials.append(material)
+    return o
+
+
+def barandas(pisos, col, paso_barrote=1.0):
+    """Pasamanos sobre la banda exterior y baranda del lado del hueco central (pasamanos + barrotes), en tubo negro;
+    más la baranda del piso principal en el borde del hueco junto al semicírculo, donde la banda de abajo ya pasó
+    y la de arriba todavía no llega (interpretación: sin ella ese borde quedaría sin protección)."""
+    m = _material_negro(); n_b = 0
+    cx, cz = ESC_CENTRO
+    n_tot = PELDANOS_RECTOS * 2 + COMPENSADAS
+    for nivel, (base, techo) in enumerate(zip(pisos, pisos[1:])):
+        r = (techo - base) / n_tot
+        ext, inter = [], []
+        for i in range(n_tot * 4 + 1):
+            sv = i / 4; pi_, po = _borde_escalera(sv)
+            h = base + (sv + 0.5) * r
+            # exterior: sobre la banda (15 cm hacia afuera del borde del peldaño)
+            if sv <= PELDANOS_RECTOS: pe = (po[0], po[1] - 0.075)
+            elif sv <= PELDANOS_RECTOS + COMPENSADAS:
+                d = math.dist(po, (cx, cz)); pe = (cx + (po[0] - cx) * (d + 0.075) / d, cz + (po[1] - cz) * (d + 0.075) / d)
+            else: pe = (po[0], po[1] + 0.075)
+            ext.append((*pe, h + ANTEPECHO + 0.02))
+            inter.append((*pi_, h + 0.90))
+        _tubo(f"circ_pasamanos_ext_{nivel}", ext, 0.02, m, col)
+        _tubo(f"circ_pasamanos_int_{nivel}", inter, 0.018, m, col)
+        for k in range(0, n_tot, max(1, int(paso_barrote))):          # un barrote por peldaño en el lado del hueco
+            sv = k + 0.5; pi_, _ = _borde_escalera(sv)
+            _tubo(f"circ_barrote_{nivel}_{k}", [(*pi_, base + (k + 1) * r), (*pi_, base + (sv + 0.5) * r + 0.90)], 0.007, m, col)
+            n_b += 1
+    # baranda del piso principal alrededor del semicírculo (borde del hueco de la losa)
+    y = pisos[1]; rr = ESC_R + 0.20
+    arco = [(cx + rr * math.cos(a), cz + rr * math.sin(a), y + 1.0) for a in [-math.pi / 2 + math.pi * k / 24 for k in range(25)]]
+    _tubo("circ_baranda_n1", arco, 0.02, m, col)
+    for k in range(0, 25, 3):
+        x, z, _ = arco[k]; _tubo(f"circ_baranda_n1_barrote_{k}", [(x, z, y), (x, z, y + 1.0)], 0.008, m, col)
+    print(f"[villa_circulacion] barandas negras: pasamanos exterior e interior + {n_b} barrotes + borde del piso principal")

@@ -207,6 +207,7 @@ PISOS = [0.0, Y_LOSA, Y_TECHO + E_CUBIERTA]            # suelo · nivel principa
 circ.rampa(PISOS, M_BLANCO, esc.collection)
 circ.escalera(PISOS, M_BLANCO, esc.collection)
 circ.antepechos_escalera(PISOS, M_BLANCO, esc.collection, Y_TECHO + E_CUBIERTA + villa_obra.ALTO_ESCALERA - villa_obra.E_TECHO_ESCALERA)
+circ.barandas(PISOS, esc.collection)
 
 # ── terreno ───────────────────────────────────────────────────────────────
 bpy.ops.mesh.primitive_plane_add(size=160, location=(0,0,0)); bpy.context.object.name = "pradera"
