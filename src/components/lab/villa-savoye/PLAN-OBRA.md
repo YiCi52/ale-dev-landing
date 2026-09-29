@@ -213,3 +213,9 @@ Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
 - LC6 de catálogo: patas de sección ovalada, cabezales, travesaño, niveladores, vidrio de 19 mm con topes. Thonet con asiento redondo de esterilla. Mesa baja de nogal con veta. Alfombra de lana de 8 mm, pelo peinado y ribete.
 - **Lección técnica:** bisel + sombreado suave sin `harden_normals` inclina las normales de TODA la cara grande; en vidrio eso rompe la refracción y el tablero salía NEGRO. Aislado ocultando el objeto (`VILLA_OCULTAR=prefijo`, nuevo). Aplicado también a `villa_detalle.cojin`.
 - Alfombra y mesa baja: SIN evidencia en fotos (amoblado anterior) → interpretación.
+
+### Fase 4, baño de los padres (29-sep) — `scripts/villa_bano.py`
+- Fotos S8 5/7/8/26 abiertas en grande. Plataforma de mosaico azul 5×5 con la tina hundida (40 cm), dos llaves; diván de mosaico gris que ondula (perfil leído de S8 7); muros de azulejo blanco; lavamanos de pedestal, WC y radiador contra el muro del fondo; barra con cortina blanca hacia el dormitorio; claraboya con brocal sobre la plataforma (hueco en la cubierta).
+- Posiciones finas (fin de la plataforma, sanitarios, claraboya) = lectura de fotos, ±0,3 m (CMN).
+- **Lección:** la baldosa procedural en coordenadas de mundo solo servía para pisos; en caras verticales salía a rayas pálidas. `villa_materia.baldosa(caras=True)` usa (x, y) arriba y (x+y, z) en los costados.
+- Cámara de verificación del baño: `VILLA_CAM=libre VILLA_CAM_POS="-1.6,-5.3,4.2" VILLA_CAM_MIRA="-3.6,-4.9,3.75" VILLA_CAM_LENTE=18` (≈ S8 7). Ojo: x −1,25…−1,4 es el muro de la rampa, la cámara no puede ir ahí.

@@ -35,12 +35,31 @@ def _mat(nombre, color, rough, metal=0.0):
     return m, b
 
 
-def baldosa(nombre, c1, c2, junta, lado, rough, giro=0.0, bump=0.2, largo=None, traba=0.0):
-    """Baldosa procedural en coordenadas de MUNDO (continúa entre piezas), con giro opcional (la diagonal)."""
+def _pos_caras(nt, geo):
+    """Posición para texturas 2D que también sirve en caras VERTICALES: arriba/abajo usa (x, y); en las caras
+    verticales usa (x + y, z). Sin esto el ladrillo solo varía en x en un costado y sale a rayas pálidas
+    (costados del baño, 29-sep)."""
+    sp = nt.nodes.new("ShaderNodeSeparateXYZ"); nt.links.new(geo.outputs["Position"], sp.inputs["Vector"])
+    sn = nt.nodes.new("ShaderNodeSeparateXYZ"); nt.links.new(geo.outputs["Normal"], sn.inputs["Vector"])
+    ab = nt.nodes.new("ShaderNodeMath"); ab.operation = "ABSOLUTE"; nt.links.new(sn.outputs["Z"], ab.inputs[0])
+    es_tapa = nt.nodes.new("ShaderNodeMath"); es_tapa.operation = "GREATER_THAN"; es_tapa.inputs[1].default_value = 0.5
+    nt.links.new(ab.outputs[0], es_tapa.inputs[0])
+    suma = nt.nodes.new("ShaderNodeMath"); suma.operation = "ADD"
+    nt.links.new(sp.outputs["X"], suma.inputs[0]); nt.links.new(sp.outputs["Y"], suma.inputs[1])
+    lado = nt.nodes.new("ShaderNodeCombineXYZ"); nt.links.new(suma.outputs[0], lado.inputs["X"]); nt.links.new(sp.outputs["Z"], lado.inputs["Y"])
+    mx = nt.nodes.new("ShaderNodeMix"); mx.data_type = "VECTOR"
+    nt.links.new(es_tapa.outputs[0], mx.inputs["Factor"]); nt.links.new(lado.outputs["Vector"], mx.inputs[4])
+    nt.links.new(geo.outputs["Position"], mx.inputs[5])
+    return mx.outputs[1]
+
+
+def baldosa(nombre, c1, c2, junta, lado, rough, giro=0.0, bump=0.2, largo=None, traba=0.0, caras=False):
+    """Baldosa procedural en coordenadas de MUNDO (continúa entre piezas), con giro opcional (la diagonal).
+    caras=True: también en caras verticales (piezas revestidas, no solo pisos)."""
     m, b = _mat(nombre, c1, rough); nt = m.node_tree
     geo = nt.nodes.new("ShaderNodeNewGeometry")
     mp = nt.nodes.new("ShaderNodeMapping"); mp.inputs["Rotation"].default_value = (0, 0, giro)
-    nt.links.new(geo.outputs["Position"], mp.inputs["Vector"])
+    nt.links.new(_pos_caras(nt, geo) if caras else geo.outputs["Position"], mp.inputs["Vector"])
     lad = nt.nodes.new("ShaderNodeTexBrick"); lad.offset = traba; lad.squash = 1.0
     lad.inputs["Scale"].default_value = 1.0; lad.inputs["Brick Width"].default_value = largo or lado
     lad.inputs["Row Height"].default_value = lado; lad.inputs["Mortar Size"].default_value = 0.004

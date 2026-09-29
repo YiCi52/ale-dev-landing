@@ -187,10 +187,12 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,
             o = bpy.context.object; o.name = f"fa_baby_piloti_{n_p}"; o.data.materials.append(M_BLANCO)
             bpy.ops.object.shade_smooth()
 
+import villa_bano
 # ── cubierta: losa con los huecos REALES (fase 2): terraza abierta y rampa (interior de la U del DWG) ──
 HUECOS_CUBIERTA = [(1.40, 9.5, -4.57, 4.78),          # terraza: jardín suspendido, abierto al cielo
                    circ.HUECO_RAMPA,                   # la rampa llega al solárium (el descanso también: 1,5 m de altura libre si no)
-                   *circ.HUECOS_ESCALERA]              # la escalera llega adentro de su caja techada
+                   *circ.HUECOS_ESCALERA,              # la escalera llega adentro de su caja techada
+                   villa_bano.CLARABOYA]               # claraboya sobre el baño de los padres (fase 4)
 for n,(x0,x1,z0,z1) in enumerate(villa_obra.rects_con_huecos(-W/2+0.23, W/2-0.23, -D/2+0.23, D/2-0.23, HUECOS_CUBIERTA)):
     caja(f"cubierta_{n}", x0, x1, Y_TECHO-0.01, Y_TECHO+E_CUBIERTA, z0, z1, M_BLANCO)
 for nombre, x0,x1,z0,z1 in [("s",-W/2,W/2,D/2-0.22,D/2), ("n",-W/2,W/2,-D/2,-D/2+0.22),
@@ -315,6 +317,7 @@ import villa_acabados
 villa_acabados.aplicar(esc, ASSETS, M_BLANCO, M_VERDE, PISOS)
 import villa_materia                                     # fase 3: materia por recinto, solo con evidencia
 villa_materia.aplicar(esc.collection, Y_LOSA, Y_TECHO, H_PILOTIS)
+villa_bano.construir(esc.collection, Y_LOSA, Y_TECHO, E_CUBIERTA)   # fase 4: el baño de los padres
 
 # ── luz: el mismo HDRI del lab + sol calido ───────────────────────────────
 mundo = bpy.data.worlds.new("cielo"); esc.world = mundo; mundo.use_nodes = True
