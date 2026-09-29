@@ -207,3 +207,9 @@ Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
 - **LC2:** el marco de arriba es una U abierta al frente (brazos + respaldo); cerrado, cruzaba el asiento (observación de Alejandro).
 - **Luminaria:** canaleta lineal metálica suspendida de 3 varillas, con tubo emisor, a lo largo del salón [S3 "en forme de gouttière", S8 28–30]; reemplaza los globos (estaban MAL). Largo/posición = lectura de fotos.
 - **LC4** en piel de pony (blanca con manchas café) [S8]; **LC6** con tablero de vidrio [S8]; **radiadores** grises [S8].
+
+### Fase 4, muebles con detalle (29-sep) — `scripts/villa_muebles.py`
+- Tapizado de verdad (caras abombadas, hundido del asiento, vivo en el canto), cuero con arrugas; LC2 con flejes y regatones.
+- LC6 de catálogo: patas de sección ovalada, cabezales, travesaño, niveladores, vidrio de 19 mm con topes. Thonet con asiento redondo de esterilla. Mesa baja de nogal con veta. Alfombra de lana de 8 mm, pelo peinado y ribete.
+- **Lección técnica:** bisel + sombreado suave sin `harden_normals` inclina las normales de TODA la cara grande; en vidrio eso rompe la refracción y el tablero salía NEGRO. Aislado ocultando el objeto (`VILLA_OCULTAR=prefijo`, nuevo). Aplicado también a `villa_detalle.cojin`.
+- Alfombra y mesa baja: SIN evidencia en fotos (amoblado anterior) → interpretación.

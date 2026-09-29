@@ -460,6 +460,9 @@ if os.environ.get("VILLA_CAM") not in ("rincon", "planta", "corte", "rampa") and
 if os.environ.get("VILLA_CAM") == "rincon":               # prueba de techo de calidad (scripts/villa_lookdev.py)
     import villa_lookdev
     villa_lookdev.aplicar(esc, cam, cam_d, Y_TECHO + E_CUBIERTA)
+for _pref in [p for p in os.environ.get("VILLA_OCULTAR", "").split(",") if p]:   # depuración: ocultar por prefijo
+    for _o in esc.objects:
+        if _o.name.startswith(_pref): _o.hide_render = True
 if "VILLA_INSPECT" in os.environ:                     # depuración: qué objetos hay alrededor de un punto
     px, py, pz = (float(v) for v in os.environ["VILLA_INSPECT"].split(","))
     for o in esc.objects:

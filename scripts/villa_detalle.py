@@ -128,6 +128,7 @@ def cojin(nombre, x0, x1, y0, y1, z0, z1, material, col, redondeo=0.035):
     o.scale = (x1 - x0, y1 - y0, z1 - z0); o.location = ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)
     me.transform(o.matrix_basis); o.matrix_basis.identity()
     bv = o.modifiers.new("canto", "BEVEL"); bv.width = redondeo; bv.segments = 5; bv.limit_method = "ANGLE"
+    bv.harden_normals = True                      # caras grandes planas de verdad (ver villa_muebles._caja_redonda)
     for p in me.polygons: p.use_smooth = True
     me.materials.append(material); return o
 
@@ -230,14 +231,17 @@ def mesa_baja(nombre, loc, rot, M, col):
 def salon(Y_LOSA, Y_TECHO, D, M, col):
     """SALLE: X −4.79…+9.50, Y +4.78…+10.63 (PLANTA.md §2). Abre a la terraza en Y=+4.78."""
     z = Y_LOSA
-    cojin("mu_alfombra", 2.3, 5.9, 6.3, 9.0, z + 0.013, z + 0.025, M["lana"], col, 0.004)   # encima de la baldosa (z+0.012): coplanar = negro
-    lc2("mu_lc2_a", (3.1, 7.65, z), math.radians(-90), M, col)
-    lc2("mu_lc2_b", (5.1, 7.65, z), math.radians(90), M, col)
-    mesa_baja("mu_mesa_baja", (4.1, 7.65, z), 0, M, col)
+    # muebles con detalle (villa_muebles.py, 29-sep): tapizado, vivo, arrugas, lana, LC6 de catálogo, esterilla
+    import villa_muebles as vm
+    vm.arrugas(M["cognac"]); vm.arrugas(M["cuero_negro"])
+    vm.alfombra("mu_alfombra", 2.3, 5.9, 6.3, 9.0, z + 0.012, col)          # sobre la baldosa (z+0.012)
+    vm.lc2("mu_lc2_a", (3.1, 7.65, z), math.radians(-90), M, col)
+    vm.lc2("mu_lc2_b", (5.1, 7.65, z), math.radians(90), M, col)
+    vm.mesa_baja("mu_mesa_baja", (4.1, 7.65, z + 0.03), 0, M, col)           # apoyada sobre la alfombra
     lc4("mu_lc4", (7.6, 6.2, z), math.radians(-18), M, col)
-    mesa("mu_comedor", (-2.2, 8.4, z), 0, M, col)
+    vm.lc6("mu_comedor", (-2.2, 8.4, z), 0, M, col)
     for n, (x, y, r) in enumerate([(-2.8, 7.75, 0), (-1.6, 7.75, 0), (-2.8, 9.05, math.pi), (-1.6, 9.05, math.pi)]):
-        thonet(f"mu_thonet_{n}", (x, y, z), r, M, col)
+        vm.thonet(f"mu_thonet_{n}", (x, y, z), r, M, col)
     # el radiador de rejilla corrido bajo la cinta: "solo ese detalle lee esta casa de inmediato"
     yr = D / 2 - 0.19 - 0.09
     cojin("mu_radiador", -4.6, 9.3, yr - 0.05, yr + 0.05, z + 0.12, z + 0.50, M["rejilla"], col, 0.01)
