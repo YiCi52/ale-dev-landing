@@ -324,12 +324,17 @@ def barandas(pisos, col, paso_barrote=1.0):
             inter.append((*pi_, h + 0.90))
         _tubo(f"circ_pasamanos_ext_{nivel}", ext, 0.02, m, col)
         _tubo(f"circ_pasamanos_int_{nivel}", inter, 0.018, m, col)
+        # poste en cada extremo del pasamanos interior: antes terminaba en el aire (Alejandro, 28-sep)
+        for (x, z, h), piso_p in ((inter[0], base), (inter[-1], techo)):
+            _tubo(f"circ_poste_{nivel}_{len(inter) if piso_p == techo else 0}", [(x, z, piso_p), (x, z, h + 0.02)], 0.014, m, col)
         for k in range(0, n_tot, max(1, int(paso_barrote))):          # un barrote por peldaño en el lado del hueco
             sv = k + 0.5; pi_, _ = _borde_escalera(sv)
             _tubo(f"circ_barrote_{nivel}_{k}", [(*pi_, base + (k + 1) * r), (*pi_, base + (sv + 0.5) * r + 0.90)], 0.007, m, col)
             n_b += 1
     # baranda del piso principal alrededor del semicírculo (borde del hueco de la losa)
-    y = pisos[1]; rr = ESC_R + 0.20
+    # sobre el EJE de la banda (radio R + 7,5 cm): así sus dos extremos entran en la banda de los tramos rectos
+    # (la de abajo del lado B, la de arriba del lado A) en vez de quedar sueltos afuera (Alejandro, 28-sep)
+    y = pisos[1]; rr = ESC_R + 0.075
     arco = [(cx + rr * math.cos(a), cz + rr * math.sin(a), y + 1.0) for a in [-math.pi / 2 + math.pi * k / 24 for k in range(25)]]
     _tubo("circ_baranda_n1", arco, 0.02, m, col)
     for k in range(0, 25, 3):
