@@ -79,3 +79,29 @@ El patrón es el mismo de la escalera: **el plano está cortado a 1 m de altura,
 6. **Para confirmar con Alejandro o más fuentes:** #17 y #18.
 
 Cada corrección se verifica con un render desde el mismo ángulo de la foto antes de darla por hecha.
+
+---
+
+## #1 Rampa: estudio en curso (29-sep, madrugada). NO se tocó el modelo todavía (regla L-052)
+
+**Evidencia revisada en grande**
+- Fotos interiores S8 2, 20, 45, 71.
+- Fotos exteriores S9 7, 15, 22, 24.
+- Corte B-B del DWG (`dwglab-cortes.png`).
+
+**Lo que ya es seguro**
+- **La rampa del piso principal a la cubierta está abierta al cielo.** En el corte B-B no hay losa sobre el pozo, que es como está hoy el modelo.
+- **Hacia la terraza no hay muro lleno.** Visto desde la terraza (S9 15, 22, 24 y corte B-B), el lado del pozo es:
+  - una **banda blanca diagonal**, que es el canto del tramo más su antepecho;
+  - **triángulos de vidrio con barras horizontales oscuras** por encima y por debajo de esa banda.
+- **Un tramo es exterior** (S9 7): losetas en diagonal y baranda de tubos claros sobre un antepecho bajo de un lado. Del otro lado, paños de vidrio triangulares con marco blanco.
+- **Desde el hall del piso principal** (S8 45) se mira a la rampa a través de un vidrio con barras horizontales sobre un antepecho.
+- **Los tramos interiores de planta baja al piso principal** (S8 2, 20, 71) tienen piso oscuro y antepecho inclinado con pasamanos negro. El muro central tiene una abertura triangular sobre el antepecho, como ya está modelado.
+
+**Lo que falta resolver antes de construir**
+- **Cuál de los dos tramos del piso principal a la cubierta es exterior y cuál interior**, y dónde va la puerta entre los dos.
+- El sentido de subida del modelo (tramo oeste hacia el fondo, tramo este de vuelta) no cierra con la foto S9 7 si el vidrio va en el muro central. Leído al pie de la letra, el tramo oeste tendría 1,46 m de altura libre bajo la cubierta al llegar al descanso, así que ese tramo no puede estar techado.
+- **Siguiente paso:** leer la planta del nivel 2 del DWG en el pozo (líneas de vidrio y líneas diagonales de la capa 2, x 0,07…1,77) y el corte A-A juntos. Recién ahí construir:
+  - vidrio con barras horizontales donde corresponda;
+  - antepechos inclinados con pasamanos negro hacia el hall;
+  - tramo exterior con baranda de tubos claros.
