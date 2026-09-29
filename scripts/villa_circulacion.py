@@ -124,46 +124,70 @@ def _caja(bm, x0, x1, z0, z1, h0, h1):
 GARGANTA = 0.16                                        # espesor de la losa de la escalera, medido en vertical
 
 
-def _peldano_liso(bm, pts, s_pts, top, base, r):
-    """Un peldaño cuya cara de ABAJO sigue la losa inclinada continua de la escalera (bajo(s) = base + s·r − garganta):
-    la escalera real tiene el intradós liso [S8 4/11]; con bloques sueltos salía un serrucho por debajo."""
+def _borde_escalera(sv):
+    """Punto interior (junto a la espina) y exterior (contra el muro) del recorrido en la posición sv (en peldaños).
+    Tramo A 0–6 hacia +x · compensadas 6–12 en el semicírculo · tramo B 12–18 hacia −x. Continuo en sv."""
+    cx, cz = ESC_CENTRO; huella = (cx - ESC_X0) / PELDANOS_RECTOS
+    (a0, a1), (b0, b1) = ESC_TRAMO_A, ESC_TRAMO_B
+    if sv <= PELDANOS_RECTOS:
+        x = ESC_X0 + sv * huella; return (x, a1), (x, a0)
+    if sv <= PELDANOS_RECTOS + COMPENSADAS:
+        t = (sv - PELDANOS_RECTOS) / COMPENSADAS; th = -math.pi / 2 + math.pi * t
+        r = ESC_R - 0.01
+        return (cx, a1 + (b0 - a1) * t), (cx + r * math.cos(th), cz + r * math.sin(th))
+    x = cx - (sv - PELDANOS_RECTOS - COMPENSADAS) * huella; return (x, b0), (x, b1)
+
+
+def _tramo_continuo(bm, base, techo, sub_recto=2, sub_giro=6):
+    """La escalera de un entrepiso como UN solo sólido: arriba los peldaños (huella + contrahuella), abajo el intradós
+    CONTINUO (base + s·r − garganta), y los dos costados cerrados. Antes eran 18 bloques pegados: por debajo se veían
+    las uniones (Alejandro, 28-sep: "se notan las partes pegadas"). El intradós se muestrea fino en las compensadas
+    para que la hélice salga lisa."""
     from mathutils.geometry import tessellate_polygon
-    bajo = [max(base + sv * r - GARGANTA, base) for sv in s_pts]
-    ab = [bm.verts.new((x, z, b)) for (x, z), b in zip(pts, bajo)]; ar = [bm.verts.new((x, z, top)) for x, z in pts]
-    for i, j, k in tessellate_polygon([[(x, z, 0.0) for x, z in pts]]):
-        for tri in ((ab[k], ab[j], ab[i]), (ar[i], ar[j], ar[k])):
-            try: bm.faces.new(tri)
-            except ValueError: pass
-    n = len(pts)
-    for k in range(n):
-        try: bm.faces.new((ab[k], ab[(k + 1) % n], ar[(k + 1) % n], ar[k]))
+    n_tot = PELDANOS_RECTOS * 2 + COMPENSADAS; r = (techo - base) / n_tot
+    perfil = [(0.0, base)]                                      # perfil de arriba: (s, altura)
+    muestras = [0.0]                                             # s donde se muestrea el intradós
+    for k in range(n_tot):
+        sub = sub_giro if PELDANOS_RECTOS <= k < PELDANOS_RECTOS + COMPENSADAS else sub_recto
+        perfil.append((float(k), base + (k + 1) * r))
+        for j in range(1, sub + 1):
+            sv = k + j / sub; perfil.append((sv, base + (k + 1) * r)); muestras.append(sv)
+    bajo = lambda sv: max(base + sv * r - GARGANTA, base)
+    T = {lado: [] for lado in (0, 1)}; B = {lado: [] for lado in (0, 1)}
+    for sv, h in perfil:
+        pts = _borde_escalera(sv)
+        for lado in (0, 1): T[lado].append(bm.verts.new((*pts[lado], h)))
+    for sv in muestras:
+        pts = _borde_escalera(sv)
+        for lado in (0, 1): B[lado].append(bm.verts.new((*pts[lado], bajo(sv))))
+    def cara(vs):
+        try: bm.faces.new(vs)
         except ValueError: pass
+    for i in range(len(perfil) - 1):                           # huellas y contrahuellas
+        cara((T[0][i], T[1][i], T[1][i + 1], T[0][i + 1]))
+    for j in range(len(muestras) - 1):                         # intradós
+        cara((B[0][j], B[0][j + 1], B[1][j + 1], B[1][j]))
+    cara((T[0][-1], T[1][-1], B[1][-1], B[0][-1]))              # testa de llegada
+    for lado in (0, 1):                                          # costados: el perfil de arriba + el intradós al revés
+        dom = [(sv, h) for sv, h in perfil] + [(sv, bajo(sv)) for sv in reversed(muestras)]
+        vs = T[lado] + list(reversed(B[lado]))
+        limpio_d, limpio_v = [], []
+        for d, v in zip(dom, vs):
+            if not limpio_d or math.dist(d, limpio_d[-1]) > 1e-6: limpio_d.append(d); limpio_v.append(v)
+        for i, j, k in tessellate_polygon([[(a, b, 0.0) for a, b in limpio_d]]):
+            cara((limpio_v[i], limpio_v[j], limpio_v[k]) if lado else (limpio_v[k], limpio_v[j], limpio_v[i]))
 
 
 def escalera(pisos, material, col):
-    """Por entrepiso: 6 peldaños por el tramo sur hacia el este, 6 compensadas en el semicírculo, 6 de vuelta.
-    `s` = posición en peldaños a lo largo del recorrido (0 al arranque, 18 al llegar)."""
-    cx, cz = ESC_CENTRO
-    huella = (cx - ESC_X0) / PELDANOS_RECTOS
+    """Un sólido continuo por entrepiso (ver _tramo_continuo). Sombreado suave con aristas vivas: los cantos de los
+    peldaños quedan nítidos y el intradós helicoidal, liso."""
     def construir(bm):
-        for base, techo in zip(pisos, pisos[1:]):
-            r = (techo - base) / (PELDANOS_RECTOS * 2 + COMPENSADAS)
-            (a0, a1), (b0, b1) = ESC_TRAMO_A, ESC_TRAMO_B
-            for k in range(PELDANOS_RECTOS):                        # tramo A: hacia +x
-                xa, xb = ESC_X0 + k * huella, ESC_X0 + (k + 1) * huella
-                _peldano_liso(bm, [(xa, a0), (xb, a0), (xb, a1), (xa, a1)], [k, k + 1, k + 1, k], base + (k + 1) * r, base, r)
-            for k in range(COMPENSADAS):                            # semicírculo: de −90° a +90°
-                s0 = PELDANOS_RECTOS + k
-                angs = [-math.pi / 2 + math.pi * (k + t / 4) / COMPENSADAS for t in range(5)]
-                arco = [(cx + (ESC_R - 0.01) * math.cos(a), cz + (ESC_R - 0.01) * math.sin(a)) for a in angs]
-                _peldano_liso(bm, [(cx, cz)] + arco, [s0 + 0.5] + [s0 + t / 4 for t in range(5)],
-                              base + (s0 + 1) * r, base, r)
-            for k in range(PELDANOS_RECTOS):                        # tramo B: de vuelta hacia −x
-                s0 = PELDANOS_RECTOS + COMPENSADAS + k
-                xa, xb = cx - k * huella, cx - (k + 1) * huella
-                _peldano_liso(bm, [(xb, b0), (xa, b0), (xa, b1), (xb, b1)], [s0 + 1, s0, s0, s0 + 1], base + (s0 + 1) * r, base, r)
-    _malla("circ_escalera", construir, material, col)
-    print(f"[villa_circulacion] escalera en U: {len(pisos) - 1} entrepisos · 18 contrahuellas · intradós liso")
+        for base, techo in zip(pisos, pisos[1:]): _tramo_continuo(bm, base, techo)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+        bmesh.ops.dissolve_degenerate(bm, dist=1e-5, edges=bm.edges)
+    o = _malla("circ_escalera", construir, material, col)
+    o.data.shade_smooth(); o.data.set_sharp_from_angle(angle=math.radians(35))
+    print(f"[villa_circulacion] escalera en U: {len(pisos) - 1} entrepisos · un sólido continuo por tramo, intradós liso")
 
 
 def tapas_escalera(h0, h1, material, col, nombre):
