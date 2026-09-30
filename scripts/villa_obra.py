@@ -256,6 +256,41 @@ def pano_trasero_pb(m_vidrio, col, x=(-3.30, 3.30), alto=(0.25, 2.62), y=(-10.80
     print("[villa_obra] planta baja: paño vidriado trasero con barras blancas afuera y negras adentro")
 
 
+def ventanas_bloque_servicio(m_vidrio, col, x=(-6.40, -6.05), alto=(1.05, 2.35),
+                             tramos=((-7.08, -5.08), (-4.41, -2.17))):
+    """#4 (30-sep): el bloque verde de servicio lleva ventanas de cuadrícula oscura [e03, e04, e50]; el DWG (nivel 0,
+    capa de vidrio) las dibuja en x −6,35…−6,15 con estos largos. Alto = lectura de e04 (INTERPRETACIÓN ±0,15 m)."""
+    negra = bpy.data.materials.get("pb_montante")
+    for n, (a, b) in enumerate(tramos):
+        hueco = _prisma(f"tmp_hueco_serv_{n}", [(x[0], a), (x[1], a), (x[1], b), (x[0], b)], alto[0], alto[1], m_vidrio, col)
+        for o in [o for o in col.objects if o.name.startswith("pb_muro") and o.type == "MESH"]:
+            bb = [o.matrix_world @ mathutils.Vector(c) for c in o.bound_box]
+            if min(v.x for v in bb) < x[1] and max(v.x for v in bb) > x[0] and min(v.y for v in bb) < b and max(v.y for v in bb) > a:
+                bpy.context.view_layer.objects.active = o
+                md = o.modifiers.new("ventana", "BOOLEAN"); md.operation = "DIFFERENCE"; md.solver = "EXACT"; md.object = hueco
+                bpy.ops.object.modifier_apply(modifier=md.name)
+        bpy.data.objects.remove(hueco, do_unlink=True)
+        # el DWG deja el vano ABIERTO de piso a techo (corte a 1 m por la ventana): antepecho y dintel de muro
+        verde = bpy.data.materials.get("verde")
+        for k, (h0, h1) in enumerate(((0.0, alto[0]), (alto[1], 2.87))):
+            _prisma(f"pb_muro_serv_{n}_{k}", [(-6.35, a), (-6.15, a), (-6.15, b), (-6.35, b)], h0, h1, verde, col)
+        xc = (x[0] + x[1]) / 2
+        _prisma(f"pb_ventana_serv_{n}_vidrio", [(xc - 0.006, a), (xc + 0.006, a), (xc + 0.006, b), (xc - 0.006, b)],
+                alto[0], alto[1], m_vidrio, col)
+        me = bpy.data.meshes.new(f"pb_ventana_serv_{n}_reja"); bm = bmesh.new()
+        def barra(a0, a1, b0, b1, h0, h1):
+            r = bmesh.ops.create_cube(bm, size=1.0)
+            for v in r["verts"]:
+                v.co = ((a0 + a1) / 2 + v.co.x * (a1 - a0), (b0 + b1) / 2 + v.co.y * (b1 - b0), (h0 + h1) / 2 + v.co.z * (h1 - h0))
+        nv = max(2, round((b - a) / 0.42))
+        for k in range(nv + 1):
+            u = a + (b - a) * k / nv; barra(xc - 0.03, xc + 0.03, u - 0.02, u + 0.02, alto[0], alto[1])
+        for k in range(4):
+            h = alto[0] + (alto[1] - alto[0]) * k / 3; barra(xc - 0.03, xc + 0.03, a, b, h - 0.02, h + 0.02)
+        bm.to_mesh(me); bm.free(); o = bpy.data.objects.new(me.name, me); col.objects.link(o); me.materials.append(negra)
+    print(f"[villa_obra] bloque de servicio: {len(tramos)} ventanas de cuadrícula (DWG nivel 0)")
+
+
 def ventana_terraza(z0, m_vidrio, col, x=(2.80, 3.70), alto=(1.05, 1.85), y=(-4.80, -4.55)):
     """#19 (30-sep): ventana cuadrada OSCURA en el muro de la terraza del lado del boudoir, sobre la mitad izquierda
     de la jardinera en U [e11, e15, e18, e27, e35, e37]. Tamaño y posición = lectura de foto (INTERPRETACIÓN ±0,15 m)."""

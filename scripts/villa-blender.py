@@ -131,7 +131,7 @@ H_RDC = H_PILOTIS - 0.2
 sys.path.insert(0, os.path.join(RAIZ, "scripts"))
 import villa_obra
 villa_obra.planta_baja(H_RDC, H_PILOTIS, M_VERDE, M_BLANCO, M_VIDRIO, esc.collection)
-villa_obra.pano_trasero_pb(M_VIDRIO, esc.collection)                        # #22: lado 2 vidriado [e02, e22, e24]
+villa_obra.pano_trasero_pb(M_VIDRIO, esc.collection); villa_obra.ventanas_bloque_servicio(M_VIDRIO, esc.collection)                        # #22: lado 2 vidriado [e02, e22, e24]
 
 # ── losa del nivel principal: huecos REALES de rampa y escalera (fase 2, del DWG) ──────
 import villa_circulacion as circ
@@ -487,6 +487,8 @@ if os.environ.get("VILLA_CAM") == "rincon":               # prueba de techo de c
 for _pref in [p for p in os.environ.get("VILLA_OCULTAR", "").split(",") if p]:   # depuración: ocultar por prefijo
     for _o in esc.objects:
         if _o.name.startswith(_pref): _o.hide_render = True
+if os.environ.get("VILLA_SCRIPT_EXTRA"):                  # depuración: correr un script sobre la escena armada
+    exec(open(os.environ["VILLA_SCRIPT_EXTRA"]).read()); raise SystemExit(0)
 if os.environ.get("VILLA_CHEQUEO"):                      # chequeo geométrico de toda la obra (no renderiza)
     import villa_chequeo; villa_chequeo.correr(); villa_chequeo.cobertura(); raise SystemExit(0)
 if "VILLA_INSPECT" in os.environ:                     # depuración: qué objetos hay alrededor de un punto
