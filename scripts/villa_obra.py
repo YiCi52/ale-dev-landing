@@ -208,6 +208,26 @@ def columnas_nivel(z0, z1, W, D, muros, rects, material, col, radio=0.14):
     return hechas
 
 
+def machon_terraza(z0, z1, m_muro, col, puerta=(3.70, 4.35), h_puerta=2.10):
+    """#23 (30-sep): entre el fin del muro del pozo (z 2,65, DWG) y la vidriera (4,65) el modelo dejaba un hueco de
+    piso a techo y desde la terraza se veía el hall. En S9 23, e16 y e25 es un MACHÓN blanco macizo, en el plano del
+    muro del pozo, con una puerta angosta OSCURA del lado de la vidriera. El DWG (corte a 1 m) no dibuja nada ahí.
+    Ancho y posición de la puerta = lectura de foto (INTERPRETACIÓN, ±0,15 m)."""
+    x0, x1, a, b = 1.25, 1.40, 2.65, VIDRIERA_Z - 0.05
+    p0, p1 = puerta
+    piezas = [_prisma("n1_machon_0", [(x0, a), (x1, a), (x1, p0), (x0, p0)], z0, z1, m_muro, col),
+              _prisma("n1_machon_1", [(x0, p1), (x1, p1), (x1, b), (x0, b)], z0, z1, m_muro, col),
+              _prisma("n1_machon_2", [(x0, p0 - 0.01), (x1, p0 - 0.01), (x1, p1 + 0.01), (x0, p1 + 0.01)],
+                      z0 + h_puerta, z1, m_muro, col)]
+    unir(piezas)
+    oscuro = bpy.data.materials.get("m_puerta_exterior") or bpy.data.materials.new("m_puerta_exterior")
+    oscuro.use_nodes = True
+    bsdf = next(n for n in oscuro.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    bsdf.inputs["Base Color"].default_value = (0.025, 0.025, 0.028, 1); bsdf.inputs["Roughness"].default_value = 0.45
+    _prisma("n1_machon_puerta", [(x1 - 0.045, p0), (x1 - 0.005, p0), (x1 - 0.005, p1), (x1 - 0.045, p1)],
+            z0 + 0.01, z0 + h_puerta - 0.004, oscuro, col)
+
+
 def vidriera_terraza(z0, z1, m_vidrio, col, paneles=4):
     """La vidriera corrediza del salón a la terraza: 9 × 3 m [S5][S6], piso a cielo raso, en la franja que dibuja el
     DWG (z 4,65…4,75, ver VIDRIERA_Z). El DWG la arranca en x 0,07; aquí sigue en 1,40 hasta resolver #16."""
@@ -286,6 +306,7 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
     for n, (x0, x1, a, b) in enumerate(vidrios):
         _prisma(f"n1_vidrio_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z1, m_vidrio or m_muro, col)
     if m_vidrio: vidriera_terraza(z0, z1, m_vidrio, col)
+    machon_terraza(z0, z1, m_muro, col)
     columnas = columnas_nivel(z0, z1, W, D, interiores, rects, m_muro, col)
     # Tabique del BAÑO n.º 14 (compartido hijo/huéspedes): la planta oficial del CMN lo dibuja entre el cuarto del
     # hijo y el baño; el DWG no. Puerta hacia el cuarto del hijo junto al pasillo: posición = interpretación.
@@ -304,7 +325,7 @@ VENTANA_SOLARIUM = (-1.39, 0.36, 8.25, 8.40)
 # La llegada de la escalera caracol a la cubierta: una caja TECHADA (corte A-A del DWG: losa de 9,10 a 9,30),
 # más baja que las pantallas (9,40). Planta = la U de la pieza 2 del nivel 2, con su remate redondo.
 CAJA_ESCALERA = (-6.05, -2.25, 0.65, 2.45)
-CHIMENEA, ALTO_CHIMENEA = (3.69, 3.98, 9.36, 9.62), 3.25     # remata ~9,9 m, medio metro sobre las pantallas
+CHIMENEA, ALTO_CHIMENEA = (3.69, 3.98, 9.36, 9.62), 3.65     # #14 (30-sep): ~0,9 m sobre las pantallas, medido en e28 (±0,2) y visto en e16, e25, e38
 ALTO_ESCALERA, E_TECHO_ESCALERA = 2.64, 0.20
 
 
