@@ -465,6 +465,12 @@ def muros_pozo(pisos, techos, m_muro, m_vidrio, col):
     zs = paso(-4.56, 2.72)
     _vidrio(bmv, bmb, X_ESTE, zs, lambda z: b1, lambda z: max(s(z, b1, b2, 1) - E_LOSA, b1))
     _banda(bm, X_ESTE, zs, lambda z: max(s(z, b1, b2, 1) - E_LOSA, b1), lambda z: s(z, b1, b2, 1) + 1.0)
+    # 30-sep (#1 reabierto): ARRIBA del antepecho que sube, vidrio con barras hasta el cielo raso. Lo muestran S9 23
+    # desde la terraza (el "triángulo" más ancho junto al machón), S8 31/45 desde adentro y el corte B-B del DWG
+    # (dos triángulos rayados en ese muro: este y el de bajo el tramo). Antes quedaba abierto.
+    zs_arriba = [z for z in zs if s(z, b1, b2, 1) + 1.0 < c1 - 0.03]
+    if len(zs_arriba) > 1:
+        _vidrio(bmv, bmb, X_ESTE, zs_arriba, lambda z: s(z, b1, b2, 1) + 1.0, lambda z: c1)
     zs = paso(-2.08, 2.62)
     _banda(bm, X_OESTE, zs, lambda z: b1, lambda z: b1 + 0.9)
     _vidrio(bmv, bmb, X_OESTE, zs, lambda z: b1 + 0.9, lambda z: c1)
