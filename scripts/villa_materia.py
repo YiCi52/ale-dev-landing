@@ -248,6 +248,9 @@ def circulacion(y_losa, col):
     piezas = villa_obra.rects_con_huecos(-5.9, 1.40, 0.6, 4.72, [circ.HUECO_RAMPA, *circ.HUECOS_ESCALERA])
     piezas += [(-5.9, -5.0, -4.4, 0.6), (-3.1, -1.45, -2.0, 0.6)]           # pasillo al hijo · entrada de la suite
     for k, r in enumerate(piezas): _losa_piso(f"mu_piso_circulacion_{k}", *r, z, m, col)
+    # la cara de arriba de la losa asomaba OCRE (material del salón) en la franja entre el piso del hall y los
+    # bordes de los huecos de escalera y rampa (30-sep, render de la escalera): lleva la misma baldosa del hall
+    n_l = sum(_asignar_caras(o, m, lambda c, nn: nn.z > 0.5) for o in _objetos(("losa_nobile",)))
     print(f"[materia] hall y pasillos: baldosa clara ({len(piezas)} piezas) — elección de Claude, sin fuente")
 
 
@@ -303,6 +306,24 @@ def verde_solo_afuera(h_pilotis):
     print(f"[materia] planta baja: {n} caras interiores en blanco (el verde queda solo afuera)")
 
 
+def escalera_oscura():
+    """#8 (30-sep): huellas y contrahuellas de BALDOSA oscura (gris antracita casi negro, junta clara) [i41, i42]; la
+    banda helicoidal, el ojo y el cielo inclinado siguen blancos. Contrahuella = cara vertical baja (< 22 cm)."""
+    m = baldosa("m_escalera_baldosa", (0.045, 0.045, 0.05), (0.06, 0.06, 0.065), (0.30, 0.30, 0.29), 0.20, 0.35, bump=0.2)
+    n = 0
+    for o in _objetos(("circ_escalera",)):
+        if o.name != "circ_escalera": continue
+        me = o.data; mw = o.matrix_world
+        if m.name not in [x.name for x in me.materials if x]: me.materials.append(m)
+        idx = [x.name if x else "" for x in me.materials].index(m.name)
+        for p_ in me.polygons:
+            zs = [(mw @ me.vertices[v].co).z for v in p_.vertices]
+            nn = (mw.to_3x3() @ p_.normal).normalized()
+            if nn.z > 0.9 or (abs(nn.z) < 0.1 and max(zs) - min(zs) < 0.22):
+                p_.material_index = idx; n += 1
+    print(f"[materia] escalera: {n} caras de huella y contrahuella en baldosa oscura")
+
+
 def cielo_raso_blanco():
     """La cara de abajo de la losa (techo del porche y del vestíbulo) era ocre: la losa entera tenía el material
     del piso del salón. Por debajo es revoque blanco."""
@@ -315,7 +336,7 @@ def cielo_raso_blanco():
 def aplicar(col, y_losa, y_techo, h_pilotis=3.07):
     dinteles(col, (h_pilotis - 0.2, y_techo - 0.01), pisos=(0.05, y_losa + 0.012))    # antes de pintar: la pintura los alcanza
     piso_vestibulo(col); rampa_diagonal(y_losa); salon(y_losa, y_techo); cocina(y_losa, y_techo)
-    verde_solo_afuera(h_pilotis); cielo_raso_blanco(); cuartos(y_losa, y_techo, col); circulacion(y_losa, col); puertas(col, (0.05, y_losa + 0.012))
+    verde_solo_afuera(h_pilotis); cielo_raso_blanco(); escalera_oscura(); cuartos(y_losa, y_techo, col); circulacion(y_losa, col); puertas(col, (0.05, y_losa + 0.012))
 
 
 def _circuncentro(a, b, c):
