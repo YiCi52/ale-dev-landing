@@ -142,4 +142,12 @@ Alejandro preguntó si las esquinas vacías de la jardinera se repetían en otro
 - los dinteles metidos 3 cm en las jambas: mismo material y mismas coordenadas de mundo, así que no se ve;
 - caras tapadas contra la losa o el cielo raso.
 
-**Hallazgo de fidelidad al pasar (para #11/#13):** en S9 8, 13 y 17 la terraza tiene UNA jardinera (la U del DWG) y la mesa. **Los tres tramos largos contra los muros (`mu_jardinera_*`) no aparecen en ninguna foto: fueron interpretación mía.** Queda pendiente la decisión de Alejandro.
+**Hallazgo de fidelidad al pasar (para #11/#13):** en S9 8, 13 y 17 la terraza tiene UNA jardinera (la U del DWG) y la mesa. **Los tres tramos largos contra los muros (`mu_jardinera_*`) no aparecen en ninguna foto: fueron interpretación mía.** **Alejandro los quitó (30-sep).** Pendiente para #11: en S9 13 la jardinera queda cerca de la vidriera, y en el modelo queda al fondo, donde la dibuja el DWG.
+
+### #13 Plantas: RESUELTO (30-sep)
+- **Antes:** esferas con ruido ("piedras escarchadas").
+- **Ahora:** modelos escaneados de Poly Haven (CC0), descargados con OK de Alejandro (5,4 MB): `shrub_04`, `grass_medium_02` y `periwinkle_plant`. El módulo es `scripts/villa_plantas.py`, reutilizable para los otros labs.
+- Cada arbusto se ARMA con copias enlazadas de ramas reales sobre una cúpula, porque Poly Haven no tiene arbustos redondos enteros.
+- Render `artefactos-bake/chequeo/plantas-cerca-v2`.
+- **Pendiente:** el verde sale algo oliva frente a S9 8; se ajusta en la fase de luz.
+- **El chequeo ahora también mide pilotis, vidrio curvo y montantes** (264 piezas). Las piezas curvas se revisaron con render: la herradura del vestíbulo contra la losa sale limpia.

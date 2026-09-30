@@ -473,7 +473,7 @@ for _pref in [p for p in os.environ.get("VILLA_OCULTAR", "").split(",") if p]:  
     for _o in esc.objects:
         if _o.name.startswith(_pref): _o.hide_render = True
 if os.environ.get("VILLA_CHEQUEO"):                      # chequeo geométrico de toda la obra (no renderiza)
-    import villa_chequeo; villa_chequeo.correr(); raise SystemExit(0)
+    import villa_chequeo; villa_chequeo.correr(); villa_chequeo.cobertura(); raise SystemExit(0)
 if "VILLA_INSPECT" in os.environ:                     # depuración: qué objetos hay alrededor de un punto
     px, py, pz = (float(v) for v in os.environ["VILLA_INSPECT"].split(","))
     for o in esc.objects:

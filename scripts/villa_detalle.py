@@ -262,18 +262,9 @@ def salon(Y_LOSA, Y_TECHO, D, M, col):
 def terraza(Y_LOSA, M, col):
     """TERRASSE: jardineras de hormigón blanco empotradas con arbustos bajos tipo lavanda + la mesa fija."""
     z = Y_LOSA
-    # 28-sep: la jardinera larga empezaba en x 1,0 (dentro del pozo de la rampa) y atravesaba la mesa fija del DWG
-    # (x 2,6…4,9): se parte en dos tramos a los lados de la mesa.
-    # 30-sep (chequeo geométrico): los dos tramos quedaban 10 cm despegados del muro (y −4,60), 5 cm de la jardinera
-    # en U del DWG (x 2,60 / 4,90) y 5 cm del muro del pozo de la rampa (x 1,40): ranuras que en la foto no existen
-    # [S9 8, 13 — la jardinera es una sola masa empotrada]. Ahora tocan las tres caras.
-    for n, (x0, x1, y0, y1) in enumerate([(1.40, 2.60, -4.60, -3.8), (4.90, 8.8, -4.60, -3.8), (8.4, 9.1, -3.8, 2.8)]):
-        cojin(f"mu_jardinera_{n}", x0, x1, y0, y1, z, z + 0.45, M["hormigon_claro"], col, 0.01)
-        largo = max(x1 - x0, y1 - y0); k_n = int(largo / 0.35)
-        for k in range(k_n):
-            t = (k + 0.5) / k_n
-            cx, cy = (x0 + (x1 - x0) * t, (y0 + y1) / 2) if (x1 - x0) > (y1 - y0) else ((x0 + x1) / 2, y0 + (y1 - y0) * t)
-            _mata(f"mu_mata_{n}_{k}", (cx, cy, z + 0.45), 0.22 + 0.06 * math.sin(k * 2.3), M, col)
+    # 30-sep: FUERA los tres tramos largos de jardinera contra los muros (mu_jardinera_*). Ninguna foto los muestra:
+    # en S9 8, 13 y 17 la terraza tiene UNA jardinera (la U del DWG, villa_obra) y la mesa. Eran interpretación mía;
+    # los quitó Alejandro al verlo.
     mesa_terraza(z, M, col)
 
 
@@ -286,25 +277,19 @@ def mesa_terraza(z, M, col):
         tubo("mu_mesa_terraza_pata", [(x, y, z), (x, y, z + h - 0.06)], 0.014, M["acero_negro"], col)
     # tierra y matas dentro de la jardinera en U del DWG (x 2,75…4,75 · z −4,6…−2,55)
     cojin("mu_tierra_jardinera", 2.76, 4.74, -4.59, -2.56, z + 0.30, z + 0.40, M["tierra"], col, 0.002)
-    for k, (cx, cy) in enumerate([(3.2, -3.9), (4.2, -3.0), (3.9, -4.2), (3.1, -2.95)]):
-        _mata(f"mu_mata_jardinera_u_{k}", (cx, cy, z + 0.40), 0.28 + 0.05 * (k % 2), M, col)
+    # plantas REALES (villa_plantas, Poly Haven CC0) en vez de esferas con ruido [#13; S9 8: arbustos redondeados
+    # de hoja verde, una mata de pasto y algo de flor]. Qué va en cada extremo = interpretación de la foto.
+    import villa_plantas as vp
+    t = z + 0.40
+    vp.arbusto("mu_planta_arbusto_a", (3.25, -3.95, t), 0.46, 0.65, col, semilla=1, densidad=85)
+    vp.arbusto("mu_planta_arbusto_b", (4.20, -3.05, t), 0.40, 0.55, col, semilla=2, densidad=85)
+    vp.matas("mu_planta_pasto", (4.25, -4.15, t), 0.30, col, semilla=3, n=9, escala=(1.2, 1.8))
+    vp.flores("mu_planta_flor", (3.20, -2.95, t), 0.32, col, semilla=4, n=8)
+    # cubresuelo: en la foto casi no se ve tierra entre las plantas
+    vp.matas("mu_planta_pasto_borde", (3.75, -3.50, t), 0.85, col, semilla=5, n=22, escala=(0.9, 1.4))
+    vp.flores("mu_planta_flor_borde", (3.75, -3.50, t), 0.85, col, semilla=6, n=10)
 
 
-def _mata(nombre, loc, r, M, col):
-    """Arbusto bajo: esfera achatada con desplazamiento de ruido (lee follaje, no pelota)."""
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=4, radius=r, location=(loc[0], loc[1], loc[2] + r * 0.45))
-    o = bpy.context.object; o.name = nombre; o.scale = (1.0, 1.0, 0.75)
-    for c in o.users_collection: c.objects.unlink(o)
-    col.objects.link(o)
-    tx = bpy.data.textures.new(nombre, "VORONOI"); tx.noise_scale = 0.07
-    dm = o.modifiers.new("hojas", "DISPLACE"); dm.texture = tx; dm.strength = 0.09
-    o.data.materials.append(M["follaje"]); o.data.materials.append(M["flor"])
-    for p in o.data.polygons:
-        p.material_index = 1 if (p.center.z > r * 0.55 and hash(p.index) % 5 == 0) else 0
-    bpy.ops.object.shade_smooth()
-
-
-# ── pasto: hebras de verdad alrededor de la casa ──────────────────────────
 def pasto(W, D, col, radio=58.0, cortes=150):        # 58 m: pasa la órbita de la cámara (~50 m)
     """Pelo de partículas sobre un disco de pradera. La foto de pasto queda DEBAJO como suelo:
     las hebras le dan volumen y sombra propia, que es lo que el ojo lee como textura a ras."""

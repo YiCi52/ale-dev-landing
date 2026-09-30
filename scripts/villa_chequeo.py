@@ -9,7 +9,8 @@ Usa las caras reales (no solo las cajas) para las coplanares; también para las 
 """
 import bpy, mathutils
 
-PREFIJOS = ("pb_", "n1_", "fa_", "cub", "circ_", "losa_", "antepecho", "bano_", "mu_jardinera", "mu_piso", "carp_marcos")
+PREFIJOS = ("pb_", "n1_", "fa_", "cub", "circ_", "losa_", "antepecho", "bano_", "mu_jardinera", "mu_piso", "carp_marcos",
+            "piloti", "herradura", "mont_")
 
 
 def _caras(objs, area_min=0.01):
@@ -93,3 +94,17 @@ def correr():
     for n in filter(None, os.environ.get("VILLA_CAJAS", "").split(",")):   # cajas de piezas puntuales, para ubicar cámaras
         o = bpy.data.objects.get(n)
         if o: a, b = [min((o.matrix_world @ mathutils.Vector(c))[i] for c in o.bound_box) for i in range(3)], [max((o.matrix_world @ mathutils.Vector(c))[i] for c in o.bound_box) for i in range(3)]; print("[caja]", n, [round(v, 3) for v in a], [round(v, 3) for v in b])
+
+
+def cobertura():
+    """Qué piezas revisa el chequeo y cuáles no (por nombre), y cuántas caras curvas quedan fuera del método."""
+    import collections
+    todas = [o for o in bpy.context.scene.objects if o.type == "MESH" and not o.hide_render]
+    dentro = [o for o in todas if o.name.startswith(PREFIJOS)]
+    fuera = collections.Counter(o.name.rstrip("0123456789._").rstrip("_") for o in todas if not o.name.startswith(PREFIJOS))
+    grupos = collections.Counter(o.name.split("_")[0] for o in dentro)
+    print("[cobertura] revisadas por grupo:", dict(grupos))
+    for o in dentro:
+        rot = o.matrix_world.to_3x3(); n_c = sum(1 for p in o.data.polygons if max(abs((rot @ p.normal).normalized()[k]) for k in range(3)) < 0.999)
+        if n_c > 20: print(f"[cobertura] curva/inclinada: {o.name} ({n_c} caras fuera del método)")
+    print("[cobertura] NO revisadas:", dict(fuera))
