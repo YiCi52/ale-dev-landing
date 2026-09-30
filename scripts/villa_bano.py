@@ -18,11 +18,18 @@ BANO = (-5.0, -2.30, -6.10, -3.30)                  # x0, x1, z0, z1 del baño d
 # delgada entre los dos) y su cabecera casi toca el muro del fondo; la plataforma azul se abre hacia la izquierda y
 # hacia el frente; atrás a la izquierda queda piso blanco con radiador, bidé/WC y lavamanos. ⚠️ La planta del CMN
 # ponía la tina en x −4,65…−4,0 (±0,3 m, planta esquemática): gana la foto, que es directa.
-PLATAFORMA = [(-4.85, -5.90), (-3.10, -5.90), (-3.10, -3.40), (-3.95, -3.40), (-3.95, -4.15), (-4.85, -4.15)]
+# 30-sep: el borde izquierdo iba en x −4,85 y dejaba 8 cm abiertos contra el muro (x −4,93). En S8 8 y S8 26 (tomadas
+# desde el fondo) la plataforma llega al muro de ese lado sin ranura: se lleva hasta la cara del muro.
+PARED_O = -4.93
+PLATAFORMA = [(PARED_O, -5.90), (-3.10, -5.90), (-3.10, -3.40), (-3.95, -3.40), (-3.95, -4.15), (PARED_O, -4.15)]
 TINA = (-3.85, -3.22, -5.15, -3.56)                 # 0,63 × 1,59 m, hundida 40 cm
 DIVAN = (-3.10, -2.36, -6.10, -3.36)                # a lo largo de la tina, del fondo al frente
 H_PLAT, PROF_TINA = 0.42, 0.40
 CLARABOYA = (-4.40, -3.40, -5.00, -4.05)            # hueco en la cubierta sobre la plataforma (interpretación)
+E_BROCAL = 0.10
+# El hueco de la LOSA incluye el brocal: si la losa llegaba al vano, el brocal quedaba encima de ella con su cara de
+# abajo en el plano del cielo raso y su cara interior en el plano del hueco (caras coplanares, chequeo 30-sep).
+HUECO_CLARABOYA = (CLARABOYA[0] - E_BROCAL, CLARABOYA[1] + E_BROCAL, CLARABOYA[2] - E_BROCAL, CLARABOYA[3] + E_BROCAL)
 
 
 def _mosaico(nombre, base, junta, var=0.18, lado=0.05):
@@ -98,7 +105,7 @@ def plataforma_y_tina(piso, col):
     xs = [x for x, _ in PLATAFORMA]; zs = [z for _, z in PLATAFORMA]
     rects = villa_obra.rects_con_huecos(min(xs), max(xs), min(zs), max(zs), [TINA])
     fuera_l = lambda r: r[1] <= -3.95 + 1e-6 and r[3] > -4.15 + 1e-6          # la muesca de los sanitarios
-    for k, r in enumerate(villa_obra.rects_con_huecos(min(xs), max(xs), min(zs), max(zs), [TINA, (-4.85, -3.95, -4.15, -3.40)])):
+    for k, r in enumerate(villa_obra.rects_con_huecos(min(xs), max(xs), min(zs), max(zs), [TINA, (PARED_O, -3.95, -4.15, -3.40)])):
         _caja(f"bano_plataforma_{k}", *r, piso, h1, azul, col)
     _caja("bano_tina_fondo", tx0, tx1, tz0, tz1, piso, h1 - PROF_TINA, azul, col)
     cromo = _cromo()
@@ -225,7 +232,7 @@ def paredes(y_losa, y_techo):
 def claraboya(y_techo, e_cubierta, col):
     """Brocal de 30 cm sobre la cubierta y vidrio encima; el hueco lo abre la losa (HUECO en villa-blender)."""
     blanco = bpy.data.materials.get("blanco"); vid = bpy.data.materials.get("vidrio")
-    x0, x1, z0, z1 = CLARABOYA; e = 0.10; h0, h1 = y_techo - 0.01, y_techo + e_cubierta + 0.30
+    x0, x1, z0, z1 = CLARABOYA; e = E_BROCAL; h0, h1 = y_techo - 0.01, y_techo + e_cubierta + 0.30
     for nm, r in (("o", (x0 - e, x0, z0 - e, z1 + e)), ("e", (x1, x1 + e, z0 - e, z1 + e)),
                   ("s", (x0, x1, z0 - e, z0)), ("n", (x0, x1, z1, z1 + e))):
         _caja(f"cub_claraboya_brocal_{nm}", *r, h0, h1, blanco, col)

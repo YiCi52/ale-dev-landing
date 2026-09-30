@@ -222,7 +222,7 @@ def cuartos(y_losa, y_techo, col):
     _losa_piso("mu_piso_cocina", -9.30, -4.79, 4.86, 10.56, z, tostada, col)
     banio = baldosa("m_baldosa_bano", (0.84, 0.84, 0.81), (0.80, 0.80, 0.78), (0.62, 0.62, 0.60), 0.15, 0.2)   # blanca de 15 cm [S8 7]
     _losa_piso("mu_piso_bano14", -9.30, -6.05, -4.62, -3.28, z, banio, col)
-    _losa_piso("mu_piso_bano_suite", -4.65, -2.30, -6.10, -3.30, z + 0.003, banio, col)
+    _losa_piso("mu_piso_bano_suite", -4.93, -2.30, -6.10, -3.30, z + 0.003, banio, col)
     losa_t = bpy.data.materials.get("mu_losa_terraza")
     if losa_t: _losa_piso("mu_piso_kiosque", 4.93, 9.30, -10.56, -4.75, z, losa_t, col)
     print(f"[materia] boudoir azul profundo ({n_b} caras) · pasillo bleu charron ({n_p}) · parqué huéspedes · piso del kiosque")
@@ -394,6 +394,22 @@ def _caras_del_muro(c, u, w, polis, rects, defecto):
     return (sum(m[0] for m in medidas) / len(medidas), sum(m[1] for m in medidas) / len(medidas))
 
 
+ENV_INT = (9.30, 10.55)            # caras interiores de la envolvente de 20 cm (villa-blender E_ENV)
+
+
+def _hasta_fachada(p, u, alcance=0.08, solape=0.03):
+    """Si el extremo del dintel queda a menos de 8 cm de la cara interior de una fachada, lo lleva hasta ella (+3 cm
+    adentro). La línea de la hoja del DWG no siempre llega a la fachada: sobre esa puerta quedaba una ranura de
+    1,8 cm que atravesaba el muro (chequeo 30-sep, puerta junto a la fachada oeste)."""
+    q = list(p)
+    for k in range(2):
+        if abs(u[k]) < 0.99: continue
+        cara = ENV_INT[k] * (1 if u[k] > 0 else -1)
+        falta = (cara - p[k]) * (1 if u[k] > 0 else -1)
+        if 0 < falta < alcance: q[k] = cara + solape * (1 if u[k] > 0 else -1)
+    return tuple(q)
+
+
 def dinteles(col, techos, grueso=0.15, h_puerta=2.10, pisos=(0.05, 3.322)):
     """Sobre cada puerta, el muro: el DWG corta los muros en la puerta de piso a techo (es un corte a 1 m) y el
     modelo los levantaba así, con un hueco hasta el cielo raso (lo vio Alejandro en el boudoir). En las fotos
@@ -413,7 +429,8 @@ def dinteles(col, techos, grueso=0.15, h_puerta=2.10, pisos=(0.05, 3.322)):
         # 3 cm DENTRO de cada jamba: el muro lleva bisel en sus cantos y, al tope, quedaba una ranura vertical
         # sobre la puerta (la "línea" que seguía viendo Alejandro). Solapado, el dintel tapa la ranura; mismo
         # material en coordenadas de mundo, así que el solape no se nota.
-        e0 = (c[0] - u[0] * 0.03, c[1] - u[1] * 0.03); e1 = (cerrado[0] + u[0] * 0.03, cerrado[1] + u[1] * 0.03)
+        e0 = _hasta_fachada((c[0] - u[0] * 0.03, c[1] - u[1] * 0.03), (-u[0], -u[1]))
+        e1 = _hasta_fachada((cerrado[0] + u[0] * 0.03, cerrado[1] + u[1] * 0.03), u)
         poli = [(e0[0] + w[0] * a1, e0[1] + w[1] * a1), (e1[0] + w[0] * a1, e1[1] + w[1] * a1),
                 (e1[0] + w[0] * a0, e1[1] + w[1] * a0), (e0[0] + w[0] * a0, e0[1] + w[1] * a0)]
         PUERTAS_GEOM.append((nivel, c, w, u, a0, a1, r))

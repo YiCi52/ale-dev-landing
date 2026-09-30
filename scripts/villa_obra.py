@@ -172,6 +172,7 @@ def tabiques_de_lineas(nivel, W, D, solidos, margen_fachada=0.4, sep=(0.10, 0.30
 
 
 PILOTIS_CENTROS = []                               # los llena planta_baja; el nivel principal los prolonga
+MURO_TERRAZA = -4.60                 # cara del muro del lado kiosque/boudoir (chequeo 30-sep)
 TERRAZA = (1.40, 9.5, -4.62, 4.78)                 # x0, x1, z0, z1 del jardín suspendido
 # La tapa cubre TODO el conjunto (z −4,60…−2,40): en las fotos de Archweb (S9, 19/20/29/30) la mesa de la terraza
 # es un tablero delgado de hormigón sobre apoyos de lámina, no un cajón. Los pares de líneas son esos apoyos.
@@ -270,6 +271,7 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
     for n, (x0, x1, a, b) in enumerate(mesa):
         if x1 - x0 > b - a: x0, x1 = max(x0 - 0.15, TERRAZA[0]), x1 + 0.15
         else: a, b = a - 0.15, min(b + 0.15, MESA_Z1)
+        a = max(a, MURO_TERRAZA)                                  # hasta la cara del muro, no adentro de él
         piezas.append(_prisma(f"n1_jardinera_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0 - 0.01, z0 + H_JARDINERA, m_muro, col))
     unir(piezas)
     for n, (x0, x1, a, b) in enumerate(rects):

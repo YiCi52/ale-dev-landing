@@ -121,3 +121,25 @@ Cada corrección se verifica con un render desde el mismo ángulo de la foto ant
   - rendijas de 5 a 10 cm entre los muros nuevos del pozo y el corte → corregidas;
   - 1 hueco de 11 cm junto a un vidrio del hall (x −4,93…−4,28, z 0,45) → **pendiente de ver con foto**; puede ser el marco de una puerta.
 - **Regla nueva:** piezas que se tocan se FUNDEN (`villa_obra.unir`). Prolongarlas crea caras coplanares, que salen como rayas negras.
+
+### Chequeo geométrico de TODA la obra (30-sep)
+Alejandro preguntó si las esquinas vacías de la jardinera se repetían en otro lado. **El chequeo del 29 solo cubría el piso principal y el pozo de la rampa**, así que se armó uno para toda la casa: `scripts/villa_chequeo.py`, que se corre con `VILLA_CHEQUEO=1` y no renderiza. Revisa 183 piezas de obra y busca dos cosas:
+- **ranuras**: caras que se miran entre sí a 2 mm–15 cm, descontando las que ya rellena una tercera pieza;
+- **caras coplanares**: caras que miran hacia el mismo lado, en el mismo plano, y se solapan.
+
+**Defectos reales encontrados y corregidos:**
+- **Ranura de 1 cm en TODOS los encuentros de muro interior con fachada.** Las bandas medían 19 cm y los muros del DWG llegan a 20 cm. Ahora la envolvente es de 20 cm (`E_ENV`).
+- **Rendija de cielo de 1 cm en todo el borde del techo.** La cubierta estaba retirada 23 cm y el remate 22 cm. Ahora llega a la banda.
+- **Canto de la losa en el mismo plano que la cara exterior de la fachada**, en todo el perímetro, además con otro material (ocre). Ahora la losa llega a la cara interior de la banda.
+- **Piso de la terraza metido 1,1 m en el pozo de la rampa y encimado al piso del hall** (arrancaba en x 0,18). Ahora ocupa el recinto real: x 1,40…9,30, de −4,60 a la vidriera.
+- **Plataforma del baño 8 cm despegada del muro**; el piso del baño dejaba ver el parqué del cuarto. Las fotos S8 8 y S8 26 la muestran contra el muro.
+- **Jardinera en U metida 15 cm dentro del muro**; los tramos sueltos, despegados 5–12 cm. Ahora tocan la cara del muro.
+- **Brocal de la claraboya coplanar con el cielo raso y con el hueco.** Ahora el hueco de la losa incluye el brocal.
+- **Dintel 1,8 cm corto contra la fachada oeste**: la ranura atravesaba el muro sobre la puerta. Ahora los dinteles se prolongan hasta la fachada si quedan a menos de 8 cm.
+
+**Lo que queda y es intencional:**
+- el vidrio de la cinta, retirado 9 cm de los muros interiores, como un vano real;
+- los dinteles metidos 3 cm en las jambas: mismo material y mismas coordenadas de mundo, así que no se ve;
+- caras tapadas contra la losa o el cielo raso.
+
+**Hallazgo de fidelidad al pasar (para #11/#13):** en S9 8, 13 y 17 la terraza tiene UNA jardinera (la U del DWG) y la mesa. **Los tres tramos largos contra los muros (`mu_jardinera_*`) no aparecen en ninguna foto: fueron interpretación mía.** Queda pendiente la decisión de Alejandro.

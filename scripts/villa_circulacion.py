@@ -16,7 +16,7 @@ import bpy, bmesh, json, math, os
 
 POZO_X = (-1.25, 1.25)
 TRAMO_OESTE, TRAMO_ESTE, MURO_X = (-1.25, -0.07), (0.07, 1.25), (-0.07, 0.07)
-Z_BOCA, Z_DESCANSO, Z_FONDO = 2.50, -6.08, -7.12
+Z_BOCA, Z_DESCANSO, Z_FONDO = 2.50, -6.08, -7.125     # fondo: a la cara del muro (quedaban 5 mm, chequeo 30-sep)
 E_LOSA, H_BARANDA = 0.20, 1.00
 
 ESC_CENTRO, ESC_R = (-3.15, 1.55), 0.75

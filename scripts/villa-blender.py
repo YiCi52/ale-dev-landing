@@ -134,7 +134,12 @@ villa_obra.planta_baja(H_RDC, H_PILOTIS, M_VERDE, M_BLANCO, M_VIDRIO, esc.collec
 # ── losa del nivel principal: huecos REALES de rampa y escalera (fase 2, del DWG) ──────
 import villa_circulacion as circ
 HUECOS_PISO = [circ.HUECO_RAMPA, *circ.HUECOS_ESCALERA]
-for n,(x0,x1,z0,z1) in enumerate(villa_obra.rects_con_huecos(-W/2, W/2, -D/2, D/2, HUECOS_PISO)):
+# Envolvente de 20 cm = el grueso de los muros del DWG, que llegan a ±10,55 / ±9,30. Antes las bandas medían 19 cm:
+# 1 cm abierto en CADA encuentro de muro con fachada, y la cubierta (retirada 23 cm) dejaba una rendija de cielo
+# contra el remate en todo el borde del techo. La losa llega a la cara interior de las bandas: si llegaba al borde,
+# su canto quedaba en el MISMO plano que la cara exterior de la banda (rayas). Chequeo geométrico del 30-sep.
+E_ENV = 0.20
+for n,(x0,x1,z0,z1) in enumerate(villa_obra.rects_con_huecos(-W/2+E_ENV, W/2-E_ENV, -D/2+E_ENV, D/2-E_ENV, HUECOS_PISO)):
     caja(f"losa_nobile_{n}", x0, x1, H_PILOTIS, Y_LOSA, z0, z1, M_PISO)
 circ.tapas_escalera(H_PILOTIS, Y_LOSA, M_PISO, esc.collection, "losa_nobile_tapas_escalera")
 
@@ -149,8 +154,8 @@ villa_obra.nivel_principal(Y_LOSA, Y_TECHO - 0.01, W, D, M_BLANCO, esc.collectio
 VANOS = {"este": (-9.45, 4.78), "norte": (4.90, 9.30)}
 # ── fachadas: banda inferior, cinta de vidrio continua, banda superior ────
 yv0, yv1 = H_PILOTIS + H_BANDA_INF, H_PILOTIS + H_BANDA_INF + H_VENTANA
-for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-0.19,D/2), ("norte",-W/2,W/2,-D/2,-D/2+0.19),
-                               ("este",W/2-0.19,W/2,-D/2+0.19,D/2-0.19), ("oeste",-W/2,-W/2+0.19,-D/2+0.19,D/2-0.19)]:
+for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-E_ENV,D/2), ("norte",-W/2,W/2,-D/2,-D/2+E_ENV),
+                               ("este",W/2-E_ENV,W/2,-D/2+E_ENV,D/2-E_ENV), ("oeste",-W/2,-W/2+E_ENV,-D/2+E_ENV,D/2-E_ENV)]:
     # la fachada este se parte donde empieza el salón (z 4,72): su cara interior, del lado del estar, es ROSA
     # [CMN: "rosa junto al estar"; S8 28–29: el muro rosa lleva la cinta de ventanas]
     cortes_f = [(z0, 4.72), (4.72, z1)] if nombre == "este" else [(z0, z1)]
@@ -192,8 +197,8 @@ import villa_bano
 HUECOS_CUBIERTA = [(1.40, 9.5, -4.57, 4.78),          # terraza: jardín suspendido, abierto al cielo
                    circ.HUECO_RAMPA,                   # la rampa llega al solárium (el descanso también: 1,5 m de altura libre si no)
                    *circ.HUECOS_ESCALERA,              # la escalera llega adentro de su caja techada
-                   villa_bano.CLARABOYA]               # claraboya sobre el baño de los padres (fase 4)
-for n,(x0,x1,z0,z1) in enumerate(villa_obra.rects_con_huecos(-W/2+0.23, W/2-0.23, -D/2+0.23, D/2-0.23, HUECOS_CUBIERTA)):
+                   villa_bano.HUECO_CLARABOYA]               # claraboya sobre el baño de los padres (fase 4)
+for n,(x0,x1,z0,z1) in enumerate(villa_obra.rects_con_huecos(-W/2+E_ENV, W/2-E_ENV, -D/2+E_ENV, D/2-E_ENV, HUECOS_CUBIERTA)):
     caja(f"cubierta_{n}", x0, x1, Y_TECHO-0.01, Y_TECHO+E_CUBIERTA, z0, z1, M_BLANCO)
 for nombre, x0,x1,z0,z1 in [("s",-W/2,W/2,D/2-0.22,D/2), ("n",-W/2,W/2,-D/2,-D/2+0.22),
                             ("e",W/2-0.22,W/2,-D/2+0.22,D/2-0.22), ("o",-W/2,-W/2+0.22,-D/2+0.22,D/2-0.22)]:
@@ -467,6 +472,8 @@ if os.environ.get("VILLA_CAM") == "rincon":               # prueba de techo de c
 for _pref in [p for p in os.environ.get("VILLA_OCULTAR", "").split(",") if p]:   # depuración: ocultar por prefijo
     for _o in esc.objects:
         if _o.name.startswith(_pref): _o.hide_render = True
+if os.environ.get("VILLA_CHEQUEO"):                      # chequeo geométrico de toda la obra (no renderiza)
+    import villa_chequeo; villa_chequeo.correr(); raise SystemExit(0)
 if "VILLA_INSPECT" in os.environ:                     # depuración: qué objetos hay alrededor de un punto
     px, py, pz = (float(v) for v in os.environ["VILLA_INSPECT"].split(","))
     for o in esc.objects:

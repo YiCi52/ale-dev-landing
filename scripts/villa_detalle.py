@@ -244,7 +244,7 @@ def salon(Y_LOSA, Y_TECHO, D, M, col):
     for n, (x, y, r) in enumerate([(-2.8, 7.75, 0), (-1.6, 7.75, 0), (-2.8, 9.05, math.pi), (-1.6, 9.05, math.pi)]):
         vm.thonet(f"mu_thonet_{n}", (x, y, z), r, M, col)
     # el radiador de rejilla corrido bajo la cinta: "solo ese detalle lee esta casa de inmediato"
-    yr = D / 2 - 0.19 - 0.09
+    yr = D / 2 - 0.20 - 0.09
     cojin("mu_radiador", -4.6, 9.3, yr - 0.05, yr + 0.05, z + 0.12, z + 0.50, M["rejilla"], col, 0.01)
     for k in range(70):
         x = -4.6 + (13.9 * k / 69)
@@ -264,7 +264,10 @@ def terraza(Y_LOSA, M, col):
     z = Y_LOSA
     # 28-sep: la jardinera larga empezaba en x 1,0 (dentro del pozo de la rampa) y atravesaba la mesa fija del DWG
     # (x 2,6…4,9): se parte en dos tramos a los lados de la mesa.
-    for n, (x0, x1, y0, y1) in enumerate([(1.45, 2.55, -4.5, -3.8), (4.95, 8.8, -4.5, -3.8), (8.4, 9.1, -3.8, 2.8)]):
+    # 30-sep (chequeo geométrico): los dos tramos quedaban 10 cm despegados del muro (y −4,60), 5 cm de la jardinera
+    # en U del DWG (x 2,60 / 4,90) y 5 cm del muro del pozo de la rampa (x 1,40): ranuras que en la foto no existen
+    # [S9 8, 13 — la jardinera es una sola masa empotrada]. Ahora tocan las tres caras.
+    for n, (x0, x1, y0, y1) in enumerate([(1.40, 2.60, -4.60, -3.8), (4.90, 8.8, -4.60, -3.8), (8.4, 9.1, -3.8, 2.8)]):
         cojin(f"mu_jardinera_{n}", x0, x1, y0, y1, z, z + 0.45, M["hormigon_claro"], col, 0.01)
         largo = max(x1 - x0, y1 - y0); k_n = int(largo / 0.35)
         for k in range(k_n):
@@ -381,7 +384,9 @@ def pisos(Y_LOSA, col):
     losa = _baldosa("mu_losa_terraza", (0.58, 0.56, 0.52), (0.52, 0.50, 0.47), (0.30, 0.29, 0.27), 0.9, 0.85)
     cojin("mu_piso_salon", -4.79, 9.5, 5.45, 10.4, z, z + 0.01, ocre, col, 0.001)
     cojin("mu_piso_umbral", -4.79, 9.5, 4.86, 5.45, z, z + 0.01, cafe, col, 0.001)
-    cojin("mu_piso_terraza", 0.18, 9.28, -4.75, 4.70, z, z + 0.01, losa, col, 0.001)
+    # 30-sep: arrancaba en x 0,18 (1,1 m DENTRO del pozo de la rampa, encimada al piso del hall). El recinto real:
+    # del muro del pozo (x 1,40) a la cara interior de la fachada (9,30), del muro del kiosque (−4,60) a la vidriera.
+    cojin("mu_piso_terraza", 1.40, 9.30, -4.60, 4.765, z, z + 0.01, losa, col, 0.001)
 
 
 def detallar(W, D, Y_LOSA, Y_TECHO):
