@@ -182,6 +182,7 @@ def tabiques_de_lineas(nivel, W, D, solidos, margen_fachada=0.4, sep=(0.10, 0.30
 
 
 PILOTIS_CENTROS = []                               # los llena planta_baja; el nivel principal los prolonga
+H_PB = 3.07                          # altura de los muros de planta baja = cara de abajo de la losa
 MURO_TERRAZA = -4.60                 # cara del muro del lado kiosque/boudoir (chequeo 30-sep)
 TERRAZA = (1.40, 9.5, -4.62, 4.78)                 # x0, x1, z0, z1 del jardín suspendido
 # La vidriera del salón SÍ está en el DWG (nivel 1, capa 2): la franja entre z 4,65 y 4,75 (hallazgo #16). Antes iba
@@ -234,7 +235,7 @@ def pano_trasero_pb(m_vidrio, col, x=(-3.30, 3.30), alto=(0.25, 2.62), y=(-10.80
     # el tabique garaje/servicio (x −1,40…−1,25, DWG) moría 11 cm antes del vidrio: se prolonga hasta el paño
     # (lo vio Alejandro por el vidrio, 30-sep)
     _prisma("pb_muro_tabique_al_vidrio", [(-1.405, yc + 0.006), (-1.255, yc + 0.006), (-1.255, y[1] + 0.01), (-1.405, y[1] + 0.01)],
-            0.0, 2.87, bpy.data.materials.get("verde"), col)
+            0.0, H_PB, bpy.data.materials.get("verde"), col)
     _prisma("pb_pano_trasero_vidrio", [(x[0], yc - 0.006), (x[1], yc - 0.006), (x[1], yc + 0.006), (x[0], yc + 0.006)],
             alto[0], alto[1], m_vidrio, col)
     blanca = bpy.data.materials.get("m_barra_blanca") or bpy.data.materials.new("m_barra_blanca"); blanca.use_nodes = True
@@ -276,7 +277,7 @@ def ventanas_bloque_servicio(m_vidrio, col, x=(-6.40, -6.05), alto=(1.05, 2.35),
         bpy.data.objects.remove(hueco, do_unlink=True)
         # el DWG deja el vano ABIERTO de piso a techo (corte a 1 m por la ventana): antepecho y dintel de muro
         verde = bpy.data.materials.get("verde")
-        for k, (h0, h1) in enumerate(((0.0, alto[0]), (alto[1], 2.87))):
+        for k, (h0, h1) in enumerate(((0.0, alto[0]), (alto[1], H_PB))):
             _prisma(f"pb_muro_serv_{n}_{k}", [(-6.35, a), (-6.15, a), (-6.15, b), (-6.35, b)], h0, h1, verde, col)
         xc = (x[0] + x[1]) / 2
         _prisma(f"pb_ventana_serv_{n}_vidrio", [(xc - 0.006, a), (xc + 0.006, a), (xc + 0.006, b), (xc - 0.006, b)],
@@ -295,7 +296,7 @@ def ventanas_bloque_servicio(m_vidrio, col, x=(-6.40, -6.05), alto=(1.05, 2.35),
     print(f"[villa_obra] bloque de servicio: {len(tramos)} ventanas de cuadrícula (DWG nivel 0)")
 
 
-def nichos_traseros_pb(col, h_muro=2.87, h_puerta=2.10):
+def nichos_traseros_pb(col, h_muro=H_PB, h_puerta=2.10):
     """Esquinas traseras de la planta baja (30-sep, lo vio Alejandro: "volvió el problema de esquinas"). El DWG (nivel
     0) dibuja en cada esquina un rincón metido: entre el fin del bloque verde (x ±4,75/4,90) y el muro lateral (x ±5,75)
     un paño en z −9,30…−9,50 que el modelo no levantaba → hueco abierto al interior. En e50 ese paño es un muro

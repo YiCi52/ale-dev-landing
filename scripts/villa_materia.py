@@ -343,7 +343,7 @@ def cielo_raso_blanco():
 
 
 def aplicar(col, y_losa, y_techo, h_pilotis=3.07):
-    dinteles(col, (h_pilotis - 0.2, y_techo - 0.01), pisos=(0.05, y_losa + 0.012))    # antes de pintar: la pintura los alcanza
+    dinteles(col, (h_pilotis, y_techo - 0.01), pisos=(0.05, y_losa + 0.012))    # antes de pintar: la pintura los alcanza
     piso_vestibulo(col); rampa_diagonal(y_losa); salon(y_losa, y_techo); cocina(y_losa, y_techo)
     verde_solo_afuera(h_pilotis); cielo_raso_blanco(); escalera_oscura(); cuartos(y_losa, y_techo, col); circulacion(y_losa, col); puertas(col, (0.05, y_losa + 0.012))
 

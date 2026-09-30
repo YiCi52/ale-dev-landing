@@ -127,7 +127,9 @@ def caja(nombre, x0, x1, y0, y1, z0, z1, material):
 # ── planta baja + pilotis: DESDE EL PLANO (fase 2, scripts/villa_obra.py) ────
 # Antes: cilindro cerrado r 6,5, bloque de servicio corrido 2,4 m y pilotis en retícula equivocada.
 # Ahora: contornos exactos del DWG (rellenos de la capa 7) extruidos; el vidrio curvo sale del arco de la capa 2.
-H_RDC = H_PILOTIS - 0.2
+# 30-sep: los muros de planta baja llegan a la CARA DE ABAJO de la losa (3,07). Con "− 0,2" quedaba una ranura de
+# 20 cm entre muros/vidrio y losa en TODA la planta baja (la vio Alejandro: sol colándose como un triángulo gris).
+H_RDC = H_PILOTIS
 sys.path.insert(0, os.path.join(RAIZ, "scripts"))
 import villa_obra
 villa_obra.planta_baja(H_RDC, H_PILOTIS, M_VERDE, M_BLANCO, M_VIDRIO, esc.collection)
@@ -400,7 +402,7 @@ if MODO == "noche":
                                 (-2.2, 8.4), (7.4, 6.4), (0.9, 9.4)]):
         bombillo(f"cuarto_{n}", x, z, Y_TECHO - 0.6, 380)
     for n, (x, z) in enumerate([(0.3, 1.0), (-2.5, 3.0), (2.8, -1.2)]):
-        luz_area(f"vestibulo_{n}", x, z, H_RDC - 0.1, 1.2, 260)
+        luz_area(f"vestibulo_{n}", x, z, H_RDC - 0.3, 1.2, 260)
     for n, (x, z) in enumerate([(-6, 6), (6, 6), (-6, -6), (6, -6)]):
         luz_area(f"bajo_losa_{n}", x, z, H_PILOTIS - 0.05, 0.8, 45)   # el porche bajo la caja, apenas
 

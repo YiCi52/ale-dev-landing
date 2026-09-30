@@ -48,7 +48,7 @@ def _relleno(objs, p, excluir):
     return False
 
 
-def rendijas(caras, tope=0.15, minimo=0.002, frente=0.10, objs=()):
+def rendijas(caras, tope=0.25, minimo=0.002, frente=0.10, objs=()):   # 25 cm: la ranura de planta baja medía 20 (30-sep)
     """Ranura real: dos caras de objetos distintos que se MIRAN (normales opuestas, cada una apuntando a la otra),
     separadas de 2 mm a 15 cm y con al menos 10 cm de frente compartido en los dos sentidos."""
     hallazgos = set()
