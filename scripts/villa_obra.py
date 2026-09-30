@@ -313,6 +313,24 @@ def nichos_traseros_pb(col, h_muro=2.87, h_puerta=2.10):
                           h_puerta, h_muro, blanco, col)]
         unir(piezas)
         _prisma(f"pb_nicho_{lado}_puerta", [(p0, -9.46), (p1, -9.46), (p1, -9.42), (p0, -9.42)], 0.01, h_puerta - 0.004, oscuro, col)
+    # REJILLA de lamas blancas en el costado del bloque verde, junto a la puerta [e50]: el DWG deja ahí una abertura
+    # de z −10,40 a −9,60 (muro x 4,70…4,90 / −4,75…−4,55) que el modelo no cerraba → hueco al interior (lo vio
+    # Alejandro). Muro verde abajo y arriba; la rejilla de ~0,9 m a la altura de la puerta (lectura de e50).
+    verde = bpy.data.materials.get("verde")
+    lamas = bpy.data.materials.get("m_barra_blanca") or blanco
+    for lado, (m0, m1, cara) in (("e", (4.70, 4.90, 4.90)), ("o", (-4.75, -4.55, -4.75))):
+        a, b = -10.40, -9.60
+        for k, (h0, h1) in enumerate(((0.0, 0.90), (h_puerta, h_muro))):
+            _prisma(f"pb_muro_rejilla_{lado}_{k}", [(m0, a), (m1, a), (m1, b), (m0, b)], h0, h1, verde, col)
+        _prisma(f"pb_rejilla_{lado}_fondo", [(m0 + 0.08, a), (m0 + 0.10, a), (m0 + 0.10, b), (m0 + 0.08, b)], 0.90, h_puerta, oscuro, col)
+        me = bpy.data.meshes.new(f"pb_rejilla_{lado}_lamas"); bm = bmesh.new()
+        h = 0.93
+        while h < h_puerta - 0.02:
+            r = bmesh.ops.create_cube(bm, size=1.0)
+            for v in r["verts"]:
+                v.co = ((m0 + m1) / 2 + v.co.x * 0.16, (a + b) / 2 + v.co.y * (b - a), h + v.co.z * 0.025)
+            h += 0.075
+        bm.to_mesh(me); bm.free(); o = bpy.data.objects.new(me.name, me); col.objects.link(o); me.materials.append(lamas)
 
 
 def ventana_terraza(z0, m_vidrio, col, x=(2.80, 3.70), alto=(1.05, 1.85), y=(-4.80, -4.55)):
