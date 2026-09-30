@@ -131,7 +131,7 @@ H_RDC = H_PILOTIS - 0.2
 sys.path.insert(0, os.path.join(RAIZ, "scripts"))
 import villa_obra
 villa_obra.planta_baja(H_RDC, H_PILOTIS, M_VERDE, M_BLANCO, M_VIDRIO, esc.collection)
-villa_obra.pano_trasero_pb(M_VIDRIO, esc.collection); villa_obra.ventanas_bloque_servicio(M_VIDRIO, esc.collection)                        # #22: lado 2 vidriado [e02, e22, e24]
+villa_obra.pano_trasero_pb(M_VIDRIO, esc.collection); villa_obra.ventanas_bloque_servicio(M_VIDRIO, esc.collection); villa_obra.nichos_traseros_pb(esc.collection)                        # #22: lado 2 vidriado [e02, e22, e24]
 
 # ── losa del nivel principal: huecos REALES de rampa y escalera (fase 2, del DWG) ──────
 import villa_circulacion as circ

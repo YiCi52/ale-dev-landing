@@ -295,6 +295,26 @@ def ventanas_bloque_servicio(m_vidrio, col, x=(-6.40, -6.05), alto=(1.05, 2.35),
     print(f"[villa_obra] bloque de servicio: {len(tramos)} ventanas de cuadrícula (DWG nivel 0)")
 
 
+def nichos_traseros_pb(col, h_muro=2.87, h_puerta=2.10):
+    """Esquinas traseras de la planta baja (30-sep, lo vio Alejandro: "volvió el problema de esquinas"). El DWG (nivel
+    0) dibuja en cada esquina un rincón metido: entre el fin del bloque verde (x ±4,75/4,90) y el muro lateral (x ±5,75)
+    un paño en z −9,30…−9,50 que el modelo no levantaba → hueco abierto al interior. En e50 ese paño es un muro
+    BLANCO con una puerta OSCURA. Ancho de la puerta = lectura de foto (INTERPRETACIÓN)."""
+    blanco = bpy.data.materials.get("blanco"); oscuro = bpy.data.materials.get("m_puerta_exterior")
+    if oscuro is None:
+        oscuro = bpy.data.materials.new("m_puerta_exterior"); oscuro.use_nodes = True
+        bo = next(n for n in oscuro.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+        bo.inputs["Base Color"].default_value = (0.025, 0.025, 0.028, 1); bo.inputs["Roughness"].default_value = 0.45
+    for lado, (a, b) in (("o", (-5.75, -4.75)), ("e", (4.90, 5.75))):
+        p0, p1 = (a + b) / 2 - 0.40, (a + b) / 2 + 0.40
+        piezas = [_prisma(f"pb_nicho_{lado}_0", [(a, -9.50), (p0, -9.50), (p0, -9.30), (a, -9.30)], 0.0, h_muro, blanco, col),
+                  _prisma(f"pb_nicho_{lado}_1", [(p1, -9.50), (b, -9.50), (b, -9.30), (p1, -9.30)], 0.0, h_muro, blanco, col),
+                  _prisma(f"pb_nicho_{lado}_2", [(p0 - 0.01, -9.50), (p1 + 0.01, -9.50), (p1 + 0.01, -9.30), (p0 - 0.01, -9.30)],
+                          h_puerta, h_muro, blanco, col)]
+        unir(piezas)
+        _prisma(f"pb_nicho_{lado}_puerta", [(p0, -9.46), (p1, -9.46), (p1, -9.42), (p0, -9.42)], 0.01, h_puerta - 0.004, oscuro, col)
+
+
 def ventana_terraza(z0, m_vidrio, col, x=(2.80, 3.70), alto=(1.05, 1.85), y=(-4.80, -4.55)):
     """#19 (30-sep): ventana cuadrada OSCURA en el muro de la terraza del lado del boudoir, sobre la mitad izquierda
     de la jardinera en U [e11, e15, e18, e27, e35, e37]. Tamaño y posición = lectura de foto (INTERPRETACIÓN ±0,15 m)."""
