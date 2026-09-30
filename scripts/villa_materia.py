@@ -206,10 +206,16 @@ def cuartos(y_losa, y_techo, col):
     """Solo lo documentado (expediente/recintos-nivel-1.md): boudoir azul profundo [Carnets d'Igor]; pasillo al
     cuarto del hijo "bleu charron" [eg-xiste]; parqué en el cuarto de huéspedes [CMN]; el kiosque con las losas
     de la terraza [CMN]. Lo que no tiene fuente (color de los demás dormitorios) queda blanco."""
-    boudoir = pintura("m_azul_profundo", (0.10, 0.17, 0.34))
+    # 30-sep (#5): el azul ultramar va SOLO en el muro de la puerta, el este (x 4,75), no en los cuatro [i10, i51:
+    # mirando al azul, la ventana queda a la izquierda; la otra puerta, abierta, en el muro de enfrente]. Tono
+    # medido en i10 contra el muro blanco: sRGB ~(56, 54, 86) → más oscuro y más violeta que el anterior.
+    boudoir = pintura("m_azul_profundo", (0.07, 0.10, 0.28))
     charron = pintura("m_bleu_charron", (0.20, 0.33, 0.50))
-    n_b = sum(_asignar_caras(o, boudoir, _mira_hacia(RECINTOS["cuarto_b"][0], y_losa, y_techo))
-              for o in _objetos(("n1_muro", "n1_tabique")))
+    bx0, bx1, bz0, bz1 = RECINTOS["cuarto_b"][0]
+    X_MURO_PUERTA = 4.75                                              # cara interior del muro este (n1_muro, x 4,75…4,90)
+    muro_puerta = lambda c, nn: (y_losa - 0.05 < c.z < y_techo + 0.05 and nn.x < -0.9 and abs(c.x - X_MURO_PUERTA) < 0.06
+                                 and bz0 - 0.05 < c.y < bz1 + 0.05)
+    n_b = sum(_asignar_caras(o, boudoir, muro_puerta) for o in _objetos(("n1_muro", "n1_tabique")))
     n_p = sum(_asignar_caras(o, charron, _mira_hacia((-5.9, -5.0, -4.4, 0.6), y_losa, y_techo))
               for o in _objetos(("n1_muro", "n1_tabique")))
     z = y_losa + 0.002
