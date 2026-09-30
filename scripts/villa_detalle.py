@@ -243,12 +243,9 @@ def salon(Y_LOSA, Y_TECHO, D, M, col):
     vm.lc6("mu_comedor", (-2.2, 8.4, z), 0, M, col)
     for n, (x, y, r) in enumerate([(-2.8, 7.75, 0), (-1.6, 7.75, 0), (-2.8, 9.05, math.pi), (-1.6, 9.05, math.pi)]):
         vm.thonet(f"mu_thonet_{n}", (x, y, z), r, M, col)
-    # el radiador de rejilla corrido bajo la cinta: "solo ese detalle lee esta casa de inmediato"
-    yr = D / 2 - 0.20 - 0.09
-    cojin("mu_radiador", -4.6, 9.3, yr - 0.05, yr + 0.05, z + 0.12, z + 0.50, M["rejilla"], col, 0.01)
-    for k in range(70):
-        x = -4.6 + (13.9 * k / 69)
-        cojin(f"mu_radiador_aleta_{k}", x - 0.012, x + 0.012, yr - 0.065, yr - 0.045, z + 0.14, z + 0.48, M["rejilla"], col, 0.002)
+    # #3 + #9 + #34 (30-sep): chimenea y mesón (una pieza) y radiadores blancos/oscuro — ver villa_salon.py
+    import villa_salon
+    villa_salon.chimenea_y_meson(z, col); villa_salon.radiadores(z, col)
     # LUMINARIA: tubo lineal suspendido de varillas que corre a lo largo del salón [S3 "en forme de gouttière";
     # S8 28–30]. Los globos de antes estaban MAL (nivel-1-principal.md). Canaleta metálica abierta arriba (luz
     # indirecta al cielo raso) con el tubo emisor adentro. Largo y posición = lectura de las fotos (interpretación).

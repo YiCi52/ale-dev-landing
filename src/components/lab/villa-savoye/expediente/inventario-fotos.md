@@ -612,3 +612,44 @@ Lo que falta es sobre todo **habitado y detalle**, y casi toda la **planta baja*
 ### D. No se modela
 - Props de exposición: paneles, ramas rojas, estantería moderna, taburetes y la silla amarilla.
 - **i55** (restauración antigua con la columna roja): se sigue la Villa de hoy (D1).
+
+---
+
+## Avance sobre la lista (30-sep, tarde)
+**Resueltos**, cada uno comparado con render contra su foto:
+- **#1** rampa:
+  - vidrio rayado arriba del antepecho (S9 23, corte B-B);
+  - **pasamanos negros** en los antepechos interiores (vestíbulo, hall, muro central del entrepiso bajo).
+  - Queda por confirmar el vidrio del muro central del tramo exterior (e07).
+- **#2** azul del salón, en el muro del fondo, medido en S8 58.
+- **#5** boudoir: azul ultramar solo en el muro de la puerta (x 4,75), medido en i10.
+- **#8** escalera: huella y contrahuella de baldosa oscura. De paso: la losa asomaba ocre en los bordes de los huecos → baldosa del hall.
+- **#11** terraza y kiosque: losas grises de concreto de ~0,9 m con junta de pasto.
+- **#14** chimenea de la cubierta, ~0,9 m sobre las pantallas.
+- **#17** carpintería de la cinta en dos mitades: granate afuera, medido en e04; blanca adentro; con rieles de cabeza y antepecho.
+- **#18** suite: muro del pasillo en rosa pálido, medido en i05.
+- **#23** **machón de la terraza** con puerta angosta oscura. El modelo tenía ahí un hueco de piso a techo.
+- **#57** montantes del vidrio curvo, claros por dentro.
+- **#3 + #9** chimenea y mesón en una pieza (`scripts/villa_salon.py`).
+- **#34** radiadores del salón: blancos bajo la cinta, oscuro bajo la ventana rosa. Faltan los de los demás recintos.
+- **#15** banca del solárium.
+- **#19** ventana oscura sobre la U.
+- **#20 + #52** jardinera de la vidriera con claraboya.
+- **#49** barra negra en la vidriera.
+- Columnas del salón enteras adentro; la casa ya sin espejo.
+
+**Siguen:**
+- **#47** viga del salón;
+- **#21 + #55** jardín de la cubierta y gravilla;
+- **#22 + #4 + #58** planta baja en fachada;
+- **#32** muebles bajo las ventanas;
+- **#29** puertas especiales;
+- **#31** escalón del baño;
+- **#45 + #43** colores de planta baja y hall;
+- **#25** zócalo gris;
+- **#24–#27 y #36** planta baja habitada;
+- **#28 y #54** iluminación;
+- **#39** cortinas;
+- **#59** felpudo;
+- **#51 y #53** jardín;
+- **#6** cocina, después de la fase 5.
