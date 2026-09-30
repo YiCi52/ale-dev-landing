@@ -170,3 +170,31 @@ Lo muestran cuatro fotos. En todas, lo que la foto tiene a la derecha el modelo 
 **Causa:** en `dwg-muros.json` los ejes quedaron así: *"z: lado 2 (arriba del plano) negativo"*. Invertir un solo eje al importar es un reflejo.
 
 **Alcance:** todo lo construido es coherente entre sí; solo la mano está al revés. Por eso las lecturas de color y de posición relativas a cada recinto siguen valiendo.
+
+### Espejo corregido (30-sep) y lo que destapó
+- **Corrección:** `villa-blender.py` refleja el mundo en Y justo antes del render; las cámaras siguen en coordenadas de obra. Con eso S9 13 y S9 27 coinciden (renders `s9-13-espejo` y `s9-27-espejo`).
+- **Columnas del salón:** la vidriera pasa a la franja del DWG (z 4,65…4,75). Las columnas de ese eje quedaban partidas por el vidrio y ahora van enteras adentro, como en S9 13 y S9 23. Lo vio Alejandro.
+- **#1 se REABRE.** El 29-sep se comparó contra el modelo en espejo. En S9 23 el vidrio con barras va ARRIBA del antepecho que sube, hasta la losa de cubierta, y el muro de abajo es macizo, con apenas una franja al pie. El modelo lo tiene al revés: vidrio bajo el tramo y nada sobre el antepecho (render `s9-23-triangulo`). Hay que re-estudiarlo con S9 15, 22, 23 y 24 y el DWG.
+- **Nuevo, de S9 23 y S9 8:** jardinera baja a lo largo del pie de la vidriera del salón, del lado de la terraza (no está en el modelo).
+- **Nuevo, de S9 23:** jardineras con arbustos en la cubierta, sobre el salón (por verificar con S9 10 y 27).
+- **Pendiente:** repetir las 9 vistas de la pasada sin espejo (`tanda-sinespejo.sh`) y revisar hallazgo por hallazgo.
+
+### Re-verificación sin espejo (30-sep, `*-sinespejo.png`)
+**Números de foto:** "S8 n" y "S9 n" = archivo `Villa-Savoye-interni-0nn.jpg` / `Villa-Savoye-Esterni-0nn.jpg` de Archweb. Coinciden con el informe del 29 salvo dos: S9 24 es una fachada (no la rampa) y S9 27 es el kiosque (no el solárium). Desde hoy se cita por archivo.
+
+**Confirmado bien, ya sin espejo:**
+- salón (S8 58): ventanas a la izquierda, azul al fondo con la puerta a la derecha;
+- kiosque (S9 18, 15, 27): jardinera contra el muro, vano a la derecha, mesa;
+- fachada (S9 03): volumen, pilotis, bloque verde, solárium a la derecha.
+
+**Nuevos o agravados:**
+- **#1 rampa, REABIERTO y agravado (S8 20, S9 23).**
+  - El vidrio con barras horizontales va ARRIBA del antepecho que sube.
+  - El piso de la rampa interior es gris antracita.
+  - El antepecho lleva pasamanos NEGRO.
+  - El modelo tiene piso claro, vidrio bajo el tramo y sin pasamanos a la vista.
+- **#19 Ventana cuadrada oscura** en el muro de la terraza junto a la jardinera en U (S9 15, 18, 27). Falta.
+- **#20 Jardinera baja al pie de la vidriera del salón**, lado terraza (S9 8, 23). Falta.
+- **#21 Plantas en la cubierta, sobre el salón**, y jardineras con arbustos grises contra la pantalla del solárium (S9 10, 23). Faltan.
+- **#22 Planta baja en fachada:** paño de vidrio con lamas horizontales blancas (S9 22, 24). Por verificar contra el modelo.
+- **#23 Puerta del machón de la terraza**: oscura en S9 23; en el modelo sale gris rosada.
