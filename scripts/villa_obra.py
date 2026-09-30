@@ -218,6 +218,44 @@ def columnas_nivel(z0, z1, W, D, muros, rects, material, col, radio=0.14):
     return hechas
 
 
+def pano_trasero_pb(m_vidrio, col, x=(-3.30, 3.30), alto=(0.25, 2.62), y=(-10.80, -10.54), paso=0.28, montantes=1.65):
+    """#22 (30-sep): el muro trasero de planta baja (lado 2) NO es macizo: entre dos bloques verdes angostos lleva un
+    gran paño vidriado con barras horizontales BLANCAS por fuera [e01, e02, e22, e24] y NEGRAS por dentro [i06].
+    Ancho = proporción medida en e02 (~75 % del frente); INTERPRETACIÓN ±0,3 m."""
+    hueco = _prisma("tmp_hueco_trasero", [(x[0], y[0]), (x[1], y[0]), (x[1], y[1]), (x[0], y[1])], alto[0], alto[1], m_vidrio, col)
+    for o in [o for o in col.objects if o.name.startswith("pb_muro") and o.type == "MESH"]:
+        bb = [o.matrix_world @ mathutils.Vector(c) for c in o.bound_box]
+        if min(v.y for v in bb) < y[1] and max(v.x for v in bb) > x[0] and min(v.x for v in bb) < x[1]:
+            bpy.context.view_layer.objects.active = o
+            md = o.modifiers.new("pano", "BOOLEAN"); md.operation = "DIFFERENCE"; md.solver = "EXACT"; md.object = hueco
+            bpy.ops.object.modifier_apply(modifier=md.name)
+    bpy.data.objects.remove(hueco, do_unlink=True)
+    yc = (y[0] + y[1]) / 2 + 0.02                          # vidrio centrado en el muro
+    _prisma("pb_pano_trasero_vidrio", [(x[0], yc - 0.006), (x[1], yc - 0.006), (x[1], yc + 0.006), (x[0], yc + 0.006)],
+            alto[0], alto[1], m_vidrio, col)
+    blanca = bpy.data.materials.get("m_barra_blanca") or bpy.data.materials.new("m_barra_blanca"); blanca.use_nodes = True
+    bb_ = next(n for n in blanca.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    bb_.inputs["Base Color"].default_value = (0.82, 0.82, 0.80, 1); bb_.inputs["Roughness"].default_value = 0.4
+    negra = bpy.data.materials.get("pb_montante")
+    me_b = bpy.data.meshes.new("pb_pano_trasero_barras"); me_n = bpy.data.meshes.new("pb_pano_trasero_barras_int")
+    bm_b, bm_n = bmesh.new(), bmesh.new()
+    def barra(bm, a0, a1, b0, b1, h0, h1):
+        r = bmesh.ops.create_cube(bm, size=1.0)
+        for v in r["verts"]:
+            v.co = ((a0 + a1) / 2 + v.co.x * (a1 - a0), (b0 + b1) / 2 + v.co.y * (b1 - b0), (h0 + h1) / 2 + v.co.z * (h1 - h0))
+    afuera, adentro = (yc - 0.05, yc - 0.006), (yc + 0.006, yc + 0.05)      # −y = afuera (lado 2)
+    h = alto[0] + paso
+    while h < alto[1] - 0.05:
+        barra(bm_b, x[0], x[1], *afuera, h - 0.02, h + 0.02); barra(bm_n, x[0], x[1], *adentro, h - 0.02, h + 0.02); h += paso
+    n = max(1, round((x[1] - x[0]) / montantes))
+    for k in range(n + 1):
+        u = x[0] + (x[1] - x[0]) * k / n
+        barra(bm_b, u - 0.03, u + 0.03, *afuera, alto[0], alto[1]); barra(bm_n, u - 0.03, u + 0.03, *adentro, alto[0], alto[1])
+    for me, bm, m in ((me_b, bm_b, blanca), (me_n, bm_n, negra)):
+        bm.to_mesh(me); bm.free(); o = bpy.data.objects.new(me.name, me); col.objects.link(o); me.materials.append(m)
+    print("[villa_obra] planta baja: paño vidriado trasero con barras blancas afuera y negras adentro")
+
+
 def ventana_terraza(z0, m_vidrio, col, x=(2.80, 3.70), alto=(1.05, 1.85), y=(-4.80, -4.55)):
     """#19 (30-sep): ventana cuadrada OSCURA en el muro de la terraza del lado del boudoir, sobre la mitad izquierda
     de la jardinera en U [e11, e15, e18, e27, e35, e37]. Tamaño y posición = lectura de foto (INTERPRETACIÓN ±0,15 m)."""
