@@ -142,7 +142,7 @@ Alejandro preguntó si las esquinas vacías de la jardinera se repetían en otro
 - los dinteles metidos 3 cm en las jambas: mismo material y mismas coordenadas de mundo, así que no se ve;
 - caras tapadas contra la losa o el cielo raso.
 
-**Hallazgo de fidelidad al pasar (para #11/#13):** en S9 8, 13 y 17 la terraza tiene UNA jardinera (la U del DWG) y la mesa. **Los tres tramos largos contra los muros (`mu_jardinera_*`) no aparecen en ninguna foto: fueron interpretación mía.** **Alejandro los quitó (30-sep).** Pendiente para #11: en S9 13 la jardinera queda cerca de la vidriera, y en el modelo queda al fondo, donde la dibuja el DWG.
+**Hallazgo de fidelidad al pasar (para #11/#13):** en S9 8, 13 y 17 la terraza tiene UNA jardinera (la U del DWG) y la mesa. **Los tres tramos largos contra los muros (`mu_jardinera_*`) no aparecen en ninguna foto: fueron interpretación mía.** **Alejandro los quitó (30-sep).** **Corrección (30-sep):** la jardinera en U SÍ va donde la dibuja el DWG. En S9 27 está contra el muro, junto al kiosque. Mi lectura de S9 13 estaba confundida por el espejo (ver abajo).
 
 ### #13 Plantas: RESUELTO (30-sep)
 - **Antes:** esferas con ruido ("piedras escarchadas").
@@ -151,3 +151,22 @@ Alejandro preguntó si las esquinas vacías de la jardinera se repetían en otro
 - Render `artefactos-bake/chequeo/plantas-cerca-v2`.
 - **Pendiente:** el verde sale algo oliva frente a S9 8; se ajusta en la fase de luz.
 - **El chequeo ahora también mide pilotis, vidrio curvo y montantes** (264 piezas). Las piezas curvas se revisaron con render: la herradura del vestíbulo contra la losa sale limpia.
+
+### #2 Azul del salón: RESUELTO (30-sep)
+- **Dónde va:** en la cara del muro del fondo que mira al salón (x −4,65), con la puerta y su dintel; el paño junto a la vidriera vuelve a blanco.
+- **Tono:** medido en S8 58 contra el cielo raso contiguo: sRGB ~(115, 133, 154) → lineal (0,36, 0,45, 0,62). Antes era un azul verdoso más oscuro.
+- **Render:** `s8-58-salon-oeste-v2`.
+- La referencia "S8 75" de la tabla no abre por enlace directo; la evidencia es S8 58.
+
+### ⚠️ EL MODELO ESTÁ EN ESPEJO (30-sep)
+Lo muestran cuatro fotos. En todas, lo que la foto tiene a la derecha el modelo lo tiene a la izquierda:
+- S8 58: la cinta de ventanas;
+- S9 13: el muro rosa;
+- S9 27: el vano del kiosque;
+- S9 23: el sentido en que sube la rampa.
+
+**Prueba:** el render desde el punto de S9 27 (`s9-27-kiosque-prueba`), volteado horizontalmente, reproduce la foto.
+
+**Causa:** en `dwg-muros.json` los ejes quedaron así: *"z: lado 2 (arriba del plano) negativo"*. Invertir un solo eje al importar es un reflejo.
+
+**Alcance:** todo lo construido es coherente entre sí; solo la mano está al revés. Por eso las lecturas de color y de posición relativas a cada recinto siguen valiendo.

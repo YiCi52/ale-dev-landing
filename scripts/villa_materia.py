@@ -178,17 +178,20 @@ def rampa_diagonal(y_losa=3.31):
 def salon(y_losa, y_techo):
     """CMN: "muro azul junto al comedor, muro rosa junto al estar, el resto blanco".
     ROSA = la cara interior de la fachada este en el tramo del salón (el extremo del estar; en las fotos S8 28–29 el
-    muro rosa lleva la cinta de ventanas, o sea que es fachada). AZUL = el paño junto a la vidriera, del lado del
-    comedor. 28-sep: la primera versión puso el rosa en el muro del fondo (salón/cocina): estaba al revés."""
+    muro rosa lleva la cinta de ventanas, o sea que es fachada).
+    AZUL = el muro corto del FONDO, lado comedor/cocina (x −4,65), el que tiene la puerta: la foto S8 58 lo muestra
+    entero en azul lavanda pálido, mirando desde el extremo rosa. 30-sep (hallazgo #2): el azul estaba en un paño
+    junto a la vidriera. Tono medido en S8 58 contra el cielo raso junto al muro: sRGB ~(115, 133, 154), el azul
+    ~1,34× el rojo → lineal (0,36, 0,45, 0,62)."""
     (x0, x1, z0, z1), _ = RECINTOS["salon"]
     rosa = pintura("m_rosa_terracota", (0.62, 0.34, 0.27))
-    azul = pintura("m_azul_polychromie", (0.30, 0.47, 0.55))
+    azul = pintura("m_azul_polychromie", (0.36, 0.45, 0.62))
     en_altura = lambda c: y_losa - 0.05 < c.z < y_techo + 0.05
     n_r = sum(_asignar_caras(o, rosa, lambda c, nn: nn.x < -0.9 and c.y > z0 and c.x > 9.0)
               for o in _objetos(("fa_este_inf_1", "fa_este_sup_1")))
-    n_a = sum(_asignar_caras(o, azul, lambda c, nn: en_altura(c) and nn.y > 0.9 and abs(c.y - z0) < 0.35
-                             and x0 < c.x < 1.40) for o in _objetos(("n1_muro", "n1_tabique")))
-    print(f"[materia] salón: {n_r} caras rosa terracota (fachada del estar) · {n_a} caras azul (comedor)")
+    n_a = sum(_asignar_caras(o, azul, lambda c, nn: en_altura(c) and nn.x > 0.9 and abs(c.x - x0) < 0.10
+                             and z0 - 0.05 < c.y < z1) for o in _objetos(("n1_muro", "n1_tabique")))
+    print(f"[materia] salón: {n_r} caras rosa terracota (fachada del estar) · {n_a} caras azul (muro del fondo)")
 
 
 def _mira_hacia(rect, y_losa, y_techo):
