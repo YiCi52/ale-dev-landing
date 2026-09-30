@@ -455,16 +455,17 @@ def muros_pozo(pisos, techos, m_muro, m_vidrio, col):
     m_barra = bpy.data.materials.get("pb_montante") or m_muro
     bm, bmv, bmb = bmesh.new(), bmesh.new(), bmesh.new()
     # planta baja
-    zs = paso(-7.08, 2.62)
+    # cada muro nuevo cubre EXACTAMENTE la franja cortada: si no, quedan rendijas (chequeo del 29-sep)
+    zs = paso(-7.08, 2.72)
     _banda(bm, X_ESTE, zs, lambda z: b0, lambda z: min(s(z, b0, b1, 1) + 1.0, c0))
     _vidrio(bmv, bmb, X_ESTE, zs, lambda z: min(s(z, b0, b1, 1) + 1.0, c0), lambda z: c0)
-    zs = paso(-7.08, -1.5)
+    zs = paso(-7.08, -1.45)
     _banda(bm, X_OESTE, zs, lambda z: b0, lambda z: min(s(z, b0, b1, 2) + 1.0, c0))
     # piso principal
-    zs = paso(-4.56, 2.62)
+    zs = paso(-4.56, 2.72)
     _vidrio(bmv, bmb, X_ESTE, zs, lambda z: b1, lambda z: max(s(z, b1, b2, 1) - E_LOSA, b1))
     _banda(bm, X_ESTE, zs, lambda z: max(s(z, b1, b2, 1) - E_LOSA, b1), lambda z: s(z, b1, b2, 1) + 1.0)
-    zs = paso(-2.08, 2.5)
+    zs = paso(-2.08, 2.62)
     _banda(bm, X_OESTE, zs, lambda z: b1, lambda z: b1 + 0.9)
     _vidrio(bmv, bmb, X_OESTE, zs, lambda z: b1 + 0.9, lambda z: c1)
     for nombre, b_, mat in (("circ_pozo_muros", bm, m_muro), ("circ_pozo_vidrio", bmv, m_vidrio), ("circ_pozo_barras", bmb, m_barra)):

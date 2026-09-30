@@ -112,3 +112,12 @@ Cada corrección se verifica con un render desde el mismo ángulo de la foto ant
 - **Muro central del tramo exterior:** macizo hasta 10 cm sobre el tramo alto, con baranda de 4 tubos claros encima (S9 7).
 - **Verificado** con los renders `s8-20-rampa-n1-v3` y `s9-24-rampa-ext-v2`. Desde la terraza se leen la banda diagonal, el vidrio con barras debajo y la baranda de tubos arriba, como en S9 15, 22 y 24.
 - **Pendiente menor:** en el piso principal, el muro central remata en un arco (DWG z 3,1…3,9); hoy termina recto en z 2,5.
+
+### #12 Mesa de la terraza: RESUELTO, y era otra cosa (29-sep)
+- Lo que el DWG dibuja en x 2,6…4,9 · z −4,6…−2,4 **no es la mesa: es una jardinera en U** junto al muro del boudoir (S9 13, 17, 19). Ahora tiene 0,45 m de alto, tierra y arbustos, y sus piezas están fundidas en una sola.
+- **La mesa real** (S9 13, 19, 29, 30) es un tablero blanco delgado sobre 4 patas delgadas, con el largo paralelo al muro del vano. La posición es interpretación, ±0,5 m.
+- **Chequeo automático de uniones** (29-sep, a raíz de lo que vio Alejandro en las esquinas de la mesa). Se revisaron todos los tabiques y vidrios del piso principal, además de las franjas cortadas del pozo de la rampa:
+  - 2 esquinas vacías en la jardinera → corregidas con la fusión;
+  - rendijas de 5 a 10 cm entre los muros nuevos del pozo y el corte → corregidas;
+  - 1 hueco de 11 cm junto a un vidrio del hall (x −4,93…−4,28, z 0,45) → **pendiente de ver con foto**; puede ser el marco de una puerta.
+- **Regla nueva:** piezas que se tocan se FUNDEN (`villa_obra.unir`). Prolongarlas crea caras coplanares, que salen como rayas negras.

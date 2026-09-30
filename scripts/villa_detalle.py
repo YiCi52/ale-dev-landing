@@ -82,6 +82,7 @@ def materiales():
         "canaleta": _principled("mu_canaleta", (0.62, 0.63, 0.64), 0.3, 0.8)[0],
         "hormigon_claro": _principled("mu_hormigon_claro", (0.72, 0.70, 0.66), 0.9)[0],
         "follaje": _principled("mu_follaje", (0.12, 0.16, 0.10), 0.7)[0],
+        "tierra": _principled("mu_tierra", (0.10, 0.075, 0.05), 0.95)[0],
         "flor": _principled("mu_lavanda", (0.30, 0.22, 0.45), 0.8)[0],
         "luz_calida": _emisor("mu_luz_calida", (1.0, 0.78, 0.52), 45.0 if os.environ.get("VILLA_MODO") == "noche" else 0.0),
     }
@@ -270,7 +271,20 @@ def terraza(Y_LOSA, M, col):
             t = (k + 0.5) / k_n
             cx, cy = (x0 + (x1 - x0) * t, (y0 + y1) / 2) if (x1 - x0) > (y1 - y0) else ((x0 + x1) / 2, y0 + (y1 - y0) * t)
             _mata(f"mu_mata_{n}_{k}", (cx, cy, z + 0.45), 0.22 + 0.06 * math.sin(k * 2.3), M, col)
-    # la mesa fija ya no va aquí: sale del DWG (villa_obra.nivel_principal), en su sitio real x 2,6…4,9 · z −3,45…−2,4
+    mesa_terraza(z, M, col)
+
+
+def mesa_terraza(z, M, col):
+    """La mesa de la terraza [S9 13, 19, 29, 30]: tablero delgado de concreto blanco (~2,2 × 0,65 × 0,06) sobre 4 patas
+    delgadas, largo paralelo al muro del vano. Posición = lectura de las fotos (INTERPRETACIÓN, ±0,5 m)."""
+    x0, x1, y0, y1, h = 7.35, 8.0, -2.3, -0.1, 0.72
+    cojin("mu_mesa_terraza", x0, x1, y0, y1, z + h - 0.06, z + h, M["hormigon_claro"], col, 0.008)
+    for (x, y) in [(x0 + 0.08, y0 + 0.12), (x1 - 0.08, y0 + 0.12), (x0 + 0.08, y1 - 0.12), (x1 - 0.08, y1 - 0.12)]:
+        tubo("mu_mesa_terraza_pata", [(x, y, z), (x, y, z + h - 0.06)], 0.014, M["acero_negro"], col)
+    # tierra y matas dentro de la jardinera en U del DWG (x 2,75…4,75 · z −4,6…−2,55)
+    cojin("mu_tierra_jardinera", 2.76, 4.74, -4.59, -2.56, z + 0.30, z + 0.40, M["tierra"], col, 0.002)
+    for k, (cx, cy) in enumerate([(3.2, -3.9), (4.2, -3.0), (3.9, -4.2), (3.1, -2.95)]):
+        _mata(f"mu_mata_jardinera_u_{k}", (cx, cy, z + 0.40), 0.28 + 0.05 * (k % 2), M, col)
 
 
 def _mata(nombre, loc, r, M, col):

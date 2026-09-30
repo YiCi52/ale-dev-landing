@@ -176,6 +176,7 @@ TERRAZA = (1.40, 9.5, -4.62, 4.78)                 # x0, x1, z0, z1 del jardín 
 # La tapa cubre TODO el conjunto (z −4,60…−2,40): en las fotos de Archweb (S9, 19/20/29/30) la mesa de la terraza
 # es un tablero delgado de hormigón sobre apoyos de lámina, no un cajón. Los pares de líneas son esos apoyos.
 MESA_Z0, MESA_Z1, H_MESA, E_MESA = -4.60, -2.40, 0.72, 0.06
+H_JARDINERA = 0.45                                  # alto leído de S9 13/17 (interpretación ±10 cm)
 
 
 def columnas_nivel(z0, z1, W, D, muros, rects, material, col, radio=0.14):
@@ -222,6 +223,17 @@ def vidriera_terraza(z0, z1, m_vidrio, col, paneles=4):
     if m: me.materials.append(m)
 
 
+def unir(objs):
+    """Funde varias piezas en la primera (booleana UNIÓN) y borra las demás: sin caras coplanares ni juntas."""
+    objs = [o for o in objs if o]
+    if len(objs) < 2: return objs[0] if objs else None
+    base = objs[0]; bpy.context.view_layer.objects.active = base
+    for o in objs[1:]:
+        m = base.modifiers.new("union", "BOOLEAN"); m.operation = "UNION"; m.solver = "EXACT"; m.object = o
+        bpy.ops.object.modifier_apply(modifier=m.name); bpy.data.objects.remove(o, do_unlink=True)
+    return base
+
+
 def _solape(r, q):
     """Fracción del rectángulo MÁS CHICO que queda dentro del otro."""
     ax = max(0.0, min(r[1], q[1]) - max(r[0], q[0])); az = max(0.0, min(r[3], q[3]) - max(r[2], q[2]))
@@ -248,16 +260,18 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
     for n, p in enumerate(interiores):
         _prisma(f"n1_muro_{n}", p, z0, z1, m_muro, col)
     rects = _sin_solapes([r for r in tabiques_de_lineas("nivel1", W, D, solidos) if not villa_circulacion.es_muro_de_rampa(*r)])
-    # En la TERRAZA los pares de líneas no son muros: son la mesa fija de concreto (el nivel 2 la muestra como
-    # pieza rellena: x 2,6…4,9 · z −3,7…−2,4). Se levantan a altura de mesa y se tapan con su losa.
+    # En la TERRAZA los pares de líneas no son muros: son una JARDINERA en U junto al muro del boudoir (fotos S9 13,
+    # 17, 19: cajones blancos bajos con arbustos). El 28-sep se había leído como la mesa fija (error: la mesa real es
+    # un tablero delgado sobre patas, ver villa_detalle.mesa_terraza). Las piezas se FUNDEN en una sola: prolongadas
+    # y sueltas dejaban esquinas vacías o caras coplanares (rayas negras).
     mesa = [r for r in rects if r[0] >= TERRAZA[0] and r[2] >= TERRAZA[2] and r[3] <= MESA_Z1 + 0.05]
     rects = [r for r in rects if r not in mesa]
+    piezas = []
     for n, (x0, x1, a, b) in enumerate(mesa):
-        _prisma(f"n1_mesa_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z0 + H_MESA - E_MESA, m_muro, col)
-    if mesa:
-        mx0, mx1 = min(r[0] for r in mesa), max(r[1] for r in mesa)
-        _prisma("n1_mesa_tapa", [(mx0, MESA_Z0), (mx1, MESA_Z0), (mx1, MESA_Z1), (mx0, MESA_Z1)],
-                z0 + H_MESA - E_MESA, z0 + H_MESA, m_muro, col)
+        if x1 - x0 > b - a: x0, x1 = max(x0 - 0.15, TERRAZA[0]), x1 + 0.15
+        else: a, b = a - 0.15, min(b + 0.15, MESA_Z1)
+        piezas.append(_prisma(f"n1_jardinera_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0 - 0.01, z0 + H_JARDINERA, m_muro, col))
+    unir(piezas)
     for n, (x0, x1, a, b) in enumerate(rects):
         _prisma(f"n1_tabique_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z1, m_muro, col)
     vidrios = _sin_solapes(tabiques_de_lineas("nivel1", W, D, solidos, sep=(0.03, 0.08)), previos=rects)
@@ -270,7 +284,7 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
     for n, (a0, a1) in enumerate([(-9.30, -7.05), (-6.25, -6.05)]):
         _prisma(f"n1_tabique_bano14_{n}", [(a0, -4.75), (a1, -4.75), (a1, -4.62), (a0, -4.62)], z0, z1, m_muro, col)
     _prisma("n1_tabique_bano14_dintel", [(-7.05, -4.75), (-6.25, -4.75), (-6.25, -4.62), (-7.05, -4.62)], z0 + 2.10, z1, m_muro, col)
-    print(f"[villa_obra] nivel principal: {len(interiores)} muros rellenos · {len(rects)} tabiques · {len(vidrios)} vidrios · mesa de terraza ({len(mesa)} piezas)")
+    print(f"[villa_obra] nivel principal: {len(interiores)} muros rellenos · {len(rects)} tabiques · {len(vidrios)} vidrios · jardinera en U ({len(mesa)} piezas fundidas)")
     return interiores, rects
 
 
