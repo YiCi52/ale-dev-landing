@@ -232,7 +232,7 @@ def cuartos(y_losa, y_techo, col):
     banio = baldosa("m_baldosa_bano", (0.84, 0.84, 0.81), (0.80, 0.80, 0.78), (0.62, 0.62, 0.60), 0.15, 0.2)   # blanca de 15 cm [S8 7]
     _losa_piso("mu_piso_bano14", -9.30, -6.05, -4.62, -3.28, z, banio, col)
     _losa_piso("mu_piso_bano_suite", -4.93, -2.30, -6.10, -3.30, z + 0.003, banio, col)
-    losa_t = bpy.data.materials.get("mu_losa_terraza")
+    losa_t = bpy.data.materials.get("blanco")                  # mismas losas grises que la terraza (#11, acabados)
     if losa_t: _losa_piso("mu_piso_kiosque", 4.93, 9.30, -10.56, -4.75, z, losa_t, col)
     print(f"[materia] boudoir azul profundo ({n_b} caras) · pasillo bleu charron ({n_p}) · parqué huéspedes · piso del kiosque")
 

@@ -11,7 +11,8 @@ La cámara y el retoque de la toma del rincón viven en villa_lookdev.py.
 import bpy, math, mathutils, os
 
 CUBIERTA = 6.66                                    # cubierta acabada (se recibe del script principal)
-PISOS = [0.0, 3.31, 6.66]                         # arranques de muro donde se junta la mugre
+PISOS = [0.0, 3.31, 6.66]
+TERRAZA_Z = 3.322                                # cara de arriba del piso de la terraza y del kiosque                         # arranques de muro donde se junta la mugre
 
 
 def _ruta(assets, prefijo, k):
@@ -122,7 +123,14 @@ def losetas_arriba(m, b, nt, pos, detalle, ao, assets):
     arriba = _valor(nt, "GREATER_THAN", sep_n.outputs["Z"], 0.9)
     sep = nt.nodes.new("ShaderNodeSeparateXYZ"); nt.links.new(pos, sep.inputs["Vector"])
     en_cubierta = _valor(nt, "LESS_THAN", _valor(nt, "ABSOLUTE", _valor(nt, "SUBTRACT", sep.outputs["Z"], CUBIERTA)), 0.05)
-    es_piso = _valor(nt, "MULTIPLY", arriba, en_cubierta)
+    # 30-sep (#11): también el piso de la TERRAZA y del kiosque (nivel principal, x > 1,35): losas de concreto gris
+    # con junta de pasto [e08, e13, e19, e29, e35]; ahí la loseta mide ~0,9 m (en la cubierta, 0,5 m)
+    en_terraza = _valor(nt, "MULTIPLY", _valor(nt, "LESS_THAN", _valor(nt, "ABSOLUTE", _valor(nt, "SUBTRACT", sep.outputs["Z"], TERRAZA_Z)), 0.03),
+                        _valor(nt, "GREATER_THAN", sep.outputs["X"], 1.35))
+    es_piso = _valor(nt, "MULTIPLY", arriba, _valor(nt, "MAXIMUM", en_cubierta, en_terraza))
+    escala = nt.nodes.new("ShaderNodeVectorMath"); escala.operation = "SCALE"
+    nt.links.new(pos, escala.inputs[0]); nt.links.new(_valor(nt, "SUBTRACT", 1.0, _valor(nt, "MULTIPLY", en_terraza, 0.44)), escala.inputs["Scale"])
+    pos = escala.outputs["Vector"]
     lad = nt.nodes.new("ShaderNodeTexBrick"); nt.links.new(pos, lad.inputs["Vector"])
     lad.offset = 0.0; lad.squash = 1.0
     lad.inputs["Scale"].default_value = 1.0; lad.inputs["Brick Width"].default_value = 0.5

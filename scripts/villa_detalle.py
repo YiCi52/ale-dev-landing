@@ -371,7 +371,8 @@ def pisos(Y_LOSA, col):
     cojin("mu_piso_umbral", -4.79, 9.5, 4.75, 5.45, z, z + 0.01, cafe, col, 0.001)
     # 30-sep: arrancaba en x 0,18 (1,1 m DENTRO del pozo de la rampa, encimada al piso del hall). El recinto real:
     # del muro del pozo (x 1,40) a la cara interior de la fachada (9,30), del muro del kiosque (−4,60) a la vidriera.
-    cojin("mu_piso_terraza", 1.40, 9.30, -4.60, 4.65, z, z + 0.01, losa, col, 0.001)
+    # piso de concreto gris con junta de pasto: lo pinta villa_acabados.losetas_arriba sobre el material blanco (#11)
+    cojin("mu_piso_terraza", 1.40, 9.30, -4.60, 4.65, z, z + 0.01, bpy.data.materials.get("blanco") or losa, col, 0.001)
 
 
 def detallar(W, D, Y_LOSA, Y_TECHO):
