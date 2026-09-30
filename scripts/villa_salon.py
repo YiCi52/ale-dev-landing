@@ -111,3 +111,14 @@ def radiadores(z, col, M_blanco_nombre="mu_radiador_blanco"):
         bm.to_mesh(me); bm.free()
         o = bpy.data.objects.new(me.name, me); col.objects.link(o); me.materials.append(m)
     print("[villa_salon] radiadores: blancos bajo la cinta, oscuro bajo la ventana rosa")
+
+
+def vigas(y_techo, col, xs=(-0.01, 4.74), ancho=0.28, alto=0.30, y=(4.75, CARA_CINTA)):
+    """#47 (30-sep): vigas descolgadas que cruzan el cielo raso del salón de la vidriera a la cinta, sobre la línea de
+    columnas del eje x 0 y del eje x 4,75 [i50, i58]. Canto ~30 cm y ancho de la columna = lectura de foto
+    (INTERPRETACIÓN ±5 cm); blancas como el cielo raso."""
+    blanco = bpy.data.materials.get("blanco")
+    for n, x in enumerate(xs):
+        villa_obra._prisma(f"n1_viga_salon_{n}", [(x - ancho / 2, y[0]), (x + ancho / 2, y[0]), (x + ancho / 2, y[1]), (x - ancho / 2, y[1])],
+                           y_techo - alto, y_techo + 0.001, blanco, col)
+    print(f"[villa_salon] {len(xs)} vigas descolgadas en el salón")
