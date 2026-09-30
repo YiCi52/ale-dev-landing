@@ -108,6 +108,8 @@ def plataforma_y_tina(piso, col):
     for k, r in enumerate(villa_obra.rects_con_huecos(min(xs), max(xs), min(zs), max(zs), [TINA, (PARED_O, -3.95, -4.15, -3.40)])):
         _caja(f"bano_plataforma_{k}", *r, piso, h1, azul, col)
     _caja("bano_tina_fondo", tx0, tx1, tz0, tz1, piso, h1 - PROF_TINA, azul, col)
+    import villa_cuartos
+    villa_cuartos.escalon_bano(piso, col, azul)                          # #31 [i08, i26, i52]
     cromo = _cromo()
     for k, x in enumerate((tx0 + 0.20, tx0 + 0.34)):                    # llaves en el borde del fondo [S8 7]
         bpy.ops.mesh.primitive_cylinder_add(vertices=16, radius=0.016, depth=0.07, location=(x, tz1 + 0.07, h1 + 0.035))
