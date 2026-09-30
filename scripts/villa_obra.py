@@ -218,6 +218,29 @@ def columnas_nivel(z0, z1, W, D, muros, rects, material, col, radio=0.14):
     return hechas
 
 
+def ventana_terraza(z0, m_vidrio, col, x=(2.80, 3.70), alto=(1.05, 1.85), y=(-4.80, -4.55)):
+    """#19 (30-sep): ventana cuadrada OSCURA en el muro de la terraza del lado del boudoir, sobre la mitad izquierda
+    de la jardinera en U [e11, e15, e18, e27, e35, e37]. Tamaño y posición = lectura de foto (INTERPRETACIÓN ±0,15 m)."""
+    hueco = _prisma("tmp_hueco_ventana", [(x[0], y[0]), (x[1], y[0]), (x[1], y[1]), (x[0], y[1])],
+                    z0 + alto[0], z0 + alto[1], m_vidrio, col)
+    lo, hi = mathutils.Vector((x[0], y[0], z0 + alto[0])), mathutils.Vector((x[1], y[1], z0 + alto[1]))
+    for o in [o for o in col.objects if o.name.startswith(("n1_muro", "n1_tabique")) and o.type == "MESH"]:
+        bb = [o.matrix_world @ mathutils.Vector(c) for c in o.bound_box]
+        if all(min(v[i] for v in bb) < hi[i] and max(v[i] for v in bb) > lo[i] for i in range(3)):
+            bpy.context.view_layer.objects.active = o
+            md = o.modifiers.new("ventana", "BOOLEAN"); md.operation = "DIFFERENCE"; md.solver = "EXACT"; md.object = hueco
+            bpy.ops.object.modifier_apply(modifier=md.name)
+    bpy.data.objects.remove(hueco, do_unlink=True)
+    yc = -4.675
+    _prisma("n1_ventana_terraza_vidrio", [(x[0], yc - 0.006), (x[1], yc - 0.006), (x[1], yc + 0.006), (x[0], yc + 0.006)],
+            z0 + alto[0], z0 + alto[1], m_vidrio, col)
+    m = bpy.data.materials.get("pb_montante")
+    for n, (a0, a1, h0, h1) in enumerate([(x[0], x[1], alto[0], alto[0] + 0.04), (x[0], x[1], alto[1] - 0.04, alto[1]),
+                                           (x[0], x[0] + 0.04, alto[0], alto[1]), (x[1] - 0.04, x[1], alto[0], alto[1])]):
+        _prisma(f"n1_ventana_terraza_marco_{n}", [(a0, yc - 0.03), (a1, yc - 0.03), (a1, yc + 0.03), (a0, yc + 0.03)],
+                z0 + h0, z0 + h1, m, col)
+
+
 def machon_terraza(z0, z1, m_muro, col, puerta=(3.70, 4.35), h_puerta=2.10):
     """#23 (30-sep): entre el fin del muro del pozo (z 2,65, DWG) y la vidriera (4,65) el modelo dejaba un hueco de
     piso a techo y desde la terraza se veía el hall. En S9 23, e16 y e25 es un MACHÓN blanco macizo, en el plano del
@@ -245,6 +268,9 @@ def vidriera_terraza(z0, z1, m_vidrio, col, paneles=4):
     _prisma("n1_vidriera_terraza", [(x0, z - 0.015), (x1, z - 0.015), (x1, z + 0.015), (x0, z + 0.015)],
             z0, z1, m_vidrio, col)
     m = bpy.data.materials.get("pb_montante")                 # el mismo acero oscuro de los montantes del vestíbulo
+    # #49 (30-sep): barra horizontal NEGRA a ~0,95 m cruzando la vidriera por dentro [e13, e14, e30, i56, i57, i59]
+    _prisma("n1_vidriera_barra", [(x0, z + 0.05), (x1, z + 0.05), (x1, z + 0.075), (x0, z + 0.075)],
+            z0 + 0.93, z0 + 0.98, m, col)
     me = bpy.data.meshes.new("n1_vidriera_marcos"); bm = bmesh.new()
     def barra(a, b, c, d, h0, h1):
         r = bmesh.ops.create_cube(bm, size=1.0)
@@ -317,6 +343,7 @@ def nivel_principal(z0, z1, W, D, m_muro, col, m_vidrio=None):
         _prisma(f"n1_vidrio_{n}", [(x0, a), (x1, a), (x1, b), (x0, b)], z0, z1, m_vidrio or m_muro, col)
     if m_vidrio: vidriera_terraza(z0, z1, m_vidrio, col)
     machon_terraza(z0, z1, m_muro, col)
+    ventana_terraza(z0, m_vidrio, col)
     columnas = columnas_nivel(z0, z1, W, D, interiores, rects, m_muro, col)
     # Tabique del BAÑO n.º 14 (compartido hijo/huéspedes): la planta oficial del CMN lo dibuja entre el cuarto del
     # hijo y el baño; el DWG no. Puerta hacia el cuarto del hijo junto al pasillo: posición = interpretación.
@@ -398,11 +425,25 @@ def cubierta(z_piso, alto_pantalla, alto_antepecho, m_muro, col):
             _prisma("cub_escalera_techo", env, z_piso + ALTO_ESCALERA - E_TECHO_ESCALERA,
                     z_piso + ALTO_ESCALERA, m_muro, col)
     pantalla_continua(col, z_piso, alto_pantalla, 1.00, 2.03)
+    banca_solarium(z_piso, m_muro, col)
     # La chimenea: la pieza 7 del nivel 2 (0,29 × 0,26) que el filtro de área descartaba como "poste". La foto 27
     # de Archweb (S9) la muestra junto a las pantallas, un poco más alta que ellas: altura = interpretación.
     cx0, cx1, cz0, cz1 = CHIMENEA
     _prisma("cub_chimenea", [(cx0, cz0), (cx1, cz0), (cx1, cz1), (cx0, cz1)], z_piso, z_piso + ALTO_CHIMENEA, m_muro, col)
     print(f"[villa_obra] cubierta: {len(muros)} muros (pantallas + rampa) · ventana del solárium · chimenea")
+
+
+def banca_solarium(z_piso, m_muro, col, alto=0.45, fondo=0.70, grueso=0.08):
+    """#15 (30-sep): banca de losa blanca delante de la ventana del solárium, apoyada en la pantalla y con dos
+    patas delgadas al frente [e10, e39]. Largo = la ventana + 5 cm por lado; alto y fondo = lectura de foto."""
+    x0, x1, a, b = VENTANA_SOLARIUM
+    x0, x1 = x0 - 0.05, x1 + 0.05
+    _prisma("cub_banca_tapa", [(x0, a - fondo), (x1, a - fondo), (x1, a), (x0, a)], z_piso + alto - grueso, z_piso + alto,
+            m_muro, col)
+    for n, x in enumerate((x0 + 0.08, x1 - 0.08)):
+        _prisma(f"cub_banca_pata_{n}", [(x - 0.025, a - fondo + 0.06), (x + 0.025, a - fondo + 0.06),
+                                          (x + 0.025, a - fondo + 0.11), (x - 0.025, a - fondo + 0.11)],
+                z_piso, z_piso + alto - grueso, m_muro, col)
 
 
 def pantalla_continua(col, z_piso, alto, alto_antepecho, alto_dintel):
