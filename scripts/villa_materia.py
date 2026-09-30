@@ -308,7 +308,8 @@ def verde_solo_afuera(h_pilotis):
     # el recinto cerrado de la planta baja: la herradura (z ≥ 0) + el tramo recto hacia el fondo, entre x ±6,4
     # (PLANTA.md: lado derecho recto en x ≈ +6,33 de z 0 a −9,4; el izquierdo contra el bloque de servicio)
     adentro = lambda x, z: (_dentro((x, z), arco) or (-6.4 < x < 6.4 and -9.5 < z < 0.1)
-                            or (x0 < x < x1 and z0 < z < z1))
+                            or (x0 < x < x1 and z0 < z < z1)
+                            or (-3.35 < x < 3.35 and -11.10 < z < -9.4))   # detrás del paño vidriado trasero (#22)
     prueba = lambda c, nn: abs(nn.z) < 0.5 and c.z < h_pilotis and adentro(c.x + nn.x * 0.4, c.y + nn.y * 0.4)
     n = sum(_asignar_caras(o, blanco, prueba) for o in _objetos(("pb_muro",)))
     print(f"[materia] planta baja: {n} caras interiores en blanco (el verde queda solo afuera)")

@@ -231,6 +231,10 @@ def pano_trasero_pb(m_vidrio, col, x=(-3.30, 3.30), alto=(0.25, 2.62), y=(-10.80
             bpy.ops.object.modifier_apply(modifier=md.name)
     bpy.data.objects.remove(hueco, do_unlink=True)
     yc = (y[0] + y[1]) / 2 + 0.02                          # vidrio centrado en el muro
+    # el tabique garaje/servicio (x −1,40…−1,25, DWG) moría 11 cm antes del vidrio: se prolonga hasta el paño
+    # (lo vio Alejandro por el vidrio, 30-sep)
+    _prisma("pb_muro_tabique_al_vidrio", [(-1.405, yc + 0.006), (-1.255, yc + 0.006), (-1.255, y[1] + 0.01), (-1.405, y[1] + 0.01)],
+            0.0, 2.87, bpy.data.materials.get("verde"), col)
     _prisma("pb_pano_trasero_vidrio", [(x[0], yc - 0.006), (x[1], yc - 0.006), (x[1], yc + 0.006), (x[0], yc + 0.006)],
             alto[0], alto[1], m_vidrio, col)
     blanca = bpy.data.materials.get("m_barra_blanca") or bpy.data.materials.new("m_barra_blanca"); blanca.use_nodes = True
