@@ -125,6 +125,41 @@ def baranda_tubos(pisos, col, rieles=4):
         _tubo_curva(f"circ_baranda_clara_poste_{round(z, 2)}", [(0.0, z, s0 + 0.10), (0.0, z, s0 + 1.0)], 0.02, m, col)
 
 
+def _fin_remate(pisos):
+    """z donde el remate del muro central del entrepiso interior se funde con el tramo bajo del siguiente
+    (mismo cálculo que _muro_central): de ahí a la boca el muro ya no es antepecho."""
+    base, techo, sig_techo = pisos[0], pisos[1], pisos[2]
+    medio, sig_medio = (base + techo) / 2, (techo + sig_techo) / 2
+    t = (sig_medio - medio - H_BARANDA) / ((techo - medio) + (sig_medio - techo))
+    return Z_DESCANSO + min(max(t, 0.0), 1.0) * (Z_BOCA - Z_DESCANSO)
+
+
+def pasamanos_rampa(pisos, techos, col, sobre=0.045, paso_poste=1.2):
+    """Pasamanos de tubo NEGRO sobre cada antepecho de la rampa interior (#1, 30-sep). Fotos: i02, i09, i20 (sobre
+    el antepecho que lleva el ventanal rayado encima), i03, i13, i47, i54 (sobre el antepecho hacia el vestíbulo y el
+    hall) y i15 (sobre el remate del muro central). Va 4,5 cm sobre el canto, con postes cortos."""
+    m = _material_negro(); s = superficie
+    b0, b1, b2 = pisos; c0, c1 = techos
+    paso = lambda a, b, n=60: [a + (b - a) * k / n for k in range(n + 1)]
+    corridas = [
+        ("pb_este", X_ESTE, paso(-7.08, 2.72), lambda z: min(s(z, b0, b1, 1) + 1.0, c0)),
+        ("pb_oeste", X_OESTE, paso(-7.08, -1.45), lambda z: min(s(z, b0, b1, 2) + 1.0, c0)),
+        ("n1_este", X_ESTE, paso(-4.56, 2.72), lambda z: s(z, b1, b2, 1) + 1.0),
+        ("n1_oeste", X_OESTE, paso(-2.08, 2.62), lambda z: b1 + 0.9),
+        # remate del muro central en el entrepiso interior: 1 m sobre el tramo que sube (ver _muro_central)
+        ("central", MURO_X, paso(Z_DESCANSO, _fin_remate(pisos)), lambda z: s(z, b0, b1, 1) + H_BARANDA),
+    ]
+    for nombre, x, zs, tope in corridas:
+        xc = (x[0] + x[1]) / 2
+        # solo donde el antepecho queda a altura de mano sobre algún tramo y bajo el cielo raso
+        zs = [z for z in zs if tope(z) + sobre < (c0 if nombre.startswith("pb") or nombre == "central" else c1) - 0.05]
+        if len(zs) < 2: continue
+        _tubo_curva(f"circ_pasamanos_rampa_{nombre}", [(xc, z, tope(z) + sobre) for z in zs], 0.021, m, col)
+        for k in range(int(abs(zs[-1] - zs[0]) / paso_poste) + 1):
+            z = zs[0] + (zs[-1] - zs[0]) * (k * paso_poste) / abs(zs[-1] - zs[0])
+            _tubo_curva(f"circ_pasamanos_rampa_{nombre}_poste_{k}", [(xc, z, tope(z)), (xc, z, tope(z) + sobre)], 0.008, m, col)
+
+
 def _tubo_curva(nombre, puntos, radio, material, col):
     cu = bpy.data.curves.new(nombre, "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = radio; cu.bevel_resolution = 3
     sp = cu.splines.new("POLY"); sp.points.add(len(puntos) - 1)
@@ -479,4 +514,5 @@ def muros_pozo(pisos, techos, m_muro, m_vidrio, col):
         me = bpy.data.meshes.new(nombre); b_.to_mesh(me); b_.free()
         o = bpy.data.objects.new(nombre, me); col.objects.link(o); me.materials.append(mat)
     baranda_tubos(pisos, col)
+    pasamanos_rampa(pisos, techos, col)
     print("[villa_circulacion] pozo de la rampa: antepechos, vidrios con barras y bandas según fotos (muros llenos quitados)")
