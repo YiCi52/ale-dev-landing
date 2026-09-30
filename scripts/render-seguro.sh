@@ -3,7 +3,7 @@
 # Blender con 4 hilos y prioridad baja; si su memoria pasa de TOPE_MB, se mata y se avisa.
 # Uso: VILLA_OUT=... [VILLA_*=...] bash scripts/render-seguro.sh
 TOPE_MB=${TOPE_MB:-4000}
-nice -n 10 /Applications/Blender.app/Contents/MacOS/Blender -b -t 4 -P scripts/villa-blender.py > "${VILLA_LOG:-/tmp/villa-render.log}" 2>&1 &
+nice -n 10 /Applications/Blender.app/Contents/MacOS/Blender -b -t 4 --python-exit-code 1 -P scripts/villa-blender.py > "${VILLA_LOG:-/tmp/villa-render.log}" 2>&1 &
 PID=$!
 while kill -0 $PID 2>/dev/null; do
   RSS=$(ps -o rss= -p $PID 2>/dev/null | tr -d ' ')

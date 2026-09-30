@@ -245,6 +245,7 @@ def salon(Y_LOSA, Y_TECHO, D, M, col):
         vm.thonet(f"mu_thonet_{n}", (x, y, z), r, M, col)
     # #3 + #9 + #34 (30-sep): chimenea y mesón (una pieza) y radiadores blancos/oscuro — ver villa_salon.py
     import villa_salon
+    import villa_cubierta; villa_cubierta.construir(Y_TECHO + 0.21, col)   # #21 + #55 (después de villa_plantas)
     villa_salon.chimenea_y_meson(z, col); villa_salon.radiadores(z, col); villa_salon.vigas(Y_TECHO - 0.01, col)
     import villa_cuartos
     villa_cuartos.muebles_bajo_ventana(z, col)                         # #32: dormitorios, bajo la cinta

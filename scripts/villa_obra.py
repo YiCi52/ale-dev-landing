@@ -409,7 +409,9 @@ def unir(objs):
     base = objs[0]; bpy.context.view_layer.objects.active = base
     for o in objs[1:]:
         m = base.modifiers.new("union", "BOOLEAN"); m.operation = "UNION"; m.solver = "EXACT"; m.object = o
-        bpy.ops.object.modifier_apply(modifier=m.name); bpy.data.objects.remove(o, do_unlink=True)
+        with bpy.context.temp_override(object=base, active_object=base):   # el activo puede ser otro (p. ej. una planta)
+            bpy.ops.object.modifier_apply(modifier=m.name)
+        bpy.data.objects.remove(o, do_unlink=True)
     return base
 
 
@@ -549,7 +551,7 @@ def cubierta(z_piso, alto_pantalla, alto_antepecho, m_muro, col):
     print(f"[villa_obra] cubierta: {len(muros)} muros (pantallas + rampa) · ventana del solárium · chimenea")
 
 
-def banca_solarium(z_piso, m_muro, col, alto=0.45, fondo=0.70, grueso=0.08):
+def banca_solarium(z_piso, m_muro, col, alto=0.45, fondo=0.48, grueso=0.08):   # fondo del DWG nivel 2 (y 7,77…8,25)
     """#15 (30-sep): banca de losa blanca delante de la ventana del solárium, apoyada en la pantalla y con dos
     patas delgadas al frente [e10, e39]. Largo = la ventana + 5 cm por lado; alto y fondo = lectura de foto."""
     x0, x1, a, b = VENTANA_SOLARIUM

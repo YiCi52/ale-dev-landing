@@ -225,6 +225,7 @@ for nombre, x0,x1,z0,z1 in [("s",-W/2,W/2,D/2-0.22,D/2), ("n",-W/2,W/2,-D/2,-D/2
 # Antes: dos arcos a ojo (villaModel.ts) puestos sobre la terraza. Ahora: contornos del nivel 2 del DWG.
 villa_obra.cubierta(Y_TECHO + E_CUBIERTA, H_PANTALLA, 1.05, M_BLANCO, esc.collection)
 circ.tapas_escalera(Y_TECHO - 0.01, Y_TECHO + E_CUBIERTA, M_BLANCO, esc.collection, "cubierta_tapas_escalera")
+import villa_cubierta                                   # #21 + #55: jardín de la cubierta (fotos; posición = interpretación)
 
 # ── rampa y escalera: DESDE EL PLANO (fase 2) ─────────────────────────────
 PISOS = [0.0, Y_LOSA, Y_TECHO + E_CUBIERTA]            # suelo · nivel principal · cubierta
