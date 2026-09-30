@@ -368,10 +368,10 @@ def pisos(Y_LOSA, col):
     cafe = _baldosa("mu_baldosa_cafe", (0.16, 0.08, 0.045), (0.13, 0.065, 0.04), (0.10, 0.08, 0.06), 0.2, 0.28)
     losa = _baldosa("mu_losa_terraza", (0.58, 0.56, 0.52), (0.52, 0.50, 0.47), (0.30, 0.29, 0.27), 0.9, 0.85)
     cojin("mu_piso_salon", -4.79, 9.5, 5.45, 10.4, z, z + 0.01, ocre, col, 0.001)
-    cojin("mu_piso_umbral", -4.79, 9.5, 4.86, 5.45, z, z + 0.01, cafe, col, 0.001)
+    cojin("mu_piso_umbral", -4.79, 9.5, 4.75, 5.45, z, z + 0.01, cafe, col, 0.001)
     # 30-sep: arrancaba en x 0,18 (1,1 m DENTRO del pozo de la rampa, encimada al piso del hall). El recinto real:
     # del muro del pozo (x 1,40) a la cara interior de la fachada (9,30), del muro del kiosque (−4,60) a la vidriera.
-    cojin("mu_piso_terraza", 1.40, 9.30, -4.60, 4.765, z, z + 0.01, losa, col, 0.001)
+    cojin("mu_piso_terraza", 1.40, 9.30, -4.60, 4.65, z, z + 0.01, losa, col, 0.001)
 
 
 def detallar(W, D, Y_LOSA, Y_TECHO):

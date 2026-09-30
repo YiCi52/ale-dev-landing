@@ -194,7 +194,7 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-E_ENV,D/2), ("norte",-W/2,W/2
 
 import villa_bano
 # ── cubierta: losa con los huecos REALES (fase 2): terraza abierta y rampa (interior de la U del DWG) ──
-HUECOS_CUBIERTA = [(1.40, 9.5, -4.57, 4.78),          # terraza: jardín suspendido, abierto al cielo
+HUECOS_CUBIERTA = [(1.40, 9.5, -4.57, villa_obra.VIDRIERA_Z - 0.05),   # terraza abierta al cielo, hasta la cara exterior de la vidriera
                    circ.HUECO_RAMPA,                   # la rampa llega al solárium (el descanso también: 1,5 m de altura libre si no)
                    *circ.HUECOS_ESCALERA,              # la escalera llega adentro de su caja techada
                    villa_bano.HUECO_CLARABOYA]               # claraboya sobre el baño de los padres (fase 4)
@@ -486,5 +486,15 @@ if "VILLA_INSPECT" in os.environ:                     # depuración: qué objeto
             print("[inspect]", o.name, [round(min(v[i] for v in bb), 2) for i in range(3)], [round(max(v[i] for v in bb), 2) for i in range(3)], usos)
     raise SystemExit(0)
 print(f"[villa] objetos: {len(esc.objects)} · renderizando…")
+# ── ESPEJO (30-sep): la obra se levanta en coordenadas del DWG tal como se importó, y esa importación invirtió un solo
+# eje ("z: lado 2 (arriba del plano) negativo", dwg-muros.json): la casa quedó REFLEJADA. Lo probaron 4 fotos (S8 58,
+# S9 13, 23, 27: todo lo que la foto tiene a la derecha el modelo lo tenía a la izquierda) y el render de S9 27 volteado.
+# Todo el código y todas las cámaras siguen en coordenadas de obra; aquí se refleja el mundo en Y y la cámara se lleva al
+# punto reflejado SIN reflejar la imagen (S · M · D: reflexión del mundo + reflexión local del eje X de la cámara).
+ESPEJO_Y = mathutils.Matrix.Diagonal((1.0, -1.0, 1.0, 1.0))
+bpy.context.view_layer.update()                        # matrix_world al día (location/rotation recién puestas)
+for _o in [o for o in esc.objects if o.parent is None and o != cam]:
+    _o.matrix_world = ESPEJO_Y @ _o.matrix_world
+cam.matrix_world = ESPEJO_Y @ cam.matrix_world @ mathutils.Matrix.Diagonal((-1.0, 1.0, 1.0, 1.0))
 bpy.ops.render.render(write_still=True)
 print(f"[villa] ✓ {OUT}")

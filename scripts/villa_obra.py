@@ -174,6 +174,10 @@ def tabiques_de_lineas(nivel, W, D, solidos, margen_fachada=0.4, sep=(0.10, 0.30
 PILOTIS_CENTROS = []                               # los llena planta_baja; el nivel principal los prolonga
 MURO_TERRAZA = -4.60                 # cara del muro del lado kiosque/boudoir (chequeo 30-sep)
 TERRAZA = (1.40, 9.5, -4.62, 4.78)                 # x0, x1, z0, z1 del jardín suspendido
+# La vidriera del salón SÍ está en el DWG (nivel 1, capa 2): la franja entre z 4,65 y 4,75 (hallazgo #16). Antes iba
+# en 4,78 y atravesaba por la mitad las columnas del eje 4,75: media columna quedaba afuera, en la terraza (lo vio
+# Alejandro, 30-sep). En S9 13 y S9 23 las columnas están ENTERAS adentro y el vidrio pasa por fuera, pegado.
+VIDRIERA_Z = 4.70
 # La tapa cubre TODO el conjunto (z −4,60…−2,40): en las fotos de Archweb (S9, 19/20/29/30) la mesa de la terraza
 # es un tablero delgado de hormigón sobre apoyos de lámina, no un cajón. Los pares de líneas son esos apoyos.
 MESA_Z0, MESA_Z1, H_MESA, E_MESA = -4.60, -2.40, 0.72, 0.06
@@ -194,6 +198,8 @@ def columnas_nivel(z0, z1, W, D, muros, rects, material, col, radio=0.14):
         if TERRAZA[0] + 0.2 < x < 9.3 and TERRAZA[2] + 0.2 < z < TERRAZA[3] - 0.2: continue
         if villa_circulacion.es_de_escalera(x - 0.1, x + 0.1, z - 0.1, z + 0.1): continue
         if any(b[0] - 0.2 < x < b[1] + 0.2 and b[2] - 0.2 < z < b[3] + 0.2 for b in cajas): continue
+        if TERRAZA[0] - 0.3 < x < 9.3 and abs(z - VIDRIERA_Z) < radio + 0.06:
+            z = VIDRIERA_Z + 0.05 + radio + 0.005             # del lado del salón, tangente al marco (INTERPRETACIÓN de foto)
         bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=radio, depth=z1 - z0, location=(x, z, (z0 + z1) / 2))
         o = bpy.context.object; o.name = f"n1_columna_{hechas}"
         for c in o.users_collection: c.objects.unlink(o)
@@ -203,9 +209,9 @@ def columnas_nivel(z0, z1, W, D, muros, rects, material, col, radio=0.14):
 
 
 def vidriera_terraza(z0, z1, m_vidrio, col, paneles=4):
-    """La vidriera corrediza del salón a la terraza: 9 × 3 m [S5][S6]. El DWG NO la dibuja (su planta no trae
-    nada en z 4,78 entre x 1,40 y 9,30); va por el expediente, en el borde de la terraza, piso a cielo raso."""
-    x0, x1 = TERRAZA[0], 9.30; z = TERRAZA[3]
+    """La vidriera corrediza del salón a la terraza: 9 × 3 m [S5][S6], piso a cielo raso, en la franja que dibuja el
+    DWG (z 4,65…4,75, ver VIDRIERA_Z). El DWG la arranca en x 0,07; aquí sigue en 1,40 hasta resolver #16."""
+    x0, x1 = TERRAZA[0], 9.30; z = VIDRIERA_Z
     _prisma("n1_vidriera_terraza", [(x0, z - 0.015), (x1, z - 0.015), (x1, z + 0.015), (x0, z + 0.015)],
             z0, z1, m_vidrio, col)
     m = bpy.data.materials.get("pb_montante")                 # el mismo acero oscuro de los montantes del vestíbulo
