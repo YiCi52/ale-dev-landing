@@ -228,4 +228,4 @@ Solo lo que tiene evidencia. Hallazgos que cambiaban la lectura:
 3. Color y material: por foto con orientación. Foto directa > texto; el conflicto se anota.
 4. "Sin fuente" solo tras revisar todas las fotos del recinto; si se elige, se marca INTERPRETACIÓN.
 5. El recinto se cierra con un render desde el ángulo de una foto real, lado a lado.
-Correcciones en curso: `expediente/fidelidad-2026-09-29.md` (orden: rampa → colores → piezas que faltan → kiosque/escalera/terraza → detalles; cocina DESPUÉS de la fase 5, decisión de Alejandro).
+**Inventario foto por foto (30-sep, noche): `expediente/inventario-fotos.md`** — 115 fotos de Archweb revisadas elemento por elemento; su RESUMEN es la lista maestra de trabajo (A correcciones · B piezas que faltan · C por confirmar). Correcciones en curso: `expediente/fidelidad-2026-09-29.md` (orden: rampa → colores → piezas que faltan → kiosque/escalera/terraza → detalles; cocina DESPUÉS de la fase 5, decisión de Alejandro).
