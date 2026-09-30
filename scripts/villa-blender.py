@@ -110,7 +110,8 @@ _vn.links.new(_gv.outputs["Position"], _rv.inputs["Vector"])
 _mr = _vn.nodes.new("ShaderNodeMapRange"); _mr.inputs["From Min"].default_value = 0.45; _mr.inputs["From Max"].default_value = 0.75
 _mr.inputs["To Min"].default_value = 0.0; _mr.inputs["To Max"].default_value = 0.05
 _vn.links.new(_rv.outputs["Fac"], _mr.inputs["Value"]); _vn.links.new(_mr.outputs["Result"], _vb.inputs["Roughness"])
-M_CARP     = mat("carpint", (0.10, 0.05, 0.03), 0.45)
+M_CARP     = mat("carpint", (0.127, 0.042, 0.052), 0.45)  # granate medido en e04: sRGB ~(100, 58, 64) (#17)
+M_CARP_INT = mat("carpint_int", (0.78, 0.78, 0.76), 0.45)   # por DENTRO la carpintería es blanca [i10, i16, i23, i33]
 
 def caja(nombre, x0, x1, y0, y1, z0, z1, material):
     bpy.ops.mesh.primitive_cube_add(size=1)
@@ -175,6 +176,7 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-E_ENV,D/2), ("norte",-W/2,W/2
         else:        caja(f"fa_{nombre}_vid_{n_t}", cx_v - 0.006, cx_v + 0.006, yv0, yv1, t0, t1, M_VIDRIO)
     # montantes de carpintería cada ~1.1 m (mismo paso que villaModel.ts); en el vano no hay carpintería
     largo_x = (x1 - x0) > (z1 - z0)
+    sale = {"sur": 1, "norte": -1, "este": 1, "oeste": -1}[nombre]      # hacia afuera: +y/−y o +x/−x
     a, b = (x0, x1) if largo_x else (z0, z1)
     n_m = max(1, int((b - a) / 1.1))
     for k in range(n_m + 1):
@@ -183,8 +185,20 @@ for nombre, x0, x1, z0, z1 in [("sur",-W/2,W/2,D/2-E_ENV,D/2), ("norte",-W/2,W/2
         # perfil delgado en el plano del vidrio (7 cm de fondo), no un poste del ancho del muro: así lo muestran
         # las fotos del salón (S8 28–30); con 21 cm se leían como pilares de madera
         cz_, cx_ = (z0 + z1) / 2, (x0 + x1) / 2
-        if largo_x: caja(f"mont_{nombre}_{k}", u-0.025, u+0.025, yv0, yv1, cz_-0.035, cz_+0.035, M_CARP)
-        else:       caja(f"mont_{nombre}_{k}", cx_-0.035, cx_+0.035, yv0, yv1, u-0.025, u+0.025, M_CARP)
+        # #17: el perfil tiene dos mitades: la de AFUERA granate [e04] y la de ADENTRO blanca [i10, i16, i23, i33]
+        for mitad, (a0_, a1_), mat_ in (("ext", (0.0, 0.035), M_CARP), ("int", (-0.035, 0.0), M_CARP_INT)):
+            s0_, s1_ = sorted((a0_ * sale, a1_ * sale))
+            if largo_x: caja(f"mont_{nombre}_{k}_{mitad}", u-0.025, u+0.025, yv0, yv1, cz_+s0_, cz_+s1_, mat_)
+            else:       caja(f"mont_{nombre}_{k}_{mitad}", cx_+s0_, cx_+s1_, yv0, yv1, u-0.025, u+0.025, mat_)
+    # rieles de cabeza y de antepecho en cada tramo vidriado, con las mismas dos caras [e04: líneas granate corridas]
+    cz_, cx_ = (z0 + z1) / 2, (x0 + x1) / 2
+    for n_t, (t0, t1) in enumerate(tramos_vid):
+        if t1 - t0 < 0.05: continue
+        for h0_, h1_, nm_ in ((yv0, yv0 + 0.05, "inf"), (yv1 - 0.05, yv1, "sup")):
+            for mitad, (a0_, a1_), mat_ in (("ext", (0.0, 0.035), M_CARP), ("int", (-0.035, 0.0), M_CARP_INT)):
+                s0_, s1_ = sorted((a0_ * sale, a1_ * sale))
+                if largo_x: caja(f"mont_riel_{nombre}_{n_t}_{nm_}_{mitad}", t0, t1, h0_, h1_, cz_+s0_, cz_+s1_, mat_)
+                else:       caja(f"mont_riel_{nombre}_{n_t}_{nm_}_{mitad}", cx_+s0_, cx_+s1_, h0_, h1_, t0, t1, mat_)
     if vano:                                                   # baby pilotis: en los ejes de la estructura (interpretación)
         for n_p, u in enumerate([k * CRUJIA / 2 for k in range(-4, 5) if vano[0] + 0.3 < k * CRUJIA / 2 < vano[1] - 0.3]):
             loc = (u, (z0 + z1) / 2, (yv0 + yv1) / 2) if largo_x else ((x0 + x1) / 2, u, (yv0 + yv1) / 2)

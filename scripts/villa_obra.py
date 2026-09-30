@@ -7,7 +7,7 @@ corrige el plano o el JSON, no este archivo.
 
 Ejes del JSON: x (izq −, der +), z (lado 2 / fondo −, lado 1 / acceso +). Blender: (X, Y, Z) = (x, z, altura).
 """
-import bpy, bmesh, json, math, os
+import bpy, bmesh, json, math, os, mathutils
 import villa_circulacion
 
 EXP = os.path.join(os.getcwd(), "src/components/lab/villa-savoye/expediente")
@@ -122,6 +122,16 @@ def _montantes(pts, altura, col, paso=0.42, ancho=0.05, fondo=0.09):
             v.co = (x + vx * ca - vy * sa, z + vx * sa + vy * ca, altura / 2 + vz)
     bm.to_mesh(me); bm.free()
     o = bpy.data.objects.new("pb_montantes", me); col.objects.link(o); me.materials.append(m)
+    # #57 (30-sep): por DENTRO los montantes son claros [e47, i04]; por fuera, oscuros [e05, e45, e52]. La cara que
+    # mira al vestíbulo (hacia el centro de la cuerda de la herradura) y sus cantos van en blanco.
+    claro = bpy.data.materials.get("m_montante_int") or bpy.data.materials.new("m_montante_int"); claro.use_nodes = True
+    bc = next(n for n in claro.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    bc.inputs["Base Color"].default_value = (0.80, 0.80, 0.78, 1); bc.inputs["Roughness"].default_value = 0.45
+    me.materials.append(claro)
+    cx, cy = (pts[0][0] + pts[-1][0]) / 2, (pts[0][1] + pts[-1][1]) / 2 + 2.0
+    for p_ in me.polygons:
+        hacia = mathutils.Vector((cx - p_.center.x, cy - p_.center.y, 0.0))
+        if hacia.length > 0 and p_.normal.dot(hacia.normalized()) > -0.5: p_.material_index = 1
 
 
 def planta_baja(altura_muros, altura_pilotis, m_muro, m_piloti, m_vidrio, col):
