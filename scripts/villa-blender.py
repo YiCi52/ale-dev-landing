@@ -207,6 +207,7 @@ circ.tapas_escalera(Y_TECHO - 0.01, Y_TECHO + E_CUBIERTA, M_BLANCO, esc.collecti
 # ── rampa y escalera: DESDE EL PLANO (fase 2) ─────────────────────────────
 PISOS = [0.0, Y_LOSA, Y_TECHO + E_CUBIERTA]            # suelo · nivel principal · cubierta
 circ.rampa(PISOS, M_BLANCO, esc.collection)
+circ.muros_pozo(PISOS, (H_PILOTIS, Y_TECHO - 0.01), M_BLANCO, M_VIDRIO, esc.collection)   # hallazgo #1 de la pasada de fidelidad
 circ.escalera(PISOS, M_BLANCO, esc.collection)
 circ.antepechos_escalera(PISOS, M_BLANCO, esc.collection, Y_TECHO + E_CUBIERTA + villa_obra.ALTO_ESCALERA - villa_obra.E_TECHO_ESCALERA)
 circ.barandas(PISOS, esc.collection)

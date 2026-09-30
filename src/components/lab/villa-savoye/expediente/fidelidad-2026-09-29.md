@@ -105,3 +105,10 @@ Cada corrección se verifica con un render desde el mismo ángulo de la foto ant
   - vidrio con barras horizontales donde corresponda;
   - antepechos inclinados con pasamanos negro hacia el hall;
   - tramo exterior con baranda de tubos claros.
+
+### #1 Rampa: RESUELTO (29-sep)
+- **La pregunta la cerró el plano:** las líneas de recorrido del DWG van por x 0,59, giran en el arco del descanso y vuelven por x −0,67. Se sube primero por el tramo este (lado terraza) y se llega por el oeste (lado hall). En el modelo estaba al revés.
+- **Muros laterales:** se reconstruyeron por nivel según las fotos (`villa_circulacion.muros_pozo`) y se quitaron, con booleana, las franjas llenas que venían de los rellenos del DWG.
+- **Muro central del tramo exterior:** macizo hasta 10 cm sobre el tramo alto, con baranda de 4 tubos claros encima (S9 7).
+- **Verificado** con los renders `s8-20-rampa-n1-v3` y `s9-24-rampa-ext-v2`. Desde la terraza se leen la banda diagonal, el vidrio con barras debajo y la baranda de tubos arriba, como en S9 15, 22 y 24.
+- **Pendiente menor:** en el piso principal, el muro central remata en un arco (DWG z 3,1…3,9); hoy termina recto en z 2,5.

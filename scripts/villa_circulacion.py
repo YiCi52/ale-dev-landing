@@ -73,8 +73,11 @@ def rampa(pisos, material, col):
     def construir(bm):
         for base, techo in zip(pisos, pisos[1:]):
             medio = (base + techo) / 2
-            _perfil_en_x(bm, _losa_inclinada(Z_BOCA, base, Z_DESCANSO, medio, pisos[0]), *TRAMO_OESTE)
-            _perfil_en_x(bm, _losa_inclinada(Z_DESCANSO, medio, Z_BOCA, techo, pisos[0]), *TRAMO_ESTE)
+            # 29-sep: las líneas de recorrido del DWG (x 0,59 de z 2,5 a −6,08, arco en el descanso, x −0,67 de vuelta)
+            # dicen que se sube PRIMERO por el tramo ESTE (lado terraza) y se llega por el OESTE (lado hall).
+            # Estaba al revés. El muro central no cambia (su perfil solo depende de z).
+            _perfil_en_x(bm, _losa_inclinada(Z_BOCA, base, Z_DESCANSO, medio, pisos[0]), *TRAMO_ESTE)
+            _perfil_en_x(bm, _losa_inclinada(Z_DESCANSO, medio, Z_BOCA, techo, pisos[0]), *TRAMO_OESTE)
             _perfil_en_x(bm, [(Z_DESCANSO, medio), (Z_DESCANSO, medio - E_LOSA),
                               (Z_FONDO, medio - E_LOSA), (Z_FONDO, medio)], *POZO_X)
     _malla("circ_rampa", construir, material, col)
@@ -88,10 +91,14 @@ def _muro_central(pisos):
     queda el hueco entre ellos (junto al descanso), que es por donde se ve de un tramo al otro."""
     largo = Z_BOCA - Z_DESCANSO
     perfil = [(Z_BOCA, pisos[0])]
+    ultimo = len(pisos) - 2
     for n, (base, techo) in enumerate(zip(pisos, pisos[1:])):
         medio = (base + techo) / 2
-        perfil.append((Z_DESCANSO, medio))                                  # sube por el tramo oeste
-        perfil.append((Z_DESCANSO, medio + H_BARANDA))                      # remate sobre el descanso
+        # en el último entrepiso (exterior) el muro macizo solo llega 10 cm sobre el tramo alto: encima va una
+        # baranda de tubos claros (S9 7 · desde la terraza se ve el vidrio del hall por encima, S9 15/22/24)
+        remate = 0.10 if n == ultimo else H_BARANDA
+        perfil.append((Z_DESCANSO, medio))
+        perfil.append((Z_DESCANSO, medio + remate))
         if n + 1 < len(pisos) - 1:
             sig_base, sig_techo = techo, pisos[n + 2]
             sig_medio = (sig_base + sig_techo) / 2
@@ -99,8 +106,30 @@ def _muro_central(pisos):
             t = (sig_medio - medio - H_BARANDA) / ((techo - medio) + (sig_medio - sig_base))
             t = min(max(t, 0.0), 1.0)
             perfil.append((Z_DESCANSO + t * largo, medio + H_BARANDA + t * (techo - medio)))
-    perfil.append((Z_BOCA, pisos[-1] + H_BARANDA))
+    perfil.append((Z_BOCA, pisos[-1] + 0.10))
     return perfil
+
+
+def baranda_tubos(pisos, col, rieles=4):
+    """Baranda de tubos claros sobre el muro central del tramo exterior (S9 7, 9): 4 rieles + postes."""
+    m = bpy.data.materials.get("m_baranda_clara") or bpy.data.materials.new("m_baranda_clara"); m.use_nodes = True
+    b = next(n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    b.inputs["Base Color"].default_value = (0.85, 0.85, 0.84, 1); b.inputs["Roughness"].default_value = 0.35
+    base, techo = pisos[-2], pisos[-1]
+    zs = [Z_DESCANSO + (Z_BOCA - Z_DESCANSO) * k / 20 for k in range(21)]
+    for k in range(1, rieles + 1):
+        h = 0.10 + 0.90 * k / rieles
+        _tubo_curva(f"circ_baranda_clara_{k}", [(0.0, z, superficie(z, base, techo, 2) + h) for z in zs], 0.018, m, col)
+    for z in [Z_DESCANSO + 0.15 + 1.6 * k for k in range(6)] + [Z_BOCA - 0.1]:
+        s0 = superficie(z, base, techo, 2)
+        _tubo_curva(f"circ_baranda_clara_poste_{round(z, 2)}", [(0.0, z, s0 + 0.10), (0.0, z, s0 + 1.0)], 0.02, m, col)
+
+
+def _tubo_curva(nombre, puntos, radio, material, col):
+    cu = bpy.data.curves.new(nombre, "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = radio; cu.bevel_resolution = 3
+    sp = cu.splines.new("POLY"); sp.points.add(len(puntos) - 1)
+    for p, q in zip(sp.points, puntos): p.co = (*q, 1)
+    o = bpy.data.objects.new(nombre, cu); col.objects.link(o); cu.materials.append(material)
 
 
 def _cuna(bm, cx, cz, r, a0, a1, h0, h1, segs=4):
@@ -340,3 +369,107 @@ def barandas(pisos, col, paso_barrote=1.0):
     for k in range(0, 25, 3):
         x, z, _ = arco[k]; _tubo(f"circ_baranda_n1_barrote_{k}", [(x, z, y), (x, z, y + 1.0)], 0.008, m, col)
     print(f"[villa_circulacion] barandas negras: pasamanos exterior e interior + {n_b} barrotes + borde del piso principal")
+
+
+# ── muros laterales del pozo según fotos + corte B-B (29-sep, hallazgo #1 de la pasada de fidelidad) ──────────
+# El DWG corta a 1 m: los muros laterales del pozo aparecían como muros llenos y se extruían a techo. Las fotos
+# (S8 1, 2, 3, 13, 45, 71 · S9 7, 15, 22, 24) y el corte B-B dicen:
+#   planta baja  · oeste (vestíbulo): ANTEPECHO que sube con el tramo, abierto arriba (pasamanos negro)
+#                · este: antepecho + VIDRIO con barras horizontales hasta el cielo raso (S8 2)
+#   piso ppal.   · oeste (hall, z −2,1…2,5): antepecho + VIDRIO con barras hasta el cielo raso (S8 45); el pozo
+#                  está abierto al cielo: el tramo que llega a la cubierta es exterior (S9 7)
+#                · este (terraza, z −4,6…2,5): VIDRIO bajo el tramo + banda blanca (canto del tramo + antepecho) y
+#                  abierto arriba (S9 15, 22, 24)
+#   Los tramos junto al dormitorio y al boudoir siguen como muro lleno (el DWG, sin evidencia en contra).
+X_ESTE, X_OESTE = (1.25, 1.40), (-1.40, -1.25)
+PASO_BARRA = 0.24
+
+
+def superficie(z, base, techo, tramo):
+    """Altura del piso de un tramo en z (1 = el que sube hacia el fondo, 2 = el que vuelve)."""
+    medio = (base + techo) / 2; L = Z_BOCA - Z_DESCANSO
+    t = min(max((Z_BOCA - z) / L, 0.0), 1.0)
+    return base + t * (medio - base) if tramo == 1 else medio + (1 - t) * (techo - medio)
+
+
+def _banda(bm, x, zs, abajo, arriba):
+    """Sólido en el plano del muro entre dos curvas (z → altura), en tramos donde arriba > abajo."""
+    tramo = []
+    for z in zs + [None]:
+        ok = z is not None and arriba(z) - abajo(z) > 0.02
+        if ok: tramo.append(z); continue
+        if len(tramo) >= 2:
+            perfil = [(z_, abajo(z_)) for z_ in tramo] + [(z_, arriba(z_)) for z_ in reversed(tramo)]
+            _perfil_en_x(bm, perfil, *x)
+        tramo = []
+
+
+def _vidrio(bmv, bmb, x, zs, abajo, arriba):
+    """Paño de vidrio de 12 mm al centro del muro + barras horizontales oscuras cada 24 cm (S8 2, 45 · S9 7, 22)."""
+    xc = (x[0] + x[1]) / 2
+    _banda(bmv, (xc - 0.006, xc + 0.006), zs, abajo, arriba)
+    lo = min(abajo(z) for z in zs); hi = max(arriba(z) for z in zs)
+    h = math.ceil(lo / PASO_BARRA) * PASO_BARRA
+    while h < hi:
+        dentro = [z for z in zs if abajo(z) + 0.03 < h < arriba(z) - 0.03]
+        grupos, g = [], []
+        for z in zs:
+            if z in dentro: g.append(z)
+            elif g: grupos.append(g); g = []
+        if g: grupos.append(g)
+        for g in grupos:
+            if len(g) < 2: continue
+            z0, z1 = min(g), max(g)
+            _perfil_en_x(bmb, [(z0, h - 0.018), (z1, h - 0.018), (z1, h + 0.018), (z0, h + 0.018)], xc - 0.03, xc + 0.03)
+        h += PASO_BARRA
+    for z in (zs[0], zs[-1]):                                            # montante en cada extremo del paño
+        if arriba(z) - abajo(z) > 0.05:
+            _perfil_en_x(bmb, [(z - 0.03, abajo(z)), (z + 0.03, abajo(z)), (z + 0.03, arriba(z)), (z - 0.03, arriba(z))], xc - 0.03, xc + 0.03)
+
+
+def _cortar_obra(cajas):
+    """Quita de los muros de la obra (rellenos del DWG) las franjas del pozo que se reconstruyen aquí."""
+    import mathutils
+    col = bpy.context.scene.collection
+    for n, (x0, x1, z0, z1, h0, h1, pref) in enumerate(cajas):
+        me = bpy.data.meshes.new(f"corte_pozo_{n}"); bm = bmesh.new(); r = bmesh.ops.create_cube(bm, size=1.0)
+        for v in r["verts"]:
+            v.co = ((x0 + x1) / 2 + v.co.x * (x1 - x0), (z0 + z1) / 2 + v.co.y * (z1 - z0), (h0 + h1) / 2 + v.co.z * (h1 - h0))
+        bm.to_mesh(me); bm.free(); cort = bpy.data.objects.new(me.name, me); col.objects.link(cort)
+        for o in [o for o in bpy.context.scene.objects if o.type == "MESH" and o.name.startswith(pref)]:
+            bb = [o.matrix_world @ mathutils.Vector(c) for c in o.bound_box]
+            if (min(v.x for v in bb) > x1 or max(v.x for v in bb) < x0 or min(v.y for v in bb) > z1 or max(v.y for v in bb) < z0
+                    or min(v.z for v in bb) > h1 or max(v.z for v in bb) < h0): continue
+            m = o.modifiers.new("pozo", "BOOLEAN"); m.operation = "DIFFERENCE"; m.solver = "EXACT"; m.object = cort
+            bpy.context.view_layer.objects.active = o; bpy.ops.object.modifier_apply(modifier=m.name)
+        bpy.data.objects.remove(cort, do_unlink=True)
+
+
+def muros_pozo(pisos, techos, m_muro, m_vidrio, col):
+    """pisos = [0, 3,31, 6,66] · techos = [3,07 (bajo la losa), 6,45 (cielo raso)]."""
+    b0, b1, b2 = pisos; c0, c1 = techos
+    _cortar_obra([(1.19, 1.46, -7.08, 2.72, -0.1, c0, "pb_muro"), (-1.46, -1.19, -7.08, -1.45, -0.1, c0, "pb_muro"),
+                  (1.19, 1.46, -4.56, 2.72, b1 - 0.3, c1 + 0.01, "n1_"), (-1.46, -1.19, -2.08, 2.62, b1 - 0.3, c1 + 0.01, "n1_")])
+    paso = lambda a, b, n=90: [a + (b - a) * k / n for k in range(n + 1)]
+    s = superficie
+    m_barra = bpy.data.materials.get("pb_montante") or m_muro
+    bm, bmv, bmb = bmesh.new(), bmesh.new(), bmesh.new()
+    # planta baja
+    zs = paso(-7.08, 2.62)
+    _banda(bm, X_ESTE, zs, lambda z: b0, lambda z: min(s(z, b0, b1, 1) + 1.0, c0))
+    _vidrio(bmv, bmb, X_ESTE, zs, lambda z: min(s(z, b0, b1, 1) + 1.0, c0), lambda z: c0)
+    zs = paso(-7.08, -1.5)
+    _banda(bm, X_OESTE, zs, lambda z: b0, lambda z: min(s(z, b0, b1, 2) + 1.0, c0))
+    # piso principal
+    zs = paso(-4.56, 2.62)
+    _vidrio(bmv, bmb, X_ESTE, zs, lambda z: b1, lambda z: max(s(z, b1, b2, 1) - E_LOSA, b1))
+    _banda(bm, X_ESTE, zs, lambda z: max(s(z, b1, b2, 1) - E_LOSA, b1), lambda z: s(z, b1, b2, 1) + 1.0)
+    zs = paso(-2.08, 2.5)
+    _banda(bm, X_OESTE, zs, lambda z: b1, lambda z: b1 + 0.9)
+    _vidrio(bmv, bmb, X_OESTE, zs, lambda z: b1 + 0.9, lambda z: c1)
+    for nombre, b_, mat in (("circ_pozo_muros", bm, m_muro), ("circ_pozo_vidrio", bmv, m_vidrio), ("circ_pozo_barras", bmb, m_barra)):
+        bmesh.ops.recalc_face_normals(b_, faces=b_.faces)
+        me = bpy.data.meshes.new(nombre); b_.to_mesh(me); b_.free()
+        o = bpy.data.objects.new(nombre, me); col.objects.link(o); me.materials.append(mat)
+    baranda_tubos(pisos, col)
+    print("[villa_circulacion] pozo de la rampa: antepechos, vidrios con barras y bandas según fotos (muros llenos quitados)")
