@@ -266,6 +266,45 @@ def terraza(Y_LOSA, M, col):
     # en S9 8, 13 y 17 la terraza tiene UNA jardinera (la U del DWG, villa_obra) y la mesa. Eran interpretación mía;
     # los quitó Alejandro al verlo.
     mesa_terraza(z, M, col)
+    jardinera_vidriera(z, M, col)
+
+
+def jardinera_vidriera(z, M, col, x=(2.90, 5.90), y=(3.62, 4.55), alto=0.40, e=0.10):
+    """#20 + #52 (30-sep): jardinera baja al pie de la vidriera del salón, del lado de la terraza, con plantas en los
+    extremos y una CLARABOYA vidriada inclinada al centro [e08, e11, e13, e14, e20, e32, i57]. Largo y posición =
+    lectura de foto (INTERPRETACIÓN ±0,3 m); pegada al marco de la vidriera."""
+    import villa_obra, villa_plantas as vp
+    x0, x1 = x; y0, y1 = y; h = z + alto
+    blanco = M["hormigon_claro"]
+    piezas = [villa_obra._prisma(f"mu_jard_vid_{n}", pol, z, h, blanco, col) for n, pol in enumerate([
+        [(x0, y0), (x1, y0), (x1, y0 + e), (x0, y0 + e)], [(x0, y1 - e), (x1, y1 - e), (x1, y1), (x0, y1)],
+        [(x0, y0), (x0 + e, y0), (x0 + e, y1), (x0, y1)], [(x1 - e, y0), (x1, y0), (x1, y1), (x1 - e, y1)]])]
+    villa_obra.unir(piezas)
+    xc = (x0 + x1) / 2; ancho_c = 1.10
+    for n, (a, b) in enumerate([(x0 + e, xc - ancho_c / 2), (xc + ancho_c / 2, x1 - e)]):      # tierra a los lados
+        cojin(f"mu_jard_vid_tierra_{n}", a, b, y0 + e, y1 - e, h - 0.10, h - 0.04, M["tierra"], col, 0.002)
+    # claraboya: caja de marco oscuro con vidrio inclinado (baja hacia la terraza)
+    oscuro = bpy.data.materials.get("pb_montante"); vidrio = bpy.data.materials.get("vidrio")
+    ca, cb = xc - ancho_c / 2, xc + ancho_c / 2
+    villa_obra._prisma("mu_jard_vid_brocal", [(ca, y0 + e), (cb, y0 + e), (cb, y1 - e), (ca, y1 - e)], h - 0.10, h + 0.02, blanco, col)
+    import bmesh
+    me = bpy.data.meshes.new("mu_jard_vid_claraboya"); bm = bmesh.new()
+    alto_f, alto_t = h + 0.22, h + 0.06                                # fondo (vidriera) más alto que el frente
+    vs = [bm.verts.new(v) for v in ((ca, y1 - e, alto_f), (cb, y1 - e, alto_f), (cb, y0 + e, alto_t), (ca, y0 + e, alto_t))]
+    bm.faces.new(vs); bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(me.name, me); col.objects.link(o); me.materials.append(vidrio)
+    so = o.modifiers.new("grosor", "SOLIDIFY"); so.thickness = 0.012
+    for n, (a, b, yy) in enumerate([(ca, cb, y1 - e), (ca, cb, y0 + e)]):
+        zz = alto_f if yy == y1 - e else alto_t
+        cojin(f"mu_jard_vid_claraboya_marco_{n}", a, b, yy - 0.03, yy + 0.03, h, zz + 0.02, oscuro, col, 0.002)
+    for n, (a, zf) in enumerate([(ca, 0), (cb, 0)]):
+        villa_obra._prisma(f"mu_jard_vid_claraboya_lado_{n}", [(a - 0.02, y0 + e), (a + 0.02, y0 + e), (a + 0.02, y1 - e), (a - 0.02, y1 - e)],
+                           h, h + 0.12, oscuro, col)
+    t = h - 0.04
+    vp.arbusto("mu_planta_vid_a", (x0 + 0.55, (y0 + y1) / 2, t), 0.36, 0.45, col, semilla=11, densidad=70)
+    vp.matas("mu_planta_vid_pasto_a", (x0 + 0.45, (y0 + y1) / 2, t), 0.30, col, semilla=12, n=7, escala=(1.0, 1.5))
+    vp.arbusto("mu_planta_vid_b", (x1 - 0.55, (y0 + y1) / 2, t), 0.34, 0.42, col, semilla=13, densidad=70)
+    vp.flores("mu_planta_vid_flor", (x1 - 0.50, (y0 + y1) / 2, t), 0.30, col, semilla=14, n=6)
 
 
 def mesa_terraza(z, M, col):
