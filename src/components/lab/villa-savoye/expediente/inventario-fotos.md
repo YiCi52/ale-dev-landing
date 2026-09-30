@@ -638,10 +638,16 @@ Lo que falta es sobre todo **habitado y detalle**, y casi toda la **planta baja*
 - **#49** barra negra en la vidriera.
 - Columnas del salón enteras adentro; la casa ya sin espejo.
 
+- **Tanda 2 (30-sep, noche):**
+  - **#32** muebles bajos bajo la cinta en el boudoir, la suite y los dormitorios del oeste;
+  - **#31** escalón del baño;
+  - **#22** paño vidriado trasero de la planta baja, con barras blancas afuera y negras adentro;
+  - **#4** ventanas de cuadrícula en el bloque de servicio (el DWG dejaba el vano abierto de piso a techo).
+
 **Siguen:**
 - **#47** viga del salón;
 - **#21 + #55** jardín de la cubierta y gravilla;
-- **#22 + #4 + #58** planta baja en fachada;
+- **#58** portones del garaje;
 - **#32** muebles bajo las ventanas;
 - **#29** puertas especiales;
 - **#31** escalón del baño;
