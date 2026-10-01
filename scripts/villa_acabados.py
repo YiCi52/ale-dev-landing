@@ -216,6 +216,28 @@ def biseles(esc):
             bv.limit_method = "ANGLE"; bv.angle_limit = math.radians(40); bv.harden_normals = True
 
 
+def zocalo_gris(m, alto=0.10, gris=(0.30, 0.30, 0.30)):
+    """#25 (1-oct): ZÓCALO gris de ~10 cm al pie de muros, columnas y escalera en las circulaciones: vestíbulo de planta
+    baja [i01, i03, i04, i11, i13, i43, i47, i49] y hall del piso principal [i38, i54]. Se pinta en el revoque blanco por
+    región (no en los dormitorios: i10, i12 sin zócalo gris). Regiones = recintos del modelo."""
+    nt = m.node_tree; b = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    base = b.inputs["Base Color"].links[0].from_socket if b.inputs["Base Color"].links else None
+    if base is None: return
+    geo = nt.nodes.new("ShaderNodeNewGeometry"); sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(geo.outputs["Position"], sep.inputs["Vector"])
+    X, Y, Z = sep.outputs["X"], sep.outputs["Y"], sep.outputs["Z"]
+    entre = lambda v, a, b_: _valor(nt, "MULTIPLY", _valor(nt, "GREATER_THAN", v, a), _valor(nt, "LESS_THAN", v, b_))
+    r2 = _valor(nt, "ADD", _valor(nt, "MULTIPLY", X, X), _valor(nt, "MULTIPLY", Y, Y))
+    pb = _valor(nt, "MULTIPLY", _valor(nt, "LESS_THAN", Z, alto),
+                _valor(nt, "MAXIMUM", _valor(nt, "LESS_THAN", r2, 6.40 * 6.40),
+                       _valor(nt, "MULTIPLY", entre(X, -6.40, 6.40), entre(Y, -9.60, 0.20))))
+    hall = _valor(nt, "MULTIPLY", entre(Z, 3.30, 3.31 + alto),
+                  _valor(nt, "MULTIPLY", entre(X, -6.0, 1.45), entre(Y, -2.1, 4.72)))
+    mascara = _valor(nt, "MAXIMUM", pb, hall)
+    gris_n = nt.nodes.new("ShaderNodeRGB"); gris_n.outputs[0].default_value = (*gris, 1)
+    nt.links.new(_mezcla(nt, mascara, base, gris_n.outputs[0]), b.inputs["Base Color"])
+
+
 def aplicar(esc, assets, m_blanco, m_verde, pisos):
     """Toda la casa: revoque sin mosaico (blanco y verde), losetas en la cubierta, biseles."""
     global CUBIERTA, PISOS
@@ -223,5 +245,6 @@ def aplicar(esc, assets, m_blanco, m_verde, pisos):
     r = revoque_sin_mosaico(m_blanco, assets)
     if r: losetas_arriba(m_blanco, *r, assets)
     revoque_sin_mosaico(m_verde, assets, tinte=(0.05, 0.10, 0.06))
+    zocalo_gris(m_blanco)
     biseles(esc)
     print("[acabados] revoque sin mosaico · losetas en cubierta · biseles")
