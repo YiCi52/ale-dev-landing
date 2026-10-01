@@ -244,5 +244,26 @@ def claraboya(y_techo, e_cubierta, col):
 def construir(col, y_losa, y_techo, e_cubierta):
     piso = y_losa + 0.013                                               # sobre la baldosa del baño
     plataforma_y_tina(piso, col); divan(piso, col); sanitarios(piso, col); cortina(piso, y_techo, col)
+    lavamanos_vestibulo(col)
     n = paredes(y_losa, y_techo); claraboya(y_techo, e_cubierta, col)
     print(f"[villa_bano] plataforma azul + tina · diván gris · sanitarios · cortina · claraboya · azulejo en {n} caras")
+
+
+def lavamanos_vestibulo(col, x=-1.32, y=3.12, piso=0.05):
+    """#27 (1-oct): el lavamanos EXENTO del vestíbulo, de pedestal, delante de la columna del arranque de la rampa,
+    entre la rampa y la escalera [i13, i47; nivel-0-planta-baja.md, fase 0]. Posición = lectura de i13 (±0,3 m)."""
+    por = _porcelana(); objs = []
+    bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.085, depth=0.72, location=(x, y, piso + 0.36))
+    objs.append(bpy.context.object); objs[-1].name = "pb_lavamanos_pie"
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=0.30, location=(x, y + 0.04, piso + 0.80))
+    objs.append(bpy.context.object); objs[-1].name = "pb_lavamanos"; objs[-1].scale = (1.0, 0.80, 0.30)
+    for o in objs:
+        for c in o.users_collection: c.objects.unlink(o)
+        col.objects.link(o); o.data.materials.append(por)
+        for p in o.data.polygons: p.use_smooth = True
+        bv = o.modifiers.new("canto", "BEVEL"); bv.width = 0.02; bv.segments = 3; bv.harden_normals = True
+    cromo = _cromo()
+    bpy.ops.mesh.primitive_cylinder_add(vertices=12, radius=0.014, depth=0.16, location=(x, y - 0.20, piso + 0.95))
+    o = bpy.context.object; o.name = "pb_lavamanos_llave"
+    for c in o.users_collection: c.objects.unlink(o)
+    col.objects.link(o); o.data.materials.append(cromo)
