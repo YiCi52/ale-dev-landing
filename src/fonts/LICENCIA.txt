@@ -1,0 +1,3 @@
+Fuentes de Google Fonts (licencia SIL Open Font License 1.1), subset latin, descargadas el 1-oct-2026:
+Geist, Geist Mono (Vercel) · Space Grotesk (Florian Karsten) · Archivo (Omnibus-Type) · Inter (Rasmus Andersson) · IBM Plex Mono (IBM).
+Se sirven locales con next/font/local para que el build no dependa de la red.

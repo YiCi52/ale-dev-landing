@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo, IBM_Plex_Mono, Inter } from "next/font/google";
+import localFont from "next/font/local";
 
 import { VsLenis } from "@/components/lab/villa-savoye/VsLenis";
 import { VsHero } from "@/components/lab/villa-savoye/VsHero";
@@ -21,25 +21,28 @@ import "./villa-savoye.css";
   modelo procedural en código, cero assets externos.
 */
 
-const display = Archivo({
+// fuentes locales desde 1-oct (ver src/app/layout.tsx): mismos archivos de Google Fonts, sin red en el build
+const display = localFont({
+  src: "../../../fonts/Archivo-100-900-latin.woff2",
   variable: "--font-vs-display",
-  subsets: ["latin"],
+  weight: "100 900",
   display: "swap",
-  weight: ["500", "600", "700"],
 });
 
-const body = Inter({
+const body = localFont({
+  src: "../../../fonts/Inter-100-900-latin.woff2",
   variable: "--font-vs-body",
-  subsets: ["latin"],
+  weight: "100 900",
   display: "swap",
-  weight: ["400", "500", "600"],
 });
 
-const mono = IBM_Plex_Mono({
+const mono = localFont({
+  src: [
+    { path: "../../../fonts/IBMPlexMono-400-latin.woff2", weight: "400", style: "normal" },
+    { path: "../../../fonts/IBMPlexMono-500-latin.woff2", weight: "500", style: "normal" },
+  ],
   variable: "--font-vs-mono",
-  subsets: ["latin"],
   display: "swap",
-  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {

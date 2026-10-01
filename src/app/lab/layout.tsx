@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 
 // Fuente grotesca solo para el demo /lab (scope local vía variable en el wrapper).
-const grotesk = Space_Grotesk({
+const grotesk = localFont({
+  src: "../../fonts/SpaceGrotesk-300-700-latin.woff2",   // local desde 1-oct (ver src/app/layout.tsx)
   variable: "--font-grotesk",
-  subsets: ["latin"],
+  weight: "300 700",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Header } from "@/components/nav/Header";
 import { Footer } from "@/components/footer/Footer";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
@@ -15,15 +15,21 @@ import { Analytics } from "@vercel/analytics/next";
   Contrato: design-system/castillo-v2/MASTER.md. Variable font — los pesos
   400/500/600/700 salen del mismo archivo.
 */
-const geist = Geist({
+/*
+  Fuentes LOCALES (1-oct-2026): antes next/font/google las bajaba de Google en cada build y una caída de red
+  rompió un deploy. Mismos archivos (Google Fonts, licencia OFL, subset latin) guardados en src/fonts/.
+*/
+const geist = localFont({
+  src: "../fonts/Geist-100-900-latin.woff2",
   variable: "--font-geist",
-  subsets: ["latin"],
+  weight: "100 900",
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "../fonts/GeistMono-100-900-latin.woff2",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "100 900",
   display: "swap",
 });
 
