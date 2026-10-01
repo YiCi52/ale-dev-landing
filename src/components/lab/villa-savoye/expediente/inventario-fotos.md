@@ -644,18 +644,27 @@ Lo que falta es sobre todo **habitado y detalle**, y casi toda la **planta baja*
   - **#22** paño vidriado trasero de la planta baja, con barras blancas afuera y negras adentro;
   - **#4** ventanas de cuadrícula en el bloque de servicio (el DWG dejaba el vano abierto de piso a techo).
 
+- **Tanda 3 (30-sep noche → 1-oct madrugada):**
+  - **esquinas traseras de planta baja**: rincón blanco con puerta oscura y rejilla de lamas (e50), cerrando dos huecos que había dejado el DWG;
+  - **muros de planta baja hasta la losa** (ranura de 20 cm en todo el perímetro);
+  - **#47** vigas del salón;
+  - **#21 + #55** jardín de la cubierta y gravilla (posiciones = interpretación);
+  - banca del solárium al fondo del DWG;
+  - **#33 + #59** puerta de entrada doble oscura en el vidrio curvo, y felpudo;
+  - **#58** portón del garaje;
+  - **#26** puertas de planta baja oscuras;
+  - **#25** zócalo gris en el vestíbulo y el hall;
+  - **#27** lavamanos del vestíbulo.
+
+**Por revisar con Alejandro:**
+- **#45 + #43** colores de planta baja y del hall: las fotos i43, i44 e i49 no alcanzan para ubicar cada muro con seguridad.
+- **Base de la escalera en planta baja:** en i49 el primer tramo lo rodea un antepecho blanco curvo bajo. En el render se ve la escalera abierta. Está pendiente de comparar.
+- **Rejilla en el piso** de cada rincón trasero (DWG 0,5 × 0,8 m).
+
 **Siguen:**
-- **#47** viga del salón;
-- **#21 + #55** jardín de la cubierta y gravilla;
-- **#58** portones del garaje;
-- **#32** muebles bajo las ventanas;
-- **#29** puertas especiales;
-- **#31** escalón del baño;
-- **#45 + #43** colores de planta baja y hall;
-- **#25** zócalo gris;
-- **#24–#27 y #36** planta baja habitada;
+- **#29** puertas especiales: blanca con tableros en la suite, vidriada del salón, de servicio con luces;
+- **#24 y #36** planta baja habitada: pisos en diagonal, pileta de la lavandería;
 - **#28 y #54** iluminación;
 - **#39** cortinas;
-- **#59** felpudo;
 - **#51 y #53** jardín;
 - **#6** cocina, después de la fase 5.
