@@ -346,6 +346,7 @@ def aplicar(col, y_losa, y_techo, h_pilotis=3.07):
     dinteles(col, (h_pilotis, y_techo - 0.01), pisos=(0.05, y_losa + 0.012))    # antes de pintar: la pintura los alcanza
     piso_vestibulo(col); rampa_diagonal(y_losa); salon(y_losa, y_techo); cocina(y_losa, y_techo)
     verde_solo_afuera(h_pilotis); cielo_raso_blanco(); escalera_oscura(); cuartos(y_losa, y_techo, col); circulacion(y_losa, col); puertas(col, (0.05, y_losa + 0.012))
+    import villa_obra; villa_obra.acceso_pb(col)                    # usa m_puerta_pb, creado en puertas()
 
 
 def _circuncentro(a, b, c):
@@ -503,14 +504,16 @@ def puertas(col, pisos=(0.05, 3.322), h=2.10):
     nt.links.new(mul.outputs[2], b.inputs["Base Color"])
     metal, _ = _mat("m_manija", (0.80, 0.79, 0.76), 0.18, metal=1.0)
     negro, _ = _mat("m_bocallave", (0.01, 0.01, 0.01), 0.6)
-    bh, bman, bll = bmesh.new(), bmesh.new(), bmesh.new()
+    bh, bh0, bman, bll = bmesh.new(), bmesh.new(), bmesh.new(), bmesh.new()
+    # #26 (1-oct): en planta baja las puertas son OSCURAS, casi negras [i01, i11, i13, i43, i47, e47, e50, e51]
+    m0, _ = _mat("m_puerta_pb", (0.028, 0.026, 0.026), 0.45)
     n = 0
     for nivel, c, w, u, a0, a1, r in PUERTAS_GEOM:
         h0 = pisos[0] if nivel == "nivel0" else pisos[1]
         ancho = u[2] - 0.006                                           # luz de 3 mm por lado, sin marco
         o = (c[0] + u[0] * 0.003 + w[0] * a1, c[1] + u[1] * 0.003 + w[1] * a1)
         uu = (-u[0], -u[1])
-        _caja_orientada(bh, o, w, uu, 0.0, ancho, -0.04, 0.0, h0 + 0.008, h0 + h - 0.003)
+        _caja_orientada(bh0 if nivel == "nivel0" else bh, o, w, uu, 0.0, ancho, -0.04, 0.0, h0 + 0.008, h0 + h - 0.003)
         libre = (o[0] + w[0] * (ancho - 0.065), o[1] + w[1] * (ancho - 0.065))
         for cara, sale in ((0.0, 1), (-0.04, -1)):
             f0 = cara if sale > 0 else cara - 0.006
@@ -525,11 +528,11 @@ def puertas(col, pisos=(0.05, 3.322), h=2.10):
         for hb in (0.22, 1.02, 1.82):                                   # bisagras en el canto
             _caja_orientada(bman, o, w, uu, -0.010, 0.003, -0.044, 0.004, h0 + hb, h0 + hb + 0.09)
         n += 1
-    for nombre, bm_, mat in (("carp_puertas", bh, m), ("carp_manijas", bman, metal), ("carp_bocallaves", bll, negro)):
+    for nombre, bm_, mat in (("carp_puertas", bh, m), ("carp_puertas_pb", bh0, m0), ("carp_manijas", bman, metal), ("carp_bocallaves", bll, negro)):
         bmesh.ops.recalc_face_normals(bm_, faces=bm_.faces)
         me = bpy.data.meshes.new(nombre); bm_.to_mesh(me); bm_.free()
         ob = bpy.data.objects.new(nombre, me); col.objects.link(ob); me.materials.append(mat)
-        if nombre == "carp_puertas":                                    # cantos apenas redondeados: atrapan luz
+        if nombre.startswith("carp_puertas"):                           # cantos apenas redondeados: atrapan luz
             bv = ob.modifiers.new("canto", "BEVEL"); bv.width = 0.003; bv.segments = 2
             bv.limit_method = "ANGLE"; bv.harden_normals = True
     print(f"[materia] carpintería: {n} puertas lisas sin marco, manija chica y bocallave (medidas contra S8 10)")

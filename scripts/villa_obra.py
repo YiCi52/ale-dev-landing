@@ -334,6 +334,52 @@ def nichos_traseros_pb(col, h_muro=H_PB, h_puerta=2.10):
         bm.to_mesh(me); bm.free(); o = bpy.data.objects.new(me.name, me); col.objects.link(o); me.materials.append(lamas)
 
 
+def acceso_pb(col, r=6.33, ancho_hoja=0.80, h_puerta=2.30):
+    """#33 + #59 (1-oct): la puerta de entrada en el vidrio curvo, en el eje de la casa (x ≈ 0, el ápice del arco del
+    DWG, r 6,35): doble, de hojas OSCURAS lisas [e44, e45, e51, e52], con felpudo de rejilla afuera [e51, e52].
+    Posición sobre el arco y ancho = lectura de foto (INTERPRETACIÓN ±0,3 m)."""
+    oscuro = bpy.data.materials.get("m_puerta_pb") or bpy.data.materials.get("m_puerta_exterior")
+    vid = bpy.data.objects.get("herradura_vidrio")             # la puerta va EN el plano del vidrio: se quita ese tramo
+    if vid:
+        bm = bmesh.new(); bm.from_mesh(vid.data)
+        fuera = [f for f in bm.faces if abs(f.calc_center_median().x) < ancho_hoja and f.calc_center_median().y > 5.5]
+        bmesh.ops.delete(bm, geom=fuera, context="FACES"); bm.to_mesh(vid.data); bm.free()
+    for k, (x0, x1) in enumerate(((-ancho_hoja, 0.0), (0.0, ancho_hoja))):
+        y0, y1 = math.sqrt(r * r - x0 * x0), math.sqrt(r * r - x1 * x1)
+        nx, ny = (y1 - y0), -(x1 - x0); L = math.hypot(nx, ny); nx, ny = nx / L * 0.045, ny / L * 0.045
+        _prisma(f"pb_acceso_hoja_{k}", [(x0 + 0.004, y0), (x1 - 0.004, y1), (x1 - 0.004 + nx, y1 + ny), (x0 + 0.004 + nx, y0 + ny)],
+                0.01, h_puerta, oscuro, col)
+    rej = bpy.data.materials.get("m_felpudo") or bpy.data.materials.new("m_felpudo"); rej.use_nodes = True
+    br = next(n for n in rej.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    br.inputs["Base Color"].default_value = (0.09, 0.09, 0.09, 1); br.inputs["Roughness"].default_value = 0.6
+    br.inputs["Metallic"].default_value = 0.6
+    me = bpy.data.meshes.new("pb_felpudo"); bm = bmesh.new()
+    for i in range(17):                                             # rejilla de barras sobre la gravilla
+        x = -0.8 + 1.6 * i / 16
+        rr = bmesh.ops.create_cube(bm, size=1.0)
+        for v in rr["verts"]: v.co = (x + v.co.x * 0.02, 6.95 + v.co.y * 0.8, 0.035 + v.co.z * 0.02)
+    for j in range(5):
+        y = 6.55 + 0.8 * j / 4
+        rr = bmesh.ops.create_cube(bm, size=1.0)
+        for v in rr["verts"]: v.co = (v.co.x * 1.6, y + v.co.y * 0.02, 0.035 + v.co.z * 0.02)
+    bm.to_mesh(me); bm.free(); o = bpy.data.objects.new(me.name, me); col.objects.link(o); me.materials.append(rej)
+
+
+def porton_garaje(col, x=6.35, y=(-8.95, -6.25), h=2.30, paneles=4):
+    """#58 (1-oct): portón corredizo del garaje en la cara lateral del bloque verde [e49, e50]: paneles verdes con
+    junta oscura y una MANIJA vertical larga al centro. Posición y ancho = lectura de foto (INTERPRETACIÓN ±0,4 m)."""
+    verde = bpy.data.materials.get("verde"); negro = bpy.data.materials.get("pb_montante")
+    paso = (y[1] - y[0]) / paneles
+    for k in range(paneles):
+        a = y[0] + k * paso
+        _prisma(f"pb_porton_panel_{k}", [(x, a + 0.006), (x + 0.012, a + 0.006), (x + 0.012, a + paso - 0.006), (x, a + paso - 0.006)],
+                0.03, h, verde, col)
+    _prisma("pb_porton_junta", [(x - 0.002, y[0]), (x + 0.006, y[0]), (x + 0.006, y[1]), (x - 0.002, y[1])], 0.03, h, negro, col)
+    ym = (y[0] + y[1]) / 2
+    _prisma("pb_porton_manija", [(x + 0.012, ym - 0.012), (x + 0.04, ym - 0.012), (x + 0.04, ym + 0.012), (x + 0.012, ym + 0.012)],
+            0.80, 1.65, negro, col)
+
+
 def ventana_terraza(z0, m_vidrio, col, x=(2.80, 3.70), alto=(1.05, 1.85), y=(-4.80, -4.55)):
     """#19 (30-sep): ventana cuadrada OSCURA en el muro de la terraza del lado del boudoir, sobre la mitad izquierda
     de la jardinera en U [e11, e15, e18, e27, e35, e37]. Tamaño y posición = lectura de foto (INTERPRETACIÓN ±0,15 m)."""
