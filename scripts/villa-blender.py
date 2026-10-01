@@ -16,6 +16,9 @@ import bpy, math, os, sys
 RAIZ = os.getcwd()
 ASSETS = os.path.expanduser("~/CastilloStudio/assets/polyhaven")   # Poly Haven CC0, fuera del repo
 MODO = os.environ.get("VILLA_MODO", "dia")          # "dia" | "noche"
+if os.environ.get("VILLA_ESTACION"):                  # fase 5: cámara + exposición + balance de una estación
+    sys.path.insert(0, os.path.join(RAIZ, "scripts"))
+    import villa_estaciones; villa_estaciones.aplicar_env(os.environ["VILLA_ESTACION"], os.environ)
 # Cada toma con su cielo (28-sep): el exterior se ve mejor contra el bosque; el rincón del solárium mira por su
 # ventana a un prado abierto (el otro HDRI muestra casas y un muro de piedra desde la cámara de aproximación).
 if os.environ.get("VILLA_CAM") == "rincon":
@@ -110,6 +113,14 @@ _vn.links.new(_gv.outputs["Position"], _rv.inputs["Vector"])
 _mr = _vn.nodes.new("ShaderNodeMapRange"); _mr.inputs["From Min"].default_value = 0.45; _mr.inputs["From Max"].default_value = 0.75
 _mr.inputs["To Min"].default_value = 0.0; _mr.inputs["To Max"].default_value = 0.05
 _vn.links.new(_rv.outputs["Fac"], _mr.inputs["Value"]); _vn.links.new(_mr.outputs["Result"], _vb.inputs["Roughness"])
+# FASE 5 (1-oct): el vidrio es vidrio SOLO para la cámara (reflejos, verde, huellas); para los demás rayos
+# (difusos, brillos, sombra) es transparente. Así la luz del cielo entra a los cuartos como en las fotos; antes el
+# rebote por dentro tenía que refractar dos caras de vidrio y los interiores salían casi negros.
+# VILLA_VIDRIO_FISICO=1 vuelve al comportamiento anterior (para comparar).
+if not os.environ.get("VILLA_VIDRIO_FISICO"):
+    _vn.links.new(_lp.outputs["Is Camera Ray"], _mx.inputs["Fac"])
+    _vn.links.remove(_mx.inputs[1].links[0]); _vn.links.remove(_mx.inputs[2].links[0])
+    _vn.links.new(_tr.outputs["BSDF"], _mx.inputs[1]); _vn.links.new(_vb.outputs["BSDF"], _mx.inputs[2])
 M_CARP     = mat("carpint", (0.127, 0.042, 0.052), 0.45)  # granate medido en e04: sRGB ~(100, 58, 64) (#17)
 M_CARP_INT = mat("carpint_int", (0.78, 0.78, 0.76), 0.45)   # por DENTRO la carpintería es blanca [i10, i16, i23, i33]
 
@@ -471,11 +482,21 @@ try:
 except Exception as e:
     print("[villa] METAL no disponible:", e); esc.cycles.device = "CPU"
 esc.cycles.samples = int(os.environ.get("VILLA_MUESTRAS", "160"))
+# FASE 5: más rebotes difusos (de 4 a 8): la luz que entra por la cinta tiene que dar 3–5 vueltas para llegar
+# al fondo de los cuartos y a la planta baja bajo la losa.
+esc.cycles.diffuse_bounces = int(os.environ.get("VILLA_REBOTES", "8")); esc.cycles.max_bounces = max(esc.cycles.max_bounces, 12)
 esc.cycles.use_denoising = True
 esc.view_settings.view_transform = "AgX"
 if os.environ.get("VILLA_CAM") not in ("interior", "hall"): esc.view_settings.exposure = -0.1 if MODO == "dia" else 1.2
 if os.environ.get("VILLA_CAM") == "hall": esc.view_settings.exposure = 1.3
-if "VILLA_EXPO" in os.environ: esc.view_settings.exposure = float(os.environ["VILLA_EXPO"])   # solo para verificar zonas oscuras
+if "VILLA_EXPO" in os.environ: esc.view_settings.exposure = float(os.environ["VILLA_EXPO"])
+# FASE 5: balance de blancos por estación, como una cámara real. Adentro la luz llega rebotada en el pasto y
+# filtrada por el vidrio: los blancos salían amarillo-verdosos (azul/rojo ≈ 0,65–0,72, medido) y en las fotos de
+# Archweb son neutros. VILLA_BALANCE_K = temperatura de la luz de la escena en kelvin (más bajo = corrige más cálido).
+if "VILLA_BALANCE_K" in os.environ:
+    esc.view_settings.use_white_balance = True
+    esc.view_settings.white_balance_temperature = float(os.environ["VILLA_BALANCE_K"])
+    esc.view_settings.white_balance_tint = float(os.environ.get("VILLA_BALANCE_TINTE", "10"))   # solo para verificar zonas oscuras
 try: esc.view_settings.look = "AgX - Punchy"
 except Exception: pass
 esc.render.resolution_x, esc.render.resolution_y = 1280, 800
