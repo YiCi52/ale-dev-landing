@@ -134,6 +134,29 @@ def _fin_remate(pisos):
     return Z_DESCANSO + min(max(t, 0.0), 1.0) * (Z_BOCA - Z_DESCANSO)
 
 
+def barras_dos_caras(col):
+    """Pulido fase 5 (1-oct): las barras horizontales de los vidrios del pozo son CLARAS vistas desde adentro
+    [i02, i20, i38, i45, i48] y OSCURAS vistas desde la terraza [e16, e23, e25]. Solo la cara de las barras del muro
+    este que mira a la terraza (+x) queda oscura; el muro oeste da a la rampa y al hall: claro de los dos lados."""
+    o = bpy.data.objects.get("circ_pozo_barras")
+    if not o: return
+    claro = bpy.data.materials.get("m_barra_blanca") or bpy.data.materials.new("m_barra_blanca")
+    if not claro.use_nodes:
+        claro.use_nodes = True
+        b = next(n for n in claro.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+        b.inputs["Base Color"].default_value = (0.82, 0.82, 0.80, 1); b.inputs["Roughness"].default_value = 0.4
+    oscura = bpy.data.materials.get("m_barra_oscura") or bpy.data.materials.new("m_barra_oscura")
+    oscura.use_nodes = True
+    bo = next(n for n in oscura.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    bo.inputs["Base Color"].default_value = (0.025, 0.027, 0.027, 1); bo.inputs["Roughness"].default_value = 0.55
+    bo.inputs["Metallic"].default_value = 0.0                     # pintura mate: la metálica reflejaba el cielo y se leía gris
+    me = o.data; me.materials[0] = oscura; me.materials.append(claro); k = len(me.materials) - 1
+    xc_este = (X_ESTE[0] + X_ESTE[1]) / 2
+    for p in me.polygons:
+        afuera = p.center.x > xc_este                                    # mitad exterior de las barras del muro este
+        if not afuera: p.material_index = k
+
+
 def pasamanos_rampa(pisos, techos, col, sobre=0.045, paso_poste=1.2):
     """Pasamanos de tubo NEGRO sobre cada antepecho de la rampa interior (#1, 30-sep). Fotos: i02, i09, i20 (sobre
     el antepecho que lleva el ventanal rayado encima), i03, i13, i47, i54 (sobre el antepecho hacia el vestíbulo y el
@@ -455,7 +478,8 @@ def _vidrio(bmv, bmb, x, zs, abajo, arriba):
         for g in grupos:
             if len(g) < 2: continue
             z0, z1 = min(g), max(g)
-            _perfil_en_x(bmb, [(z0, h - 0.018), (z1, h - 0.018), (z1, h + 0.018), (z0, h + 0.018)], xc - 0.03, xc + 0.03)
+            for a_, b_ in ((xc - 0.03, xc - 0.0005), (xc + 0.0005, xc + 0.03)):        # dos mitades: una por cara
+                _perfil_en_x(bmb, [(z0, h - 0.018), (z1, h - 0.018), (z1, h + 0.018), (z0, h + 0.018)], a_, b_)
         h += PASO_BARRA
     for z in (zs[0], zs[-1]):                                            # montante en cada extremo del paño
         if arriba(z) - abajo(z) > 0.05:
@@ -513,6 +537,7 @@ def muros_pozo(pisos, techos, m_muro, m_vidrio, col):
         bmesh.ops.recalc_face_normals(b_, faces=b_.faces)
         me = bpy.data.meshes.new(nombre); b_.to_mesh(me); b_.free()
         o = bpy.data.objects.new(nombre, me); col.objects.link(o); me.materials.append(mat)
+    barras_dos_caras(col)
     baranda_tubos(pisos, col)
     pasamanos_rampa(pisos, techos, col)
     print("[villa_circulacion] pozo de la rampa: antepechos, vidrios con barras y bandas según fotos (muros llenos quitados)")
