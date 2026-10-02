@@ -278,7 +278,23 @@ def cocina(y_losa, y_techo):
                             and x0 - 0.3 < c.x < x1 + 0.3 and z0 - 0.3 < c.y < z1 + 0.3
                             and x0 < c.x + nn.x * 0.5 < x1 and z0 < c.y + nn.y * 0.5 < z1)   # mira HACIA la cocina
     n = sum(_asignar_caras(o, azulejo, dentro) for o in _objetos(("n1_muro", "n1_tabique")))
-    print(f"[materia] cocina: azulejo blanco en {n} caras")
+    # #6 (1-oct): el azulejo cubre solo el salpicadero, hasta ~1,40 m; arriba el muro es pintura blanca [i17, i19,
+    # i24, i25, i27]. Se corta en el shader por altura de mundo (las caras del muro van de piso a techo).
+    nt = azulejo.node_tree; b = next(n_ for n_ in nt.nodes if n_.type == "BSDF_PRINCIPLED")
+    if b.inputs["Base Color"].links:
+        geo = nt.nodes.new("ShaderNodeNewGeometry"); sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+        nt.links.new(geo.outputs["Position"], sep.inputs["Vector"])
+        bajo = nt.nodes.new("ShaderNodeMath"); bajo.operation = "LESS_THAN"; bajo.inputs[1].default_value = y_losa + 1.40
+        nt.links.new(sep.outputs["Z"], bajo.inputs[0])
+        mz = nt.nodes.new("ShaderNodeMix"); mz.data_type = "RGBA"
+        mz.inputs[6].default_value = (0.90, 0.89, 0.86, 1)
+        nt.links.new(bajo.outputs[0], mz.inputs["Factor"]); nt.links.new(b.inputs["Base Color"].links[0].from_socket, mz.inputs[7])
+        nt.links.new(mz.outputs[2], b.inputs["Base Color"])
+        if b.inputs["Normal"].links:                                  # sin relieve de juntas en la pintura
+            mn = nt.nodes.new("ShaderNodeMix"); mn.data_type = "VECTOR"
+            nt.links.new(geo.outputs["Normal"], mn.inputs[4]); nt.links.new(b.inputs["Normal"].links[0].from_socket, mn.inputs[5])
+            nt.links.new(bajo.outputs[0], mn.inputs["Factor"]); nt.links.new(mn.outputs[1], b.inputs["Normal"])
+    print(f"[materia] cocina: azulejo blanco hasta 1,40 m en {n} caras (#6)")
 
 
 def _herradura():

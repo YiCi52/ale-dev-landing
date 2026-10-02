@@ -23,6 +23,8 @@ ESTACIONES = {
     "solarium":      dict(pos=(3.0, 0.8, 8.4), mira=(-2.0, 6.5, 7.0), lente=22, expo=0.2, k=6200, tinte=28, foto="e38"),
     # recintos
     "cocina":        dict(pos=(-5.2, 9.8, 4.95), mira=(-8.8, 6.0, 3.9), lente=20, expo=3.0, k=5000, foto="i17"),
+    "cocina_alacena": dict(pos=(-5.3, 6.9, 4.95), mira=(-9.3, 5.6, 4.3), lente=20, expo=3.0, k=5000, foto="i19 / i25"),
+    "cocina_pileta": dict(pos=(-6.4, 8.6, 5.05), mira=(-7.6, 10.4, 4.1), lente=24, expo=3.0, k=5000, foto="i24 / i37"),
     "boudoir":       dict(pos=(3.9, -5.4, 4.9), mira=(3.0, -10.6, 4.2), lente=20, expo=1.8, k=5200, foto="i51"),
     "bano":          dict(pos=(-2.5, -2.6, 4.9), mira=(-3.9, -5.2, 3.6), lente=20, expo=1.8, k=5200, foto="i52"),
 }

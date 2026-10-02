@@ -656,6 +656,11 @@ Lo que falta es sobre todo **habitado y detalle**, y casi toda la **planta baja*
   - **#25** zócalo gris en el vestíbulo y el hall;
   - **#27** lavamanos del vestíbulo.
 
+- **Tanda 4 (1-oct, tarde):**
+  - **fase 5 completa**: día (luz que entra, 8 rebotes, 13 estaciones con exposición y balance) y noche (luminarias reales);
+  - barras de la rampa en dos caras;
+  - **#6 cocina**: alacena de aluminio en el muro del hall, mesón en L con pileta doble, mesa central en L, radiadores y azulejo solo hasta 1,40 m (`scripts/villa_cocina.py`). i22 no se modeló, porque no se ubica en el plano.
+
 **Por revisar con Alejandro:**
 - **#45 + #43** colores de planta baja y del hall: las fotos i43, i44 e i49 no alcanzan para ubicar cada muro con seguridad.
 - **Base de la escalera en planta baja:** en i49 el primer tramo lo rodea un antepecho blanco curvo bajo. En el render se ve la escalera abierta. Está pendiente de comparar.
@@ -667,4 +672,3 @@ Lo que falta es sobre todo **habitado y detalle**, y casi toda la **planta baja*
 - **#28 y #54** iluminación;
 - **#39** cortinas;
 - **#51 y #53** jardín;
-- **#6** cocina, después de la fase 5.

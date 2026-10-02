@@ -249,6 +249,7 @@ def salon(Y_LOSA, Y_TECHO, D, M, col):
     villa_salon.chimenea_y_meson(z, col); villa_salon.radiadores(z, col); villa_salon.vigas(Y_TECHO - 0.01, col)
     import villa_cuartos
     villa_cuartos.muebles_bajo_ventana(z, col)                         # #32: dormitorios, bajo la cinta
+    import villa_cocina; villa_cocina.construir(col)                   # #6: cocina (después de la fase 5)
     # LUMINARIA: tubo lineal suspendido de varillas que corre a lo largo del salón [S3 "en forme de gouttière";
     # S8 28–30]. Los globos de antes estaban MAL (nivel-1-principal.md). Canaleta metálica abierta arriba (luz
     # indirecta al cielo raso) con el tubo emisor adentro. Largo y posición = lectura de las fotos (interpretación).
