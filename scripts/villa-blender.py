@@ -395,28 +395,10 @@ else:
 sol = bpy.data.objects.new("sol", sd); esc.collection.objects.link(sol)
 sol.rotation_euler = mathutils.Vector(dir_sol).to_track_quat("Z","Y").to_euler()
 
-if MODO == "noche":
-    # La luz artificial de la casa: cálida (2700 K) en los cuartos del nivel principal —la cinta de
-    # ventanas brilla desde afuera— y en el vestíbulo curvo bajo los pilotis.
-    CALIDA = (1.0, 0.70, 0.42)
-    def luz_area(nombre, x, z, y, w, energia):
-        ld = bpy.data.lights.new(nombre, type="AREA"); ld.energy = energia; ld.color = CALIDA
-        ld.shape = "SQUARE"; ld.size = w
-        o = bpy.data.objects.new(nombre, ld); esc.collection.objects.link(o)
-        o.location = (x, z, y)                               # apunta hacia abajo por defecto
-    # Bombillos colgantes (puntuales), no paneles hacia abajo: desde el pasto el ojo ve el TECHO de los
-    # cuartos por la cinta, y un panel que apunta al piso lo deja negro. El bombillo lo baña.
-    def bombillo(nombre, x, z, y, energia):
-        ld = bpy.data.lights.new(nombre, type="POINT"); ld.energy = energia; ld.color = CALIDA
-        ld.shadow_soft_size = 0.2
-        o = bpy.data.objects.new(nombre, ld); esc.collection.objects.link(o); o.location = (x, z, y)
-    for n, (x, z) in enumerate([(-6.5, 7.5), (-6.5, -7.5), (4.5, 8.0), (4.5, -8.0), (-6.8, 0.0), (-3.5, 8.3), (-3.5, -8.3),
-                                (-2.2, 8.4), (7.4, 6.4), (0.9, 9.4)]):
-        bombillo(f"cuarto_{n}", x, z, Y_TECHO - 0.6, 380)
-    for n, (x, z) in enumerate([(0.3, 1.0), (-2.5, 3.0), (2.8, -1.2)]):
-        luz_area(f"vestibulo_{n}", x, z, H_RDC - 0.3, 1.2, 260)
-    for n, (x, z) in enumerate([(-6, 6), (6, 6), (-6, -6), (6, -6)]):
-        luz_area(f"bajo_losa_{n}", x, z, H_PILOTIS - 0.05, 0.8, 45)   # el porche bajo la caja, apenas
+# FASE 5, noche (1-oct): cada luz sale de una luminaria que se ve en las fotos (scripts/villa_luminarias.py).
+# Antes: bombillos genéricos flotando y paneles "del porche" sin evidencia. Los cuerpos se modelan siempre.
+import villa_luminarias
+villa_luminarias.construir(esc.collection, MODO == "noche")
 
 # ── camara: el encuadre de aproximacion ───────────────────────────────────
 cam_d = bpy.data.cameras.new("cam"); cam_d.lens = 40
