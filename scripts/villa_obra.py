@@ -344,7 +344,19 @@ def acceso_pb(col, r=6.33, ancho_hoja=0.80, h_puerta=2.30):
         bm = bmesh.new(); bm.from_mesh(vid.data)
         fuera = [f for f in bm.faces if abs(f.calc_center_median().x) < ancho_hoja and f.calc_center_median().y > 5.5]
         bmesh.ops.delete(bm, geom=fuera, context="FACES"); bm.to_mesh(vid.data); bm.free()
-    for k, (x0, x1) in enumerate(((-ancho_hoja, 0.0), (0.0, ancho_hoja))):
+    mon = bpy.data.objects.get("pb_montantes")                 # y sin montantes dentro del vano de la puerta
+    if mon:
+        bm = bmesh.new(); bm.from_mesh(mon.data)
+        fuera = [v for v in bm.verts if abs(v.co.x) < ancho_hoja + 0.02 and v.co.y > 5.5]
+        bmesh.ops.delete(bm, geom=fuera, context="VERTS"); bm.to_mesh(mon.data); bm.free()
+    import os
+    if os.environ.get("VILLA_RECORRIDO") or os.environ.get("VILLA_PUERTA_ABIERTA"):
+        # en el recorrido la puerta está ABIERTA: cada hoja gira 90° hacia adentro sobre su bisagra exterior
+        for k, xb in enumerate((-ancho_hoja, ancho_hoja)):
+            yb = math.sqrt(r * r - xb * xb); s_ = 1 if xb > 0 else -1
+            _prisma(f"pb_acceso_hoja_{k}", [(xb - s_ * 0.004, yb), (xb - s_ * 0.049, yb), (xb - s_ * 0.049, yb - ancho_hoja + 0.004),
+                                            (xb - s_ * 0.004, yb - ancho_hoja + 0.004)], 0.01, h_puerta, oscuro, col)
+    for k, (x0, x1) in enumerate(((-ancho_hoja, 0.0), (0.0, ancho_hoja)) if not (os.environ.get("VILLA_RECORRIDO") or os.environ.get("VILLA_PUERTA_ABIERTA")) else ()):
         y0, y1 = math.sqrt(r * r - x0 * x0), math.sqrt(r * r - x1 * x1)
         nx, ny = (y1 - y0), -(x1 - x0); L = math.hypot(nx, ny); nx, ny = nx / L * 0.045, ny / L * 0.045
         _prisma(f"pb_acceso_hoja_{k}", [(x0 + 0.004, y0), (x1 - 0.004, y1), (x1 - 0.004 + nx, y1 + ny), (x0 + 0.004 + nx, y0 + ny)],

@@ -519,5 +519,13 @@ bpy.context.view_layer.update()                        # matrix_world al día (l
 for _o in [o for o in esc.objects if o.parent is None and o != cam]:
     _o.matrix_world = ESPEJO_Y @ _o.matrix_world
 cam.matrix_world = ESPEJO_Y @ cam.matrix_world @ mathutils.Matrix.Diagonal((-1.0, 1.0, 1.0, 1.0))
-bpy.ops.render.render(write_still=True)
+if os.environ.get("VILLA_RECORRIDO"):                      # fase 6: caminata de cámara → secuencia de fotogramas
+    import villa_recorrido
+    villa_recorrido.preparar(esc, cam, cam_d, os.environ["VILLA_RECORRIDO"], fps=int(os.environ.get("VILLA_FPS", "12")),
+                             vel=float(os.environ.get("VILLA_VEL", "1.2")), espejo=ESPEJO_Y)
+    esc.render.filepath = os.path.join(OUT, "f_")              # OUT es un directorio
+    esc.render.use_overwrite = False; esc.render.use_placeholder = True   # si se cae, al relanzar sigue donde iba
+    bpy.ops.render.render(animation=True)
+else:
+    bpy.ops.render.render(write_still=True)
 print(f"[villa] ✓ {OUT}")
