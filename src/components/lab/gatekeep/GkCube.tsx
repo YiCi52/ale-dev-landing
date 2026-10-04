@@ -17,7 +17,7 @@ const FRAME_H = 1200;
 const MAX_DPR = 2;
 
 const framePath = (i: number) =>
-  `/lab/gatekeep/cube/frame_${String(i + 1).padStart(4, "0")}.png`;
+  `/lab/gatekeep/cube/frame_${String(i + 1).padStart(4, "0")}.webp`;
 
 export function GkCube() {
   const sectionRef = useRef<HTMLElement>(null);
