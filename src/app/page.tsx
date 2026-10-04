@@ -1,6 +1,7 @@
 import { HeroEscena } from "@/components/hero/escena/HeroEscena";
 import { BarajaCasos } from "@/components/casos/BarajaCasos";
 import { Testimonio } from "@/components/casos/Testimonio";
+import { LabsSeccion } from "@/components/labs/LabsSeccion";
 import { Servicios } from "@/components/servicios/Servicios";
 import { Constelacion } from "@/components/constelacion/Constelacion";
 import { Contacto } from "@/components/form/Contacto";
@@ -37,6 +38,12 @@ export default function Home() {
         `fixed` del sitio de la clienta. La sección trae su propia entrada.
       */}
       <BarajaCasos />
+      {/*
+        Labs (4-oct-2026): la sección 3 del MASTER. Va pegada al trabajo porque
+        también es trabajo — lo que se prueba antes de llevarlo a un cliente —, y
+        antes del testimonio, que respalda todo lo visto hasta ahí.
+      */}
+      <LabsSeccion />
       {/*
         El testimonio va DESPUÉS del trabajo y ANTES de la oferta: primero se
         ve lo que hizo, después alguien más lo respalda, y recién ahí se habla
