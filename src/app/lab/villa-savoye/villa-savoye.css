@@ -232,6 +232,16 @@
   color: var(--vs-verde);
 }
 
+.vs-recorrido-titulo,
+.vs-puntos-texto h3,
+.vs-galeria-item h3 {
+  text-wrap: balance;
+}
+
+.vs-obra-lede {
+  text-wrap: pretty;
+}
+
 .vs-recorrido-titulo {
   font-family: var(--vs-display);
   font-size: clamp(1.3rem, 2.4vw, 1.8rem);
@@ -401,6 +411,7 @@
   font-size: clamp(2.2rem, 5vw, 3.6rem);
   font-weight: 600;
   letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
   color: var(--vs-ink);
   margin-bottom: 0.4rem;
 }

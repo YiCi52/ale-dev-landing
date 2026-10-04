@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { LAB_DESTACADO, LABS } from "./labs";
-import { ESTACIONES, PORTADA, PUNTOS, RECINTOS } from "@/components/lab/villa-savoye/contenido";
+import { ESTACIONES, PORTADA, PUNTOS, RECINTOS, RECORRIDO } from "@/components/lab/villa-savoye/contenido";
 
 /*
   Lo que se rompe en silencio en estas secciones no es la lógica: es un enlace
@@ -33,7 +33,7 @@ describe("sección Labs", () => {
 });
 
 describe("contenido de la Villa", () => {
-  const vistas = [PORTADA, ...PUNTOS, ...ESTACIONES, ...RECINTOS];
+  const vistas = [PORTADA, RECORRIDO, ...PUNTOS, ...ESTACIONES, ...RECINTOS];
 
   it("cada render citado existe en public", () => {
     for (const v of vistas) expect(enPublic(v.imagen), v.imagen).toBe(true);

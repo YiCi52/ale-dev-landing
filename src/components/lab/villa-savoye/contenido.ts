@@ -23,6 +23,14 @@ export const PORTADA: Vista = {
   foto: "e53 · e28",
 };
 
+export const RECORRIDO: Vista = {
+  imagen: `${RUTA}/llegada-noche.webp`,
+  alt: "La Villa Savoye de noche desde el camino de llegada: la ventana corrida y el vestíbulo encendidos.",
+  titulo: "La llegada, de noche",
+  texto: "Las luminarias son las que se ven en las fotos del museo: bombillos y colgantes en el vestíbulo, regletas y globos arriba.",
+  foto: "i13 · i49 · e45",
+};
+
 export const PUNTOS: ReadonlyArray<Vista & { n: string }> = [
   {
     n: "01",

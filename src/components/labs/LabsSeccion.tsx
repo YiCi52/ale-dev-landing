@@ -18,7 +18,7 @@ function TarjetaLab({ lab, indice }: { lab: Lab; indice: number }) {
   return (
     <Link
       href={`/lab/${lab.slug}`}
-      className="group block overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] transition-[border-color] duration-[var(--duration-normal)] hover:border-[color:var(--color-border-strong)] focus-visible:border-[color:var(--color-accent)]"
+      className="group block overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] transition-[border-color] duration-[var(--duration-normal)] hover:border-[color:var(--color-border-strong)] focus-visible:border-[color:var(--color-accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--color-accent)]"
     >
       <div className="relative aspect-[16/10] overflow-hidden">
         <Image
@@ -33,7 +33,7 @@ function TarjetaLab({ lab, indice }: { lab: Lab; indice: number }) {
         <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--color-fg-subtle)]">
           / {String(indice + 2).padStart(2, "0")} · {lab.tipo}
         </p>
-        <h3 className="mt-2 text-lg font-semibold tracking-[-0.005em] text-[color:var(--color-fg)]">
+        <h3 className="mt-2 text-balance text-lg font-semibold tracking-[-0.005em] text-[color:var(--color-fg)]">
           {lab.nombre}
         </h3>
         <Text size="sm" tone="subtle" className="mt-2">
@@ -49,7 +49,7 @@ function LabDestacado() {
   return (
     <Link
       href={`/lab/${lab.slug}`}
-      className="group grid overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] transition-[border-color] duration-[var(--duration-normal)] hover:border-[color:var(--color-border-strong)] focus-visible:border-[color:var(--color-accent)] lg:grid-cols-[3fr_2fr]"
+      className="group grid overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] transition-[border-color] duration-[var(--duration-normal)] hover:border-[color:var(--color-border-strong)] focus-visible:border-[color:var(--color-accent)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--color-accent)] lg:grid-cols-[3fr_2fr]"
     >
       <div className="relative aspect-[16/10] overflow-hidden lg:aspect-auto lg:min-h-[420px]">
         <Image
@@ -68,7 +68,7 @@ function LabDestacado() {
           <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--color-accent)]">
             / 01 · {lab.tipo}
           </p>
-          <h3 className="mt-3 text-3xl font-semibold tracking-[-0.015em] text-[color:var(--color-fg)] lg:text-4xl">
+          <h3 className="mt-3 text-balance text-3xl font-semibold tracking-[-0.015em] text-[color:var(--color-fg)] lg:text-4xl">
             {lab.nombre}
           </h3>
           <Text tone="muted" className="mt-4">
@@ -76,7 +76,7 @@ function LabDestacado() {
           </Text>
         </div>
         <span className="font-mono text-xs uppercase tracking-[0.18em] text-[color:var(--color-fg)] transition-transform duration-[var(--duration-normal)] ease-[var(--ease-out-quart)] pointer-fine:group-hover:translate-x-1">
-          Ver la casa →
+          Ver la casa <span aria-hidden="true">→</span>
         </span>
       </div>
     </Link>

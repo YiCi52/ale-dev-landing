@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { PORTADA } from "./contenido";
+import { RECORRIDO } from "./contenido";
 
 /*
   El espacio reservado del recorrido (4-oct-2026). El recorrido por la
@@ -14,10 +14,9 @@ export function VsRecorrido() {
     <section className="vs-recorrido" aria-labelledby="vs-recorrido-titulo">
       <div className="vs-recorrido-marco">
         <Image
-          src={PORTADA.imagen}
-          alt={PORTADA.alt}
+          src={RECORRIDO.imagen}
+          alt={RECORRIDO.alt}
           fill
-          priority
           sizes="100vw"
           className="vs-recorrido-img"
         />
@@ -33,7 +32,7 @@ export function VsRecorrido() {
         </div>
       </div>
       <p className="vs-pie">
-        {PORTADA.titulo} — {PORTADA.texto} <span className="vs-ref">Ref. foto {PORTADA.foto}</span>
+        {RECORRIDO.titulo} — {RECORRIDO.texto} <span className="vs-ref">Ref. foto {RECORRIDO.foto}</span>
       </p>
     </section>
   );
