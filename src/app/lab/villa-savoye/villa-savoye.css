@@ -174,135 +174,137 @@
   }
 }
 
-/* ── Desarme: escena pineada + fichas ─────────────────────────────────── */
-.vs-desarme {
-  position: relative;
-  height: 100svh;
-  overflow: clip;
-  background: linear-gradient(var(--vs-bg) 0%, var(--vs-bg-2) 100%);
-}
-
-/* costuras suaves: el papel del hero se funde con el cielo del canvas
-   (arriba) y el cielo se funde de vuelta al papel (abajo) — sin línea dura */
-.vs-desarme::before,
-.vs-desarme::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: clamp(6rem, 18svh, 12rem);
-  z-index: 2;
-  pointer-events: none;
-}
-
-.vs-desarme::before {
-  top: 0;
-  background: linear-gradient(var(--vs-bg) 0%, transparent 100%);
-}
-
-.vs-desarme::after {
-  bottom: 0;
-  background: linear-gradient(transparent 0%, var(--vs-bg) 100%);
-}
-
-.vs-scene {
-  position: absolute;
-  inset: 0;
-}
-
-.vs-scene canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* loader del stage (ronda 3): ASCII puro con progreso real, estilo cota de
-   plano — vive mientras compilan shaders y suben texturas, y se va con el
-   fade del canvas */
-.vs-loader {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
+/* ── v2 (4-oct-2026): la casa reconstruida, en renders ───────────────────
+   Las imágenes van como láminas de publicación: marco fino, pie en mono con
+   la foto del museo citada. Nada de sombras ni radios de tarjeta de app. */
+.vs-ref {
+  display: inline-block;
   font-family: var(--vs-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  color: var(--vs-dim);
-}
-
-.vs-hud {
-  position: absolute;
-  /* debajo de la barra fija del sitio: antes el header la tapaba al pinear */
-  top: clamp(4.6rem, 9vh, 6.5rem);
-  right: clamp(1.5rem, 5vw, 6rem);
-  display: flex;
-  align-items: center;
-  gap: 1.1rem;
-  font-family: var(--vs-mono);
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-  color: var(--vs-ink);
-}
-
-.vs-toggle-noche {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-family: var(--vs-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.14em;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--vs-ink);
-  background: color-mix(in oklab, var(--vs-bg) 82%, transparent);
-  backdrop-filter: blur(6px);
-  border: 1px solid var(--vs-linea);
-  border-radius: 999px;
-  padding: 0.42rem 0.85rem;
-  cursor: pointer;
-  transition:
-    border-color 200ms ease-out,
-    color 200ms ease-out,
-    background-color 200ms ease-out;
-}
-
-.vs-toggle-noche:hover {
-  border-color: var(--vs-verde);
   color: var(--vs-verde);
 }
 
-.vs-toggle-noche[aria-pressed="true"] {
-  background: var(--vs-ink);
-  color: var(--vs-bg);
-  border-color: var(--vs-ink);
-}
-
-.vs-hud b {
-  font-weight: 600;
-  color: var(--vs-verde);
-}
-
-.vs-hud i {
-  font-style: normal;
+.vs-pie {
+  max-width: 48rem;
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
   color: var(--vs-dim);
 }
 
-.vs-fichas {
-  position: absolute;
-  left: clamp(1.5rem, 5vw, 6rem);
-  bottom: clamp(1.5rem, 6vh, 4rem);
-  width: min(24rem, calc(100% - 3rem));
+.vs-pie .vs-ref {
+  margin-left: 0.5rem;
 }
 
-.vs-punto {
-  position: absolute;
-  bottom: 0;
-  left: 0;
+/* Recorrido: espacio reservado, a sangre */
+.vs-recorrido {
+  padding: 0 clamp(1.5rem, 5vw, 6rem) clamp(3rem, 9vh, 7rem);
+}
+
+.vs-recorrido-marco {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  max-height: 86svh;
   width: 100%;
-  opacity: 0;
-  background: color-mix(in oklab, var(--vs-bg) 88%, transparent);
+  overflow: hidden;
+  border: 1px solid var(--vs-linea);
+  background: var(--vs-bg-2);
+}
+
+.vs-recorrido-img {
+  object-fit: cover;
+}
+
+.vs-recorrido-nota {
+  position: absolute;
+  left: clamp(1rem, 3vw, 2.5rem);
+  bottom: clamp(1rem, 3vw, 2.5rem);
+  max-width: 26rem;
+  padding: 1.2rem 1.4rem 1.3rem;
+  background: color-mix(in oklab, var(--vs-bg) 90%, transparent);
   backdrop-filter: blur(6px);
   border-left: 2px solid var(--vs-verde);
-  padding: 1.1rem 1.3rem 1.2rem;
+}
+
+.vs-recorrido-nota .vs-eyebrow {
+  color: var(--vs-verde);
+}
+
+.vs-recorrido-titulo {
+  font-family: var(--vs-display);
+  font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0.4rem 0 0.5rem;
+}
+
+.vs-recorrido-nota p:last-child {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+/* Los cinco puntos: filas alternadas imagen/texto */
+.vs-puntos {
+  padding: clamp(3rem, 9vh, 7rem) clamp(1.5rem, 5vw, 6rem);
+  border-top: 1px solid var(--vs-linea);
+}
+
+.vs-puntos-lista {
+  list-style: none;
+  margin: 2.4rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(2.5rem, 7vh, 5rem);
+}
+
+.vs-puntos-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: center;
+}
+
+.vs-puntos-item:nth-child(even) .vs-puntos-img {
+  order: 2;
+}
+
+.vs-puntos-img,
+.vs-galeria-img,
+.vs-obra-plano {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--vs-linea);
+  background: var(--vs-bg-2);
+}
+
+.vs-puntos-img img,
+.vs-galeria-img img {
+  object-fit: cover;
+  transition: transform 1.2s var(--vs-ease);
+}
+
+.vs-obra-plano img {
+  object-fit: contain;
+  padding: 1rem;
+}
+
+.vs-puntos-texto h3 {
+  font-family: var(--vs-display);
+  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0.4rem 0 0.8rem;
+}
+
+.vs-puntos-texto p {
+  max-width: 28rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0 0 1rem;
 }
 
 .vs-punto-n {
@@ -312,49 +314,169 @@
   color: var(--vs-verde);
 }
 
-.vs-punto h3 {
+/* Galerías (promenade y recintos) */
+.vs-galeria {
+  padding: clamp(3rem, 9vh, 7rem) clamp(1.5rem, 5vw, 6rem);
+  border-top: 1px solid var(--vs-linea);
+}
+
+.vs-galeria-cabeza p {
+  max-width: 36rem;
+  margin: 1rem 0 0;
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  line-height: 1.55;
+}
+
+.vs-galeria-lista {
+  list-style: none;
+  margin: 2.4rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.2rem, 2.5vw, 2rem);
+}
+
+.vs-galeria-item h3 {
   font-family: var(--vs-display);
-  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+  font-size: 1.2rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  margin: 0.3rem 0 0.5rem;
+  margin: 1rem 0 0.4rem;
 }
 
-.vs-punto p {
+.vs-galeria-item p {
   font-size: 0.92rem;
   line-height: 1.55;
+  margin: 0 0 0.6rem;
   color: var(--vs-ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .vs-galeria-item:hover .vs-galeria-img img,
+  .vs-puntos-item:hover .vs-puntos-img img {
+    transform: scale(1.025);
+  }
+}
+
+/* Construida desde la evidencia */
+.vs-obra {
+  padding: clamp(3rem, 9vh, 7rem) clamp(1.5rem, 5vw, 6rem);
+  border-top: 1px solid var(--vs-linea);
+  background: var(--vs-bg-2);
+}
+
+.vs-obra-lede {
+  max-width: 40rem;
+  margin: 1rem 0 0;
+  font-family: var(--vs-display);
+  font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+.vs-obra-cifras {
+  margin: 2.6rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--vs-linea);
+}
+
+.vs-obra-cifra {
+  padding: 1.2rem 1.2rem 1.4rem 0;
+  border-bottom: 1px solid var(--vs-linea);
+}
+
+.vs-obra-cifra dt {
+  font-family: var(--vs-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vs-dim);
+}
+
+.vs-obra-cifra dt b {
+  display: block;
+  font-family: var(--vs-display);
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--vs-ink);
+  margin-bottom: 0.4rem;
+}
+
+.vs-obra-cifra dd {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.vs-obra-cuerpo {
+  margin-top: clamp(2rem, 5vh, 3.5rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: start;
+}
+
+.vs-obra-plano {
+  aspect-ratio: 9 / 4;
+  background: var(--vs-bg);
+}
+
+.vs-obra-metodo {
   margin: 0;
-}
-
-/* la promenade comparte esqueleto con el desarme; fondo apenas más cálido
-   (interior) para que el capítulo se sienta distinto sin romper el sistema */
-.vs-promenade {
-  background: linear-gradient(var(--vs-bg-2) 0%, #efeee7 100%);
-}
-
-/* variante estática (reduced motion): todo apilado y legible */
-.vs-desarme--static {
-  height: auto;
-  padding: clamp(2rem, 6vw, 5rem);
+  padding-left: 1.2rem;
   display: grid;
-  gap: 2rem;
+  gap: 1rem;
+  font-size: 0.98rem;
+  line-height: 1.55;
 }
 
-.vs-desarme--static .vs-scene {
-  position: relative;
-  height: min(70svh, 34rem);
+.vs-obra-metodo li::marker {
+  font-family: var(--vs-mono);
+  color: var(--vs-verde);
 }
 
-.vs-static-list {
-  display: grid;
-  gap: 1.5rem;
-  max-width: 44rem;
+@media (max-width: 960px) {
+  .vs-puntos-item,
+  .vs-obra-cuerpo {
+    grid-template-columns: 1fr;
+  }
+
+  .vs-puntos-item:nth-child(even) .vs-puntos-img {
+    order: 0;
+  }
+
+  .vs-galeria-lista {
+    grid-template-columns: 1fr;
+  }
 }
 
-.vs-punto--static {
-  position: static;
-  opacity: 1;
+@media (max-width: 640px) {
+  .vs-obra-cifras {
+    grid-template-columns: 1fr;
+  }
+
+  .vs-recorrido-nota {
+    position: static;
+    max-width: none;
+    border-left: 0;
+    border-top: 2px solid var(--vs-verde);
+  }
+
+  .vs-recorrido-marco {
+    aspect-ratio: auto;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .vs-recorrido-marco > img {
+    position: relative !important;
+    aspect-ratio: 16 / 10;
+    height: auto !important;
+  }
 }
 
 /* ── Ficha técnica ─────────────────────────────────────────────────────── */
@@ -437,16 +559,15 @@
   .vs-homenaje {
     grid-template-columns: 1fr;
   }
-
-  .vs-fichas {
-    width: calc(100% - 2.4rem);
-    left: 1.2rem;
-    bottom: 1.2rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .vs-hint-flecha {
     animation: none;
+  }
+
+  .vs-puntos-img img,
+  .vs-galeria-img img {
+    transition: none;
   }
 }

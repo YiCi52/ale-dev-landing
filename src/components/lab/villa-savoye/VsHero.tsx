@@ -1,7 +1,7 @@
 /*
-  Hero tipográfico puro — la página es el museo, la casa llega después.
-  Sin imágenes: tipo gigante + cotas mono, como lámina de publicación de
-  arquitectura. El único color es el verde corbusiano en la regla y el hint.
+  Hero tipográfico puro — la página es el museo, la casa llega justo después
+  (VsRecorrido). Sin imágenes: tipo gigante + cotas mono, como lámina de
+  publicación de arquitectura. El único color es el verde corbusiano.
 */
 
 export function VsHero() {
@@ -29,10 +29,10 @@ export function VsHero() {
       </div>
       <p className="vs-hero-lede">
         Una «máquina de habitar» que resume en un solo volumen blanco los cinco puntos de la
-        arquitectura moderna. Aquí, la casa se desarma capa por capa — cada punto es una pieza.
+        arquitectura moderna. Aquí, reconstruida desde su plano y sus fotografías, recinto por recinto.
       </p>
       <p className="vs-hero-hint" aria-hidden="true">
-        Desplázate para desarmar <span className="vs-hint-flecha">↓</span>
+        Desplázate para entrar <span className="vs-hint-flecha">↓</span>
       </p>
     </header>
   );

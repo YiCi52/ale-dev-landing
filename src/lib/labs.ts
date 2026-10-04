@@ -20,7 +20,7 @@ export const LAB_DESTACADO: Lab = {
   nombre: "Villa Savoye",
   tipo: "Casas icónicas · Nº 1",
   resumen:
-    "La casa de Le Corbusier reconstruida desde el plano DWG y 115 fotografías, recinto por recinto. El recorrido por la promenade está en producción.",
+    "La casa de Le Corbusier reconstruida desde el plano DWG y más de 100 fotografías, recinto por recinto. El recorrido por la promenade está en producción.",
   imagen: "/lab/villa-savoye/v2/llegada.webp",
   alt: "Render de la Villa Savoye desde el camino de llegada: el volumen blanco sobre pilotis y la planta baja verde.",
 };
