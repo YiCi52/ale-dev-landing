@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { PELICULA, cuadroDe, cubrir, proyectoDe } from "./escena";
+import { PELICULA, cuadroDe, cubrir, luzDe, proyectoDe } from "./escena";
 
 describe("cuadroDe", () => {
   it("recorre la película en la primera parte del scroll y se queda en el último cuadro", () => {
@@ -37,5 +37,13 @@ describe("cubrir", () => {
     expect(0.5 * sx + ox).toBeCloseTo(0.5);
     expect(0.5 * sy + oy).toBeCloseTo(0.5);
     expect(c.alto(0.2)).toBeCloseTo(0.2);
+  });
+});
+
+describe("luzDe", () => {
+  it("la luna brilla llena hasta el eclipse y se apaga al cerrarse", () => {
+    expect(luzDe(1)).toBe(1);
+    expect(luzDe(92)).toBeCloseTo(0.5);
+    expect(luzDe(120)).toBe(0);
   });
 });

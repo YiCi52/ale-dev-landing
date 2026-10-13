@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { AguaGL, type Escena } from "./agua/AguaGL";
-import { cuadroDe, cubrir, proyectoDe, type Datos } from "./agua/escena";
+import { cuadroDe, cubrir, luzDe, proyectoDe, type Datos } from "./agua/escena";
 import { observarProgreso, pintarCubriendo, precargar, rutasSecuencia, sinMovimiento } from "./scroll";
 
 /*
@@ -21,7 +21,7 @@ const PROYECTOS = [
   { id: "villa", nombre: "Villa Savoye", tipo: "Lab · casas icónicas Nº 1", href: "/lab/villa-savoye", img: "/lab/v4/proyectos/villa-salon.webp" },
 ] as const;
 
-type Estado = { p: number; datos: Datos | null; escena: Escena | null };
+type Estado = { p: number; datos: Datos | null; escena: Escena | null; cursor: [number, number] | null; cerca: number };
 
 function entrarPorElAgua(x: number, y: number, img: string, destino: string) {
   if (sinMovimiento()) return window.location.assign(destino);
@@ -41,13 +41,19 @@ function entrarPorElAgua(x: number, y: number, img: string, destino: string) {
   window.setTimeout(() => window.location.assign(destino), 950);
 }
 
-/** Escena del cuadro actual en coordenadas de pantalla (máscara del agua y disco del eclipse). */
-function calcularEscena(c: HTMLCanvasElement, img: HTMLImageElement, d: Datos[string] | undefined, visible: number): Escena {
+/** Escena del cuadro actual en coordenadas de pantalla (máscara del agua, disco del eclipse, luna del cielo). */
+function calcularEscena(c: HTMLCanvasElement, img: HTMLImageElement, f: number, s: Estado, visible: number): Escena {
+  const d = s.datos?.[f];
   const t = cubrir(c.clientWidth, c.clientHeight, img.naturalWidth || 1280, img.naturalHeight || 720);
   const [cx, cy] = d ? t.aPantalla(d.reflejo[0], d.reflejo[1]) : [0.5, 0.5];
   const horizonte = d ? t.aPantalla(0, d.horizonte)[1] : 0;
   const piso = d ? t.aPantalla(0, d.piso)[1] : 1;
-  return { cubre: t.uniforme, mascara: [horizonte, piso], disco: [cx, cy, d ? t.alto(d.radio) : 0.2], visible };
+  const [lx, ly] = d?.luna ? t.aPantalla(d.luna[0], d.luna[1]) : [-1, -1];
+  const lr = d?.luna_radio ? t.alto(d.luna_radio) : 0;
+  // cercanía del cursor a la luna, suavizada para que el resplandor crezca y se apague sin saltos
+  const dist = s.cursor && lr ? Math.hypot((s.cursor[0] - lx) * (c.clientWidth / c.clientHeight), s.cursor[1] - ly) : 9;
+  s.cerca += (Math.max(0, 1 - dist / (lr * 3)) - s.cerca) * 0.12;
+  return { cubre: t.uniforme, mascara: [horizonte, piso], disco: [cx, cy, d ? t.alto(d.radio) : 0.2], visible, luz: luzDe(f), lunaCielo: [lx, ly, lr, s.cerca] };
 }
 
 function pintarEtiqueta(el: HTMLElement | null, e: Escena, indice: number, c: HTMLCanvasElement) {
@@ -68,7 +74,7 @@ export function RioLuna() {
   const seccion = useRef<HTMLElement>(null);
   const lienzo = useRef<HTMLCanvasElement>(null);
   const etiqueta = useRef<HTMLDivElement>(null);
-  const estado = useRef<Estado>({ p: sinMovimiento() ? 1 : 0, datos: null, escena: null });
+  const estado = useRef<Estado>({ p: sinMovimiento() ? 1 : 0, datos: null, escena: null, cursor: null, cerca: 0 });
 
   useEffect(() => {
     const el = seccion.current, c = lienzo.current;
@@ -85,7 +91,7 @@ export function RioLuna() {
       const f = cuadroDe(s.p, N), img = cuadros[f - 1];
       const { indice, visible: vis } = proyectoDe(s.p, PROYECTOS.length);
       if (!img?.complete) { if (vivo && visible) raf = requestAnimationFrame(tick); return; }
-      const e = calcularEscena(c, img, s.datos?.[f], vis);
+      const e = calcularEscena(c, img, f, s, vis);
       s.escena = e;
       if (agua) {
         agua.ajustar();
@@ -105,6 +111,7 @@ export function RioLuna() {
       const e = estado.current.escena, r = c.getBoundingClientRect();
       if (!agua || !e) return;
       const x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
+      estado.current.cursor = [x, y];
       if (y <= e.mascara[0] + 0.02 || y >= e.mascara[1] - 0.01) { previo = null; return; }   // el piso y el cielo no se mojan
       const dist = previo ? Math.hypot(x - previo[0], y - previo[1]) : 1;
       if (dist < 0.004) return;

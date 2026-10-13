@@ -44,25 +44,42 @@ def emisivo(nombre, color, fuerza):
 mundo = bpy.data.worlds.new("noche"); esc.world = mundo; mundo.use_nodes = True
 fondo = next(n for n in mundo.node_tree.nodes if n.type == "BACKGROUND")
 nt = mundo.node_tree; tcw = nt.nodes.new("ShaderNodeTexCoord"); sep = nt.nodes.new("ShaderNodeSeparateXYZ")
-rw = nt.nodes.new("ShaderNodeValToRGB"); rw.color_ramp.elements[0].position = 0.0; rw.color_ramp.elements[0].color = (0.020, 0.024, 0.034, 1)
-rw.color_ramp.elements[1].position = 0.22; rw.color_ramp.elements[1].color = (0.0035, 0.004, 0.0065, 1)
+rw = nt.nodes.new("ShaderNodeValToRGB"); rw.color_ramp.elements[0].position = 0.0; rw.color_ramp.elements[0].color = (0.030, 0.036, 0.055, 1)
+rw.color_ramp.elements[1].position = 0.25; rw.color_ramp.elements[1].color = (0.004, 0.005, 0.010, 1)
 nt.links.new(tcw.outputs["Generated"], sep.inputs[0]); nt.links.new(sep.outputs["Z"], rw.inputs["Fac"])
-nt.links.new(rw.outputs["Color"], fondo.inputs["Color"]); fondo.inputs["Strength"].default_value = 1.0
+vor = nt.nodes.new("ShaderNodeTexVoronoi"); vor.inputs["Scale"].default_value = 300; vor.inputs["Randomness"].default_value = 1.0
+tcs = nt.nodes.new("ShaderNodeTexCoord"); nt.links.new(tcs.outputs["Generated"], vor.inputs["Vector"])
+pts = nt.nodes.new("ShaderNodeMapRange"); pts.inputs["From Min"].default_value = 0.085; pts.inputs["From Max"].default_value = 0.0
+pts.clamp = True; nt.links.new(vor.outputs["Distance"], pts.inputs["Value"])
+brillo_e = nt.nodes.new("ShaderNodeMath"); brillo_e.operation = "MULTIPLY"; nt.links.new(pts.outputs["Result"], brillo_e.inputs[0])
+nt.links.new(vor.outputs["Color"], brillo_e.inputs[1])   # cada estrella con su intensidad
+alto = nt.nodes.new("ShaderNodeMath"); alto.operation = "GREATER_THAN"; alto.inputs[1].default_value = 0.01
+nt.links.new(sep.outputs["Z"], alto.inputs[0])             # solo sobre el horizonte
+est = nt.nodes.new("ShaderNodeMath"); est.operation = "MULTIPLY"; nt.links.new(brillo_e.outputs[0], est.inputs[0]); nt.links.new(alto.outputs[0], est.inputs[1])
+est2 = nt.nodes.new("ShaderNodeMath"); est2.operation = "MULTIPLY"; est2.inputs[1].default_value = 7.0; nt.links.new(est.outputs[0], est2.inputs[0])
+suma = nt.nodes.new("ShaderNodeMixRGB"); suma.blend_type = "ADD"; suma.inputs["Fac"].default_value = 1.0
+nt.links.new(rw.outputs["Color"], suma.inputs["Color1"]); nt.links.new(est2.outputs[0], suma.inputs["Color2"])
+nt.links.new(suma.outputs["Color"], fondo.inputs["Color"]); fondo.inputs["Strength"].default_value = 1.0
 
 # ── agua ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 120, 0)); agua = bpy.context.object; agua.scale = (400, 400, 1)
 m_agua, nodos, ln = mat("agua"); b = bsdf_de(nodos)
-b.inputs["Base Color"].default_value = (0.006, 0.008, 0.011, 1); b.inputs["Roughness"].default_value = 0.035
+b.inputs["Base Color"].default_value = (0.012, 0.020, 0.030, 1); b.inputs["Roughness"].default_value = 0.015
 b.inputs["IOR"].default_value = 1.9   # más reflejo que el agua real: la luna reflejada es la protagonista
 coord = nodos.new("ShaderNodeTexCoord"); mapeo = nodos.new("ShaderNodeMapping")
-mapeo.inputs["Scale"].default_value = (0.9, 0.35, 1)   # ondas alargadas a lo ancho, como corriente
-ruido = nodos.new("ShaderNodeTexNoise"); ruido.inputs["Scale"].default_value = 3.2; ruido.inputs["Detail"].default_value = 6
+mapeo.inputs["Scale"].default_value = (0.5, 2.6, 1)   # crestas largas a lo ancho: rompen el reflejo en un camino de luz
+ruido = nodos.new("ShaderNodeTexNoise"); ruido.inputs["Scale"].default_value = 2.2; ruido.inputs["Detail"].default_value = 9
 ruido.noise_dimensions = "4D"
 w = ruido.inputs["W"]; w.default_value = 0.0; w.keyframe_insert("default_value", frame=1); w.default_value = 1.6
 w.keyframe_insert("default_value", frame=N)
-bump = nodos.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.06; bump.inputs["Distance"].default_value = 0.4
+bump = nodos.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.22; bump.inputs["Distance"].default_value = 0.4
 ln.new(coord.outputs["Object"], mapeo.inputs["Vector"]); ln.new(mapeo.outputs[0], ruido.inputs["Vector"])
-ln.new(ruido.outputs["Fac"], bump.inputs["Height"]); ln.new(bump.outputs[0], b.inputs["Normal"])
+rizo = nodos.new("ShaderNodeTexNoise"); rizo.inputs["Scale"].default_value = 26.0; rizo.inputs["Detail"].default_value = 4
+rizo.noise_dimensions = "4D"; wr = rizo.inputs["W"]; wr.default_value = 0.0; wr.keyframe_insert("default_value", frame=1)
+wr.default_value = 6.0; wr.keyframe_insert("default_value", frame=N)
+mezcla = nodos.new("ShaderNodeMath"); mezcla.operation = "MULTIPLY_ADD"; mezcla.inputs[1].default_value = 0.35
+ln.new(mapeo.outputs[0], rizo.inputs["Vector"]); ln.new(rizo.outputs["Fac"], mezcla.inputs[0]); ln.new(ruido.outputs["Fac"], mezcla.inputs[2])
+ln.new(mezcla.outputs[0], bump.inputs["Height"]); ln.new(bump.outputs[0], b.inputs["Normal"])
 agua.data.materials.append(m_agua)
 
 # ── orillas: dos bancos bajos y vegetación en silueta (el río NO es mar) ────────────────────────────────────────────
@@ -97,12 +114,7 @@ bp.inputs["Roughness"].default_value = 0.22; bp.inputs["Coat Weight"].default_va
 tp = nodos.new("ShaderNodeTexImage"); tp.image = bpy.data.images.load(TEX_PIEDRA); tp.projection = "BOX"; tp.projection_blend = 0.2
 tcp = nodos.new("ShaderNodeTexCoord"); mpp = nodos.new("ShaderNodeMapping"); mpp.inputs["Scale"].default_value = (0.35, 0.35, 0.35)
 ln.new(tcp.outputs["Object"], mpp.inputs["Vector"]); ln.new(mpp.outputs[0], tp.inputs["Vector"]); ln.new(tp.outputs["Color"], bp.inputs["Base Color"])
-for lado in (-1, 1):
-    bpy.ops.mesh.primitive_cube_add(location=(lado * 9.6, 150, 0.22)); muro = bpy.context.object
-    muro.scale = (0.7, 152, 0.42); muro.data.materials.append(m_piedra)
-    bpy.ops.object.modifier_add(type="BEVEL"); muro.modifiers[-1].width = 0.03; muro.modifiers[-1].segments = 3
-    bpy.ops.mesh.primitive_cube_add(location=(lado * 60, 150, -0.05)); llano = bpy.context.object   # terreno oscuro detrás
-    llano.scale = (50, 160, 0.3); llano.data.materials.append(m_orilla_b)
+# 13-oct tarde (Alejo): sin bordes: el fondo es un HORIZONTE de agua y cielo (los muros se quitaron)
 
 # ── piso de nogal: tablones que corren hacia el agua y terminan en un borde ─────────────────────────────────────────
 m_nogal, nodos, ln = mat("nogal"); b = bsdf_de(nodos)
@@ -194,7 +206,7 @@ sol.data.keyframe_insert("energy", frame=80); sol.data.energy = 0.12; sol.data.k
 
 # ── cámara: camina hasta el borde mirando la luna; en el borde BAJA LA MIRADA hasta ver solo el agua ───────────────
 bpy.ops.object.camera_add(); cam = bpy.context.object; esc.camera = cam; cam.data.sensor_width = 36
-for f, y, z, pitch, lente in ((1, -9.0, 2.6, 3.0, 22), (48, -3.7, 2.48, 3.0, 22), (74, -3.0, 2.25, -20.0, 45), (N, -2.95, 2.22, -20.0, 45)):
+for f, y, z, pitch, lente in ((1, -9.0, 2.6, 3.0, 22), (48, -5.4, 2.48, 3.0, 22), (74, -4.9, 2.25, -20.0, 45), (N, -4.85, 2.22, -20.0, 45)):
     cam.location = (0.0, y, z); cam.rotation_euler = (math.radians(90 + pitch), 0, 0); cam.data.lens = lente
     cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f); cam.data.keyframe_insert("lens", frame=f)
 
@@ -213,7 +225,8 @@ for f in range(1, N + 1):
     esc.frame_set(f)
     c = a_pantalla(reflejo); r = a_pantalla(reflejo + lateral)
     datos[f] = {"reflejo": c, "radio": round(abs(r[0] - c[0]) * esc.render.resolution_x / esc.render.resolution_y, 4),
-                "piso": a_pantalla(Vector((0, Y_BORDE, Z_PISO)))[1], "horizonte": a_pantalla(Vector((0, 4000, 0)))[1]}
+                "piso": a_pantalla(Vector((0, Y_BORDE, Z_PISO)))[1], "horizonte": a_pantalla(Vector((0, 4000, 0)))[1],
+                "luna": a_pantalla(c_luna), "luna_radio": round(abs(a_pantalla(c_luna + lateral)[0] - a_pantalla(c_luna)[0]) * esc.render.resolution_x / esc.render.resolution_y, 4)}
 
 # ── render ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 esc.render.engine = "CYCLES"

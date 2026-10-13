@@ -12,6 +12,10 @@ export type Escena = {
   mascara: [number, number];
   disco: [number, number, number];
   visible: number;
+  /** brillo de la luna 0-1 (camino de luz) */
+  luz: number;
+  /** luna del cielo: x, y, radio en pantalla y cercanía del cursor 0-1 */
+  lunaCielo: [number, number, number, number];
 };
 
 type Programa = { prog: WebGLProgram; u: (n: string) => WebGLUniformLocation | null };
@@ -169,6 +173,9 @@ export class AguaGL {
       gl.uniform1f(p.u("uAspecto"), this.canvas.width / Math.max(1, this.canvas.height));
       gl.uniform1f(p.u("uProyAspecto"), this.proyAspecto);
       gl.uniform2f(p.u("uDelta"), 1 / this.ancho, 1 / this.alto);
+      gl.uniform1f(p.u("uTiempo"), performance.now() / 1000);
+      gl.uniform1f(p.u("uLuz"), e.luz);
+      gl.uniform4f(p.u("uLunaCielo"), ...e.lunaCielo);
     });
   }
 

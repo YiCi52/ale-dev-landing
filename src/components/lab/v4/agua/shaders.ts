@@ -71,6 +71,9 @@ uniform float uAspecto;
 uniform float uVisible;   // 0 = proyecto disuelto, 1 = entero
 uniform float uProyAspecto;
 uniform vec2 uDelta;
+uniform float uTiempo;
+uniform float uLuz;       // brillo de la luna (1 llena → 0 eclipsada): manda el camino de luz
+uniform vec4 uLunaCielo;  // x, y, radio de la luna en el cielo (pantalla) y cercanía del cursor (0-1)
 in vec2 vUv;
 out vec4 color;
 
@@ -82,6 +85,13 @@ float ruido(vec2 p) {
   float d = fract(sin(dot(i + vec2(1.0, 1.0), vec2(127.1, 311.7))) * 43758.5453);
   vec2 u = f * f * (3.0 - 2.0 * f);
   return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+// redes de luz del fondo (cáusticas): dos campos de ruido que se cruzan, como en el agua clara
+float causticas(vec2 p, float t) {
+  float a = ruido(p + vec2(t * 0.6, -t * 0.4));
+  float b = ruido(p * 1.7 + vec2(-t * 0.5, t * 0.7));
+  return pow(1.0 - abs(a - b), 9.0);
 }
 
 void main() {
@@ -97,16 +107,30 @@ void main() {
   float brillo = pow(max(0.0, dot(n, normalize(vec3(-0.5, 1.0, 0.6)))), 80.0) * agua;
   col += vec3(0.85, 0.88, 0.95) * brillo * 0.3;
 
+  // camino de luz: destellos que titilan en una columna bajo la luna, más ancha cerca del muelle
+  float ancho = mix(0.02, 0.16, smoothstep(uMascara.x, 1.0, pant.y));
+  float columna = exp(-pow((pant.x - uDisco.x) * uAspecto / ancho, 2.0)) * agua * uLuz;
+  // destellos sueltos y alargados a lo ancho (como en el agua real), que titilan; no tapan el reflejo de la luna
+  float destello = pow(ruido(vec2(pant.x * uAspecto * 70.0, pant.y * 260.0 + uTiempo * 1.3)), 30.0);
+  float fueraLuna = smoothstep(uDisco.z * 0.95, uDisco.z * 1.25, length((pant - uDisco.xy) * vec2(uAspecto, 1.0)));
+  col += vec3(0.9, 0.92, 1.0) * columna * (destello * 1.8 * fueraLuna + 0.02);
+
+  // la luna del cielo responde al cursor: un resplandor suave que crece al acercarse
+  float dl = length((pant - uLunaCielo.xy) * vec2(uAspecto, 1.0));
+  col += vec3(0.85, 0.88, 0.95) * uLunaCielo.w * 0.35 * smoothstep(uLunaCielo.z * 2.6, uLunaCielo.z * 0.9, dl) * step(uLunaCielo.z * 0.98, dl);
+
+  // proyecto dentro del disco del eclipse: SUBE desde el fondo (referencia NACRE, video 198) y al irse se hunde
   vec2 q = (p - uDisco.xy) * vec2(uAspecto, 1.0);
   float dentro = 1.0 - smoothstep(uDisco.z * 0.86, uDisco.z * 0.92, length(q));
   if (dentro > 0.0 && uVisible > 0.0) {
+    float hondo = 1.0 - uVisible;
     vec2 pu = q / (uDisco.z * 1.84) + 0.5;
-    pu.x = (pu.x - 0.5) / max(uProyAspecto, 1.0) + 0.5;
-    pu.y = 1.0 - pu.y;                                   // reflejo: la imagen va invertida
-    float grano = ruido(pu * 70.0) * 0.55 + ruido(pu * 9.0) * 0.45;
-    float a = smoothstep(0.0, 0.06, uVisible * 1.12 - grano);
-    vec3 proy = texture(uProyecto, pu).rgb * 0.78;
-    col = mix(col, proy, a * dentro);
+    pu.x = (pu.x - 0.5) / max(uProyAspecto, 1.0) + 0.5;          // al derecho: es una página, no un espejo
+    vec2 ola = vec2(ruido(pu * 5.0 + uTiempo * 0.5), ruido(pu * 5.0 - uTiempo * 0.45)) - 0.5;
+    vec3 proy = texture(uProyecto, pu + ola * 0.09 * hondo).rgb;
+    proy = mix(proy, vec3(0.02, 0.07, 0.09), hondo * 0.85);        // el agua tiñe lo que está hondo
+    proy += vec3(0.75, 0.9, 1.0) * causticas(pu * 7.0, uTiempo) * (0.08 + 0.35 * hondo);
+    col = mix(col, proy * mix(0.3, 0.95, uVisible), smoothstep(0.0, 0.35, uVisible) * dentro);
   }
   color = vec4(col, 1.0);
 }`;

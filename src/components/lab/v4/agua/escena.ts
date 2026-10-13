@@ -7,7 +7,15 @@
 /** Parte del scroll que ocupa la película (caminar, bajar la mirada, eclipse). El resto es para los proyectos. */
 export const PELICULA = 0.55;
 
-export type Datos = Record<string, { reflejo: [number, number]; radio: number; piso: number; horizonte: number }>;
+export type Datos = Record<
+  string,
+  { reflejo: [number, number]; radio: number; piso: number; horizonte: number; luna?: [number, number]; luna_radio?: number }
+>;
+
+/** Brillo de la luna según el cuadro: llena hasta que empieza el eclipse (cuadro 76) y apagada al cerrarse (108). */
+export function luzDe(cuadro: number): number {
+  return Math.min(1, Math.max(0, (108 - cuadro) / (108 - 76)));
+}
 
 export function cuadroDe(p: number, total: number): number {
   const t = Math.min(1, Math.max(0, p / PELICULA));
