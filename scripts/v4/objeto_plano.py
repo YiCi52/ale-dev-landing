@@ -29,24 +29,36 @@ def material(nombre):
 
 def con_imagen(nombre, archivo, escala, rugosidad, capa):
     m, nodos, ln, b = material(nombre)
-    t = nodos.new("ShaderNodeTexImage"); t.image = bpy.data.images.load(os.path.join(MAT, archivo))
+    t = nodos.new("ShaderNodeTexImage"); t.image = bpy.data.images.load(os.path.join(MAT, archivo)); t.interpolation = "Cubic"
     t.projection = "BOX"; t.projection_blend = 0.15
     tc = nodos.new("ShaderNodeTexCoord"); mp = nodos.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (escala,) * 3
     ln.new(tc.outputs["Object"], mp.inputs["Vector"]); ln.new(mp.outputs[0], t.inputs["Vector"]); ln.new(t.outputs["Color"], b.inputs["Base Color"])
+    # pulido real: las vetas apenas en relieve y la rugosidad varía un poco con el dibujo de la piedra
+    bmp = nodos.new("ShaderNodeBump"); bmp.inputs["Strength"].default_value = 0.08; bmp.inputs["Distance"].default_value = 0.002
+    ln.new(t.outputs["Color"], bmp.inputs["Height"]); ln.new(bmp.outputs[0], b.inputs["Normal"])
+    rr = nodos.new("ShaderNodeMapRange"); rr.inputs["To Min"].default_value = rugosidad * 0.7; rr.inputs["To Max"].default_value = rugosidad * 1.3
+    ln.new(t.outputs["Color"], rr.inputs["Value"]); ln.new(rr.outputs["Result"], b.inputs["Roughness"])
     b.inputs["Roughness"].default_value = rugosidad; b.inputs["Coat Weight"].default_value = capa; b.inputs["Coat Roughness"].default_value = 0.06
     return m
 
 
 def nogal():
     m, nodos, ln, b = material("nogal")
-    tc = nodos.new("ShaderNodeTexCoord"); mp = nodos.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (1.0, 14, 1.0)
-    w = nodos.new("ShaderNodeTexWave"); w.wave_type = "BANDS"; w.bands_direction = "X"
-    w.inputs["Scale"].default_value = 2.2; w.inputs["Distortion"].default_value = 7; w.inputs["Detail"].default_value = 5
+    tc = nodos.new("ShaderNodeTexCoord"); mp = nodos.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (2.2, 26, 2.2)
+    w = nodos.new("ShaderNodeTexWave"); w.wave_type = "BANDS"; w.bands_direction = "Y"   # vetas paralelas al largo
+    w.inputs["Scale"].default_value = 1.0; w.inputs["Distortion"].default_value = 4.5; w.inputs["Detail"].default_value = 6
+    w.inputs["Detail Scale"].default_value = 1.6
+    fig = nodos.new("ShaderNodeTexNoise"); fig.inputs["Scale"].default_value = 3.0; fig.inputs["Detail"].default_value = 4
+    mez = nodos.new("ShaderNodeMath"); mez.operation = "MULTIPLY_ADD"; mez.inputs[1].default_value = 0.75
     r = nodos.new("ShaderNodeValToRGB")
-    r.color_ramp.elements[0].color = (0.022, 0.009, 0.004, 1); r.color_ramp.elements[1].color = (0.075, 0.036, 0.018, 1)
-    ln.new(tc.outputs["Object"], mp.inputs["Vector"]); ln.new(mp.outputs[0], w.inputs["Vector"])
-    ln.new(w.outputs["Fac"], r.inputs["Fac"]); ln.new(r.outputs["Color"], b.inputs["Base Color"])
-    b.inputs["Roughness"].default_value = 0.38; b.inputs["Coat Weight"].default_value = 0.4
+    r.color_ramp.elements[0].color = (0.016, 0.007, 0.0035, 1); r.color_ramp.elements[1].color = (0.085, 0.042, 0.021, 1)
+    mid = r.color_ramp.elements.new(0.55); mid.color = (0.045, 0.021, 0.010, 1)
+    ln.new(tc.outputs["Object"], mp.inputs["Vector"]); ln.new(mp.outputs[0], w.inputs["Vector"]); ln.new(mp.outputs[0], fig.inputs["Vector"])
+    ln.new(w.outputs["Fac"], mez.inputs[0]); ln.new(fig.outputs["Fac"], mez.inputs[2]); ln.new(mez.outputs[0], r.inputs["Fac"])
+    ln.new(r.outputs["Color"], b.inputs["Base Color"])
+    bmp = nodos.new("ShaderNodeBump"); bmp.inputs["Strength"].default_value = 0.12; bmp.inputs["Distance"].default_value = 0.001
+    ln.new(w.outputs["Fac"], bmp.inputs["Height"]); ln.new(bmp.outputs[0], b.inputs["Normal"])
+    b.inputs["Roughness"].default_value = 0.32; b.inputs["Coat Weight"].default_value = 0.55; b.inputs["Coat Roughness"].default_value = 0.12
     return m
 
 
@@ -58,8 +70,8 @@ def losa(nombre, tam, z, m):
     return o
 
 
-m_piedra = con_imagen("piedra", "piedra-negra-vetas-grises.png", 1.1, 0.24, 0.7)
-m_cuarzo = con_imagen("cuarzo", "cuarzo-textura.png", 0.9, 0.12, 0.5)
+m_piedra = con_imagen("piedra", "piedra-2x.png", 0.9, 0.2, 0.8)
+m_cuarzo = con_imagen("cuarzo", "cuarzo-2x.png", 0.8, 0.1, 0.6)
 pivote = bpy.data.objects.new("pivote", None); esc.collection.objects.link(pivote)
 piedra = losa("piedra", (1.6, 1.0, 0.34), 0.17, m_piedra)
 madera = losa("nogal", (1.42, 0.86, 0.10), 0.39, nogal())
@@ -71,6 +83,10 @@ for o, dz in ((madera, 0.22), (cuarzo, 0.48)):
 pivote.rotation_euler = (0, 0, math.radians(-38)); pivote.keyframe_insert("rotation_euler", frame=1)
 pivote.rotation_euler = (0, 0, math.radians(52)); pivote.keyframe_insert("rotation_euler", frame=N)
 
+# sombra de contacto sobre un piso invisible (shadow catcher) y un mundo tenue para los reflejos del pulido
+bpy.ops.mesh.primitive_plane_add(size=12, location=(0, 0, 0)); piso = bpy.context.object; piso.is_shadow_catcher = True
+mundo = bpy.data.worlds.new("estudio"); esc.world = mundo; mundo.use_nodes = True
+fw = next(n for n in mundo.node_tree.nodes if n.type == "BACKGROUND"); fw.inputs["Color"].default_value = (0.02, 0.021, 0.024, 1)
 # luz de estudio
 for loc, rot, e, tam, color in (((-2.6, -2.4, 3.2), (55, 0, -48), 260, 2.2, (1.0, 0.93, 0.85)),
                                  ((2.8, 1.6, 2.2), (65, 0, 125), 140, 1.4, (0.85, 0.9, 1.0)),
@@ -123,6 +139,7 @@ def pasada_lineas():
     for n in list(nt.nodes):
         if n.type != "OUTPUT_MATERIAL": nt.nodes.remove(n)
     h = nt.nodes.new("ShaderNodeHoldout"); nt.links.new(h.outputs[0], next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL").inputs[0])
+    piso.hide_render = True   # el plano de líneas no lleva sombra
     for o in (piedra, madera, cuarzo):
         o.data.materials[0] = hold
         for md in o.modifiers: md.show_render = False   # sin bisel: aristas a 90° que Freestyle sí detecta

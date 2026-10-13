@@ -30,7 +30,7 @@ function dibujarGuias(svg: SVGSVGElement, lienzo: HTMLCanvasElement, img: HTMLIm
     const texto = svg.querySelector<SVGTextElement>(`[data-t="${e.id}"]`);
     if (!linea || !texto || !fila[e.id]) return;
     const [ax, ay] = aPantalla(lienzo, img, fila[e.id][0], fila[e.id][1]);
-    const tx = e.lado === "der" ? w * 0.8 : w * 0.2;
+    const tx = e.lado === "der" ? w * 0.72 : w * 0.28;
     const ty = h * e.y;
     linea.setAttribute("points", `${ax},${ay} ${tx},${ty} ${tx + (e.lado === "der" ? 18 : -18)},${ty}`);
     linea.style.strokeDashoffset = String(1 - mostrar);
@@ -46,6 +46,7 @@ export function ObjetoPlano() {
   const render = useRef<HTMLCanvasElement>(null);
   const lineas = useRef<HTMLCanvasElement>(null);
   const guias = useRef<SVGSVGElement>(null);
+  const lista = useRef<HTMLOListElement>(null);
 
   useEffect(() => {
     const el = seccion.current;
@@ -61,6 +62,7 @@ export function ObjetoPlano() {
       cR.style.opacity = String(1 - plano * 0.92);
       cL.style.opacity = String(plano);
       if (anclas[f]) dibujarGuias(svg, cR, imgsR[f - 1], anclas[f], plano);
+      if (lista.current) lista.current.style.opacity = String(Math.max(0, (plano - 0.4) / 0.6));
     };
     const imgsR = precargar(rutasSecuencia(BASE, "render", N), (i) => i === 0 && pintar());
     const imgsL = precargar(rutasSecuencia(BASE, "lineas", N), () => undefined);
@@ -77,7 +79,7 @@ export function ObjetoPlano() {
         </h2>
         <canvas ref={render} className="absolute inset-0 h-full w-full" aria-hidden />
         <canvas ref={lineas} className="absolute inset-0 h-full w-full opacity-0" aria-hidden />
-        <svg ref={guias} className="absolute inset-0 h-full w-full" role="img" aria-label="Lo que trae cada sitio: diseño a la medida, recorrido de cada proyecto, formulario que filtra, aviso inmediato a tu correo y respaldo semanal.">
+        <svg ref={guias} className="absolute inset-0 hidden h-full w-full lg:block" role="img" aria-label="Lo que trae cada sitio: diseño a la medida, recorrido de cada proyecto, formulario que filtra, aviso inmediato a tu correo y respaldo semanal.">
           {ETIQUETAS.map((e) => (
             <g key={e.id}>
               <polyline data-g={e.id} pathLength={1} fill="none" stroke="var(--veta-oro)" strokeWidth={1} strokeDasharray="1" strokeDashoffset="1" />
@@ -87,6 +89,15 @@ export function ObjetoPlano() {
             </g>
           ))}
         </svg>
+        {/* En celular no caben las guías a los lados: la misma información va como lista debajo del plano */}
+        <ol ref={lista} className="v4-mono absolute inset-x-4 bottom-10 grid gap-2 opacity-0 lg:hidden" style={{ color: "var(--cuarzo-50)" }}>
+          {ETIQUETAS.map((e, i) => (
+            <li key={e.id} className="flex gap-3 border-t pt-2" style={{ borderColor: "var(--linea)" }}>
+              <span style={{ color: "var(--veta-oro)" }}>{String(i + 1).padStart(2, "0")}</span>
+              {e.texto}
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

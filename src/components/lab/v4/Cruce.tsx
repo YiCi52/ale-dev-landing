@@ -5,27 +5,28 @@ import { useEffect, useRef } from "react";
 import { observarProgreso, sinMovimiento } from "./scroll";
 
 /*
-  Dos filas de texto enorme que se cruzan con el scroll (referencia: Zentro),
-  con muestras de los materiales metidas entre las palabras como si fueran letras:
-  cada material tiene su momento sin necesidad de una escena.
+  Dos filas de texto enorme que se cruzan con el scroll (referencia: Zentro).
+  13-oct (Alejo): fotos de PROYECTOS entre las palabras —no muestras de material—
+  y frases que se entiendan solas: qué hago (sitios que se recorren) y qué pasa
+  después (cada consulta llega a tu correo).
 */
-type Pieza = { texto?: string; chip?: "piedra" | "nogal" | "cuarzo" };
+type Pieza = { texto?: string; foto?: string; alt?: string };
 
 const FILA_A: Pieza[] = [
-  { texto: "DISEÑO" }, { chip: "nogal" }, { texto: "RECORRIDO" }, { chip: "cuarzo" }, { texto: "PROYECTO" }, { chip: "piedra" },
-  { texto: "DISEÑO" }, { chip: "nogal" }, { texto: "RECORRIDO" },
+  { texto: "SITIOS PARA ARQUITECTOS" }, { foto: "mh-sala" }, { texto: "QUE SE RECORREN" }, { foto: "villa-salon" },
+  { texto: "SITIOS PARA ARQUITECTOS" }, { foto: "mh-cocina" },
 ];
 const FILA_B: Pieza[] = [
-  { texto: "CONSULTAS" }, { chip: "cuarzo" }, { texto: "QUE LLEGAN" }, { chip: "piedra" }, { texto: "REGISTRADAS" }, { chip: "nogal" },
-  { texto: "CONSULTAS" }, { chip: "cuarzo" }, { texto: "QUE LLEGAN" },
+  { texto: "CADA CONSULTA" }, { foto: "villa-llegada" }, { texto: "LLEGA A TU CORREO" }, { foto: "mh-sala" },
+  { texto: "CADA CONSULTA" }, { foto: "villa-salon" }, { texto: "LLEGA A TU CORREO" },
 ];
 
 function Fila({ piezas, filaRef }: { piezas: Pieza[]; filaRef: React.RefObject<HTMLParagraphElement | null> }) {
   return (
-    <p ref={filaRef} aria-hidden className="v4-display whitespace-nowrap text-[clamp(52px,11vw,170px)] leading-[1.05] will-change-transform">
+    <p ref={filaRef} aria-hidden className="v4-display whitespace-nowrap text-[clamp(44px,11vw,170px)] leading-[1.05] will-change-transform">
       {piezas.map((p, i) =>
-        p.chip ? (
-          <span key={i} className="v4-chip" style={{ backgroundImage: `url(/lab/v4/materiales/${p.chip}.webp)` }} />
+        p.foto ? (
+          <span key={i} className="v4-chip" style={{ backgroundImage: `url(/lab/v4/proyectos/${p.foto}.webp)` }} />
         ) : (
           <span key={i}>{p.texto} </span>
         ),
@@ -42,15 +43,21 @@ export function Cruce() {
   useEffect(() => {
     const el = seccion.current;
     if (!el || sinMovimiento()) return;
+    // cada fila recorre TODO su largo (en px), sin importar el ancho de la pantalla: en celular también pasan las fotos
+    const mover = (fila: HTMLParagraphElement | null, p: number, haciaIzquierda: boolean) => {
+      if (!fila) return;
+      const sobra = Math.max(0, fila.scrollWidth - window.innerWidth);
+      const t = haciaIzquierda ? p : 1 - p;
+      fila.style.transform = `translate3d(${-sobra * t}px, 0, 0)`;
+    };
     return observarProgreso(el, (p) => {
-      const d = (p - 0.5) * 38; // % de su propio ancho
-      if (filaA.current) filaA.current.style.transform = `translate3d(${-8 - d}%, 0, 0)`;
-      if (filaB.current) filaB.current.style.transform = `translate3d(${-30 + d}%, 0, 0)`;
+      mover(filaA.current, p, true);
+      mover(filaB.current, p, false);
     });
   }, []);
 
   return (
-    <section ref={seccion} aria-label="Qué hace Castillo Studio" className="relative h-[220vh]">
+    <section ref={seccion} aria-label="Sitios para arquitectos que se recorren; cada consulta llega a tu correo" className="relative h-[220vh]">
       <div className="sticky top-0 flex h-[100svh] flex-col justify-center gap-2 overflow-hidden">
         <Fila piezas={FILA_A} filaRef={filaA} />
         <Fila piezas={FILA_B} filaRef={filaB} />
