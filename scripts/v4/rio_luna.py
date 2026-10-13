@@ -1,0 +1,212 @@
+# Escena de la galería v4 (13-oct-2026): asomado desde un piso de nogal sobre un río de noche; una luna llena real se
+# refleja en el agua y, con el scroll, se eclipsa hasta dejar solo un halo blanco. Los proyectos aparecen después en ese
+# reflejo negro (eso lo hace la página, no Blender).
+#
+# Uso:  Blender -b -P scripts/v4/rio_luna.py -- <salida_dir> [cuadros=1-120] [muestras=48] [ancho=1600]
+#   cuadros: "1-120" (secuencia) o "1,60,120" (prueba)
+import bpy, math, os, sys
+from mathutils import Vector
+
+ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+SALIDA = os.path.abspath(ARGS[0] if ARGS else "/tmp/rio")
+CUADROS = ARGS[1] if len(ARGS) > 1 else "1-120"
+MUESTRAS = int(ARGS[2]) if len(ARGS) > 2 else 48
+ANCHO = int(ARGS[3]) if len(ARGS) > 3 else 1600
+TEX_LUNA = os.path.expanduser("~/CastilloStudio/assets/higgsfield/castillo-luna-2026-10/textura-luna.png")
+N = 120
+
+bpy.ops.wm.read_factory_settings(use_empty=True)
+esc = bpy.context.scene
+esc.frame_start, esc.frame_end = 1, N
+
+
+def mat(nombre):
+    m = bpy.data.materials.new(nombre); m.use_nodes = True
+    return m, m.node_tree.nodes, m.node_tree.links
+
+
+def bsdf_de(nodos):
+    return next(n for n in nodos if n.type == "BSDF_PRINCIPLED")
+
+
+def emisivo(nombre, color, fuerza):
+    m, nodos, ln = mat(nombre)
+    for n in list(nodos):
+        if n.type != "OUTPUT_MATERIAL": nodos.remove(n)
+    e = nodos.new("ShaderNodeEmission"); e.inputs["Color"].default_value = (*color, 1); e.inputs["Strength"].default_value = fuerza
+    ln.new(e.outputs[0], next(n for n in nodos if n.type == "OUTPUT_MATERIAL").inputs[0])
+    return m, e
+
+
+# ── mundo: noche casi negra con un degradé muy leve hacia el horizonte ─────────────────────────────────────────────
+mundo = bpy.data.worlds.new("noche"); esc.world = mundo; mundo.use_nodes = True
+fondo = next(n for n in mundo.node_tree.nodes if n.type == "BACKGROUND")
+nt = mundo.node_tree; tcw = nt.nodes.new("ShaderNodeTexCoord"); sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+rw = nt.nodes.new("ShaderNodeValToRGB"); rw.color_ramp.elements[0].position = 0.0; rw.color_ramp.elements[0].color = (0.020, 0.024, 0.034, 1)
+rw.color_ramp.elements[1].position = 0.22; rw.color_ramp.elements[1].color = (0.0035, 0.004, 0.0065, 1)
+nt.links.new(tcw.outputs["Generated"], sep.inputs[0]); nt.links.new(sep.outputs["Z"], rw.inputs["Fac"])
+nt.links.new(rw.outputs["Color"], fondo.inputs["Color"]); fondo.inputs["Strength"].default_value = 1.0
+
+# ── agua ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 120, 0)); agua = bpy.context.object; agua.scale = (400, 400, 1)
+m_agua, nodos, ln = mat("agua"); b = bsdf_de(nodos)
+b.inputs["Base Color"].default_value = (0.006, 0.008, 0.011, 1); b.inputs["Roughness"].default_value = 0.035
+b.inputs["IOR"].default_value = 1.33
+coord = nodos.new("ShaderNodeTexCoord"); mapeo = nodos.new("ShaderNodeMapping")
+mapeo.inputs["Scale"].default_value = (0.9, 0.35, 1)   # ondas alargadas a lo ancho, como corriente
+ruido = nodos.new("ShaderNodeTexNoise"); ruido.inputs["Scale"].default_value = 3.2; ruido.inputs["Detail"].default_value = 6
+ruido.noise_dimensions = "4D"
+w = ruido.inputs["W"]; w.default_value = 0.0; w.keyframe_insert("default_value", frame=1); w.default_value = 1.6
+w.keyframe_insert("default_value", frame=N)
+bump = nodos.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.10; bump.inputs["Distance"].default_value = 0.4
+ln.new(coord.outputs["Object"], mapeo.inputs["Vector"]); ln.new(mapeo.outputs[0], ruido.inputs["Vector"])
+ln.new(ruido.outputs["Fac"], bump.inputs["Height"]); ln.new(bump.outputs[0], b.inputs["Normal"])
+agua.data.materials.append(m_agua)
+
+# ── orillas: dos bancos bajos y vegetación en silueta (el río NO es mar) ────────────────────────────────────────────
+m_orilla, _ = emisivo("orilla", (0.0, 0.0, 0.0), 0.0)
+m_orilla_b = bpy.data.materials.new("orilla_bsdf"); m_orilla_b.use_nodes = True
+bsdf_de(m_orilla_b.node_tree.nodes).inputs["Base Color"].default_value = (0.010, 0.012, 0.011, 1)
+bsdf_de(m_orilla_b.node_tree.nodes).inputs["Roughness"].default_value = 0.9
+import random, bmesh
+random.seed(7)
+
+
+def linea_arboles(lado):
+    """Franja vertical que corre río arriba con el borde superior ruidoso: copas de árboles y palmas en silueta."""
+    bm = bmesh.new(); prev = None
+    for k in range(0, 520):
+        y = 6 + k * 0.62; x = lado * (19 + 0.06 * y + 2.5 * math.sin(y * 0.05))
+        h = (6.5 + 2.4 * math.sin(y * 0.09 + lado) + 1.3 * math.sin(y * 0.31) + 0.6 * math.sin(y * 1.7) + random.uniform(0, 0.5)) * (1 + y / 420)
+        a = bm.verts.new((x, y, 0.4)); b = bm.verts.new((x, y, 0.4 + h))
+        if prev: bm.faces.new((prev[0], a, b, prev[1]))
+        prev = (a, b)
+    me = bpy.data.meshes.new("arboles"); bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new("arboles", me); esc.collection.objects.link(o); o.data.materials.append(m_orilla_b)
+
+
+m_orilla_b = bpy.data.materials.new("orilla"); m_orilla_b.use_nodes = True
+bsdf_de(m_orilla_b.node_tree.nodes).inputs["Base Color"].default_value = (0.0015, 0.0017, 0.0022, 1)
+bsdf_de(m_orilla_b.node_tree.nodes).inputs["Roughness"].default_value = 0.95
+# 13-oct (Alejo): sin árboles. Bordes de PIEDRA NEGRA pulida: un canal de agua arquitectónico (como el de la villa de Bali)
+TEX_PIEDRA = os.path.expanduser("~/CastilloStudio/marca/materiales-2026-10/piedra-negra-vetas-grises.png")
+m_piedra, nodos, ln = mat("piedra"); bp = bsdf_de(nodos)
+bp.inputs["Roughness"].default_value = 0.22; bp.inputs["Coat Weight"].default_value = 0.6; bp.inputs["Coat Roughness"].default_value = 0.08
+tp = nodos.new("ShaderNodeTexImage"); tp.image = bpy.data.images.load(TEX_PIEDRA); tp.projection = "BOX"; tp.projection_blend = 0.2
+tcp = nodos.new("ShaderNodeTexCoord"); mpp = nodos.new("ShaderNodeMapping"); mpp.inputs["Scale"].default_value = (0.35, 0.35, 0.35)
+ln.new(tcp.outputs["Object"], mpp.inputs["Vector"]); ln.new(mpp.outputs[0], tp.inputs["Vector"]); ln.new(tp.outputs["Color"], bp.inputs["Base Color"])
+for lado in (-1, 1):
+    bpy.ops.mesh.primitive_cube_add(location=(lado * 9.6, 150, 0.22)); muro = bpy.context.object
+    muro.scale = (0.7, 152, 0.42); muro.data.materials.append(m_piedra)
+    bpy.ops.object.modifier_add(type="BEVEL"); muro.modifiers[-1].width = 0.03; muro.modifiers[-1].segments = 3
+    bpy.ops.mesh.primitive_cube_add(location=(lado * 60, 150, -0.05)); llano = bpy.context.object   # terreno oscuro detrás
+    llano.scale = (50, 160, 0.3); llano.data.materials.append(m_orilla_b)
+
+# ── piso de nogal: tablones que corren hacia el agua y terminan en un borde ─────────────────────────────────────────
+m_nogal, nodos, ln = mat("nogal"); b = bsdf_de(nodos)
+b.inputs["Roughness"].default_value = 0.42
+b.inputs["Coat Weight"].default_value = 0.35; b.inputs["Coat Roughness"].default_value = 0.18
+coord = nodos.new("ShaderNodeTexCoord"); mapeo = nodos.new("ShaderNodeMapping"); mapeo.inputs["Scale"].default_value = (40, 1.5, 40)
+veta = nodos.new("ShaderNodeTexWave"); veta.wave_type = "BANDS"; veta.bands_direction = "X"
+veta.inputs["Scale"].default_value = 1.2; veta.inputs["Distortion"].default_value = 9; veta.inputs["Detail"].default_value = 4
+rampa = nodos.new("ShaderNodeValToRGB")
+rampa.color_ramp.elements[0].color = (0.028, 0.011, 0.005, 1)   # #23140d lineal ≈
+rampa.color_ramp.elements[1].color = (0.085, 0.040, 0.020, 1)    # #40291d lineal ≈
+ln.new(coord.outputs["Object"], mapeo.inputs["Vector"]); ln.new(mapeo.outputs[0], veta.inputs["Vector"])
+ln.new(veta.outputs["Fac"], rampa.inputs["Fac"]); ln.new(rampa.outputs["Color"], b.inputs["Base Color"])
+Y_BORDE = -2.6; Z_PISO = 1.0
+for i in range(38):
+    x = -3.46 + i * 0.187
+    bpy.ops.mesh.primitive_cube_add(location=(x, Y_BORDE - 2.6, Z_PISO - 0.03)); t = bpy.context.object
+    t.scale = (0.088, 2.6, 0.03); t.data.materials.append(m_nogal)
+    bpy.ops.object.modifier_add(type="BEVEL"); t.modifiers[-1].width = 0.006; t.modifiers[-1].segments = 2
+bpy.ops.mesh.primitive_cube_add(location=(0, Y_BORDE + 0.04, Z_PISO - 0.09)); viga = bpy.context.object
+viga.scale = (3.6, 0.05, 0.09); viga.data.materials.append(m_nogal)
+
+# ── luna llena real + oclusor del eclipse + halo ────────────────────────────────────────────────────────────────────
+D_LUNA, R_LUNA, ELEV = 320.0, 15.5, math.radians(5.2)
+c_luna = Vector((0.0, D_LUNA * math.cos(ELEV), D_LUNA * math.sin(ELEV)))
+bpy.ops.mesh.primitive_uv_sphere_add(radius=R_LUNA, location=c_luna, segments=96, ring_count=48); luna = bpy.context.object
+bpy.ops.object.shade_smooth(); luna.rotation_euler = (0, 0, math.radians(90))
+m_luna, nodos, ln = mat("luna")
+for n in list(nodos):
+    if n.type != "OUTPUT_MATERIAL": nodos.remove(n)
+img = nodos.new("ShaderNodeTexImage"); img.image = bpy.data.images.load(TEX_LUNA)
+gama = nodos.new("ShaderNodeGamma"); gama.inputs["Gamma"].default_value = 1.15
+em = nodos.new("ShaderNodeEmission"); em.inputs["Strength"].default_value = 1.1
+tcl = nodos.new("ShaderNodeTexCoord"); sepl = nodos.new("ShaderNodeSeparateXYZ")
+corr = nodos.new("ShaderNodeMath"); corr.operation = "SUBTRACT"
+mrange = nodos.new("ShaderNodeMapRange"); mrange.inputs["From Min"].default_value = -R_LUNA * 0.22
+mrange.inputs["From Max"].default_value = R_LUNA * 0.22; mrange.clamp = True
+mult = nodos.new("ShaderNodeMixRGB"); mult.blend_type = "MULTIPLY"; mult.inputs["Fac"].default_value = 1.0
+ln.new(tcl.outputs["Object"], sepl.inputs[0]); ln.new(sepl.outputs["Y"], corr.inputs[0])
+ln.new(corr.outputs[0], mrange.inputs["Value"])
+ln.new(img.outputs["Color"], gama.inputs["Color"]); ln.new(gama.outputs[0], mult.inputs["Color1"])
+ln.new(mrange.outputs["Result"], mult.inputs["Color2"]); ln.new(mult.outputs[0], em.inputs["Color"])
+SOMBRA = corr.inputs[1]
+for f, v in ((1, -R_LUNA * 1.5), (62, -R_LUNA * 1.5), (106, R_LUNA * 1.5)):
+    SOMBRA.default_value = v; SOMBRA.keyframe_insert("default_value", frame=f)
+ln.new(em.outputs[0], next(n for n in nodos if n.type == "OUTPUT_MATERIAL").inputs[0])
+luna.data.materials.append(m_luna)
+# luz cálida desde atrás (la casa a tu espalda): el nogal se lee como nogal
+bpy.ops.object.light_add(type="AREA", location=(0, -14.5, 4.2)); calida = bpy.context.object
+calida.data.energy = 650; calida.data.size = 6; calida.data.color = (1.0, 0.68, 0.42)
+calida.rotation_euler = (math.radians(62), 0, 0)
+# la luz de la luna sobre el nogal (lo que el ojo espera ver en el borde del piso)
+bpy.ops.object.light_add(type="SUN", location=(0, 0, 10)); sol = bpy.context.object
+sol.data.energy = 0.9; sol.data.color = (0.82, 0.86, 1.0); sol.data.angle = math.radians(1.0)
+sol.rotation_euler = (math.radians(90) - ELEV - math.radians(2), 0, math.radians(180 - 1.4))
+# halo: anillo emisivo detrás de la luna con caída suave (gradiente esférico), que crece cuando la luna se apaga
+bpy.ops.mesh.primitive_plane_add(size=R_LUNA * 5.2, location=c_luna + Vector((0, 8, 0))); halo = bpy.context.object
+halo.rotation_euler = (math.radians(90) - ELEV, 0, 0)
+m_halo, nodos, ln = mat("halo")
+for n in list(nodos):
+    if n.type != "OUTPUT_MATERIAL": nodos.remove(n)
+tc = nodos.new("ShaderNodeTexCoord"); grad = nodos.new("ShaderNodeTexGradient"); grad.gradient_type = "SPHERICAL"
+mp = nodos.new("ShaderNodeMapping"); k_h = 1 / (R_LUNA * 2.6); mp.inputs["Scale"].default_value = (k_h, k_h, k_h)
+rp = nodos.new("ShaderNodeValToRGB"); el = rp.color_ramp.elements
+# borde de la luna en fac = 1 - 1/2,6 ≈ 0,615: pico justo afuera, caída larga hacia afuera (corona)
+el[0].position = 0.0; el[0].color = (0, 0, 0, 1); el[1].position = 0.618; el[1].color = (0, 0, 0, 1)
+for pos, v in ((0.20, 0.0), (0.38, 0.06), (0.50, 0.22), (0.57, 0.55), (0.605, 1.0)):
+    e = rp.color_ramp.elements.new(pos); e.color = (v, v, v, 1)
+em = nodos.new("ShaderNodeEmission"); em.inputs["Color"].default_value = (0.95, 0.96, 1.0, 1)
+tr = nodos.new("ShaderNodeBsdfTransparent"); mx = nodos.new("ShaderNodeMixShader")
+ln.new(tc.outputs["Object"], mp.inputs["Vector"]); ln.new(mp.outputs[0], grad.inputs["Vector"])
+ln.new(grad.outputs["Fac"], rp.inputs["Fac"]); ln.new(rp.outputs["Color"], mx.inputs["Fac"])
+ln.new(tr.outputs[0], mx.inputs[1]); ln.new(em.outputs[0], mx.inputs[2])
+ln.new(mx.outputs[0], next(n for n in nodos if n.type == "OUTPUT_MATERIAL").inputs[0])
+halo.data.materials.append(m_halo)
+s = em.inputs["Strength"]
+for f, v in ((1, 0.25), (80, 0.6), (104, 5.0), (120, 5.5)): s.default_value = v; s.keyframe_insert("default_value", frame=f)
+fz = next(n for n in m_luna.node_tree.nodes if n.type == "EMISSION").inputs["Strength"]
+for f, v in ((1, 1.1), (100, 1.0), (110, 0.0)): fz.default_value = v; fz.keyframe_insert("default_value", frame=f)
+sol.data.keyframe_insert("energy", frame=70); sol.data.energy = 0.12; sol.data.keyframe_insert("energy", frame=106)
+
+# ── cámara: se acerca al borde del piso y se inclina hacia el reflejo ──────────────────────────────────────────────
+bpy.ops.object.camera_add(); cam = bpy.context.object; esc.camera = cam; cam.data.lens = 26; cam.data.sensor_width = 36
+for f, y, z, pitch in ((1, -9.0, 2.6, -3.0), (64, -6.2, 2.45, -9.0), (120, -5.4, 2.4, -12.5)):
+    cam.location = (0.0, y, z); cam.rotation_euler = (math.radians(90 + pitch), 0, 0)
+    cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
+
+# ── render ──────────────────────────────────────────────────────────────────────────────────────────────────────────
+esc.render.engine = "CYCLES"
+try:
+    prefs = bpy.context.preferences.addons["cycles"].preferences
+    prefs.compute_device_type = "METAL"; prefs.get_devices()
+    for d in prefs.devices: d.use = True
+    esc.cycles.device = "GPU"
+except Exception as e:
+    print("[rio] METAL no disponible:", e)
+esc.cycles.samples = MUESTRAS; esc.cycles.use_denoising = True
+esc.view_settings.view_transform = "AgX"; esc.view_settings.look = "AgX - Base Contrast"
+esc.render.resolution_x = ANCHO; esc.render.resolution_y = round(ANCHO * 9 / 16); esc.render.resolution_percentage = 100
+esc.render.image_settings.file_format = "JPEG"; esc.render.image_settings.quality = 90
+os.makedirs(SALIDA, exist_ok=True)
+if "-" in CUADROS and "," not in CUADROS:
+    a, z = (int(v) for v in CUADROS.split("-")); lista = range(a, z + 1)
+else:
+    lista = [int(v) for v in CUADROS.split(",")]
+for f in lista:
+    esc.frame_set(f); esc.render.filepath = os.path.join(SALIDA, f"rio-{f:03d}.jpg")
+    bpy.ops.render.render(write_still=True); print(f"[rio] cuadro {f}", flush=True)
+print("[rio] TERMINADO")
