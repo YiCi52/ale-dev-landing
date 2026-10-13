@@ -19,7 +19,12 @@ export function SmoothScroll() {
 
     gsap.registerPlugin(ScrollTrigger);
 
-    const lenis = new Lenis({ duration: 1.1 });
+    /*
+      13-oct (Alejo): inercia "tipo Apple". `lerp` en vez de `duration`: el scroll se desliza hacia su destino a
+      un ritmo constante por cuadro y frena poco a poco, sin tiempos fijos. Solo suaviza rueda y trackpad; en
+      pantallas táctiles queda el scroll nativo (que ya trae inercia y se detiene si el dedo se queda quieto).
+    */
+    const lenis = new Lenis({ lerp: 0.075, smoothWheel: true, wheelMultiplier: 0.9, syncTouch: false });
     const onScroll = () => ScrollTrigger.update();
     lenis.on("scroll", onScroll);
 

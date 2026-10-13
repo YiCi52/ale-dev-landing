@@ -8,21 +8,38 @@ export function sinMovimiento(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Llama `alCambiar(p)` con p ∈ [0, 1]: 0 cuando la sección toca el borde superior, 1 al terminar de pasar. */
+/**
+ * Llama `alCambiar(p)` con p ∈ [0, 1]: 0 cuando la sección toca el borde superior, 1 al terminar de pasar.
+ * 13-oct (Alejo): el valor que recibe la animación NO salta a la posición del scroll: se desliza hacia ella y
+ * frena poco a poco (inercia), así al soltar el scroll no se ve el corte. Si el scroll se queda quieto (dedo
+ * apoyado en el trackpad o en la pantalla), la animación alcanza ese punto y también se queda quieta.
+ */
+const SUAVIZADO = 0.12;
+
 export function observarProgreso(el: HTMLElement, alCambiar: (p: number) => void): () => void {
   let pendiente = 0;
+  let objetivo = 0;
+  let actual = -1;
   const medir = () => {
-    pendiente = 0;
     const r = el.getBoundingClientRect();
     const recorrido = Math.max(1, r.height - window.innerHeight);
-    alCambiar(Math.min(1, Math.max(0, -r.top / recorrido)));
+    objetivo = Math.min(1, Math.max(0, -r.top / recorrido));
+  };
+  const cuadro = () => {
+    pendiente = 0;
+    medir();
+    const directo = actual < 0 || sinMovimiento();
+    actual = directo ? objetivo : actual + (objetivo - actual) * SUAVIZADO;
+    if (Math.abs(objetivo - actual) < 0.0004) actual = objetivo;
+    alCambiar(actual);
+    if (actual !== objetivo) pendiente = requestAnimationFrame(cuadro);
   };
   const pedir = () => {
-    if (!pendiente) pendiente = requestAnimationFrame(medir);
+    if (!pendiente) pendiente = requestAnimationFrame(cuadro);
   };
   window.addEventListener("scroll", pedir, { passive: true });
   window.addEventListener("resize", pedir);
-  medir();
+  cuadro();
   return () => {
     window.removeEventListener("scroll", pedir);
     window.removeEventListener("resize", pedir);
