@@ -143,7 +143,7 @@ float olas(vec2 w, float t) {
 void main() {
   vec2 pant = vec2(vUv.x, 1.0 - vUv.y);
   float agua = smoothstep(uMascara.x, uMascara.x + 0.015, pant.y) * (1.0 - smoothstep(uMascara.y - 0.012, uMascara.y, pant.y));
-  float t = uTiempo;
+  float t = uTiempo * 0.5;   // 14-oct (Alejo): el agua iba muy rápida; todo lo que se mueve solo va a la mitad
 
   // plano del agua: cuanto más cerca del horizonte, más lejos (y las olas más chicas en pantalla)
   float prof = 1.0 / max(0.03, pant.y - uMascara.x + 0.08);
@@ -178,18 +178,21 @@ void main() {
   // el agua se ve viva aunque el reflejo esté quieto: un brillo muy leve donde las olas se inclinan
   col += vec3(0.55, 0.62, 0.75) * smoothstep(0.0015, 0.006, length(n)) * 0.05 * agua;
 
-  // proyecto dentro del disco del eclipse: sube desde el fondo (NACRE) y al irse se hunde
+  // proyecto dentro del disco del eclipse (Alejo, 14-oct): SUBE DESDE EL FONDO por el negro. Hondo = casi negro,
+  // más chico, más abajo y torcido por el agua; al subir se aclara, toma su tamaño y se aquieta.
   vec2 q = (p - uDisco.xy) * vec2(uAspecto, 1.0);
   float dentro = 1.0 - smoothstep(uDisco.z * 0.86, uDisco.z * 0.92, length(q));
   if (dentro > 0.0 && uVisible > 0.0) {
-    float hondo = 1.0 - uVisible;
-    vec2 pu = q / (uDisco.z * 1.84) + 0.5;
+    float hondo = 1.0 - uVisible, h2 = hondo * hondo;
+    vec2 pu = q / (uDisco.z * 1.84) * mix(1.0, 1.7, h2) + vec2(0.5, 0.5 - h2 * 0.18);
     pu.x = (pu.x - 0.5) / max(uProyAspecto, 1.0) + 0.5;
-    vec2 ola = vec2(ruido(pu * 5.0 + t * 0.35), ruido(pu * 5.0 - t * 0.3)) - 0.5;
-    vec3 proy = texture(uProyecto, pu + ola * 0.09 * hondo + n * 0.3).rgb;
-    proy = mix(proy, vec3(0.02, 0.07, 0.09), hondo * 0.85);
-    proy += vec3(0.75, 0.9, 1.0) * causticas(pu * 7.0, t * 0.6) * (0.06 + 0.35 * hondo);
-    col = mix(col, proy * mix(0.3, 0.95, uVisible), smoothstep(0.0, 0.35, uVisible) * dentro);
+    vec2 ola = vec2(ruido(pu * 4.0 + t * 0.35), ruido(pu * 4.0 - t * 0.3)) - 0.5;
+    vec2 tu = pu + ola * 0.12 * hondo + n * 0.3;
+    float enFoto = step(0.0, tu.x) * step(tu.x, 1.0) * step(0.0, tu.y) * step(tu.y, 1.0);
+    vec3 proy = texture(uProyecto, tu).rgb * enFoto;
+    proy = mix(vec3(0.004, 0.010, 0.014), proy, pow(uVisible, 1.6));   // la luz llega de arriba: lo hondo es negro
+    proy += vec3(0.7, 0.88, 1.0) * causticas(pu * 6.0, t * 0.6) * 0.2 * sin(PI * uVisible);
+    col = mix(col, proy, smoothstep(0.0, 0.25, uVisible) * dentro);
   }
   color = vec4(col, 1.0);
 }`;

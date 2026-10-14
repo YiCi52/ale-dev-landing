@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react";
 
 import { AguaGL, type Escena } from "./agua/AguaGL";
-import { cuadroDe, cubrir, eclipseDe, proyectoDe, type Datos } from "./agua/escena";
+import { PELICULA, cuadroDe, cubrir, eclipseDe, proyectoDe, type Datos } from "./agua/escena";
+import { CacheCuadros } from "./agua/cache";
 import { observarProgreso, pintarCubriendo, precargar, rutasSecuencia, sinMovimiento } from "./scroll";
 
 /*
@@ -23,9 +24,19 @@ const PROYECTOS = [
 
 type Estado = {
   p: number; datos: Datos | null; escena: Escena | null; cursor: [number, number] | null; cerca: number;
-  /** desplazamiento suavizado de la luna hacia el cursor */
+  /** desplazamiento suavizado de la luna hacia el cursor (solo cuando el cursor está encima, como un botón magnético) */
   sigue: [number, number];
+  /** lo mismo para el reflejo y el proyecto dentro del agua */
+  sigueAgua: [number, number];
 };
+
+/** Imán: si el cursor está sobre el disco (radio en alturas), devuelve hacia dónde tirar; si no, cero. */
+function iman(cursor: [number, number] | null, cx: number, cy: number, radio: number, asp: number): [number, number] {
+  if (!cursor) return [0, 0];
+  const dx = cursor[0] - cx, dy = cursor[1] - cy;
+  if (Math.hypot(dx * asp, dy) > radio * 1.15) return [0, 0];
+  return [dx * 0.12, dy * 0.12];
+}
 
 function entrarPorElAgua(x: number, y: number, img: string, destino: string) {
   if (sinMovimiento()) return window.location.assign(destino);
@@ -53,16 +64,19 @@ function calcularEscena(c: HTMLCanvasElement, img: HTMLImageElement, f: number, 
   const [rx, ry] = d ? t.aPantalla(d.reflejo[0], d.reflejo[1]) : [0.5, 0.5];
   const [lx, ly] = d?.luna ? t.aPantalla(d.luna[0], d.luna[1]) : [0.5, -1];
   const lr = d?.luna_radio ? t.alto(d.luna_radio) : 0.1;
-  // la luna sigue un poco al cursor (suavizado); el reflejo se mueve igual en x y al revés en y
-  const objetivo: [number, number] = s.cursor ? [(s.cursor[0] - lx) * 0.07, (s.cursor[1] - ly) * 0.05] : [0, 0];
-  s.sigue = [s.sigue[0] + (objetivo[0] - s.sigue[0]) * 0.06, s.sigue[1] + (objetivo[1] - s.sigue[1]) * 0.06];
+  // 14-oct (Alejo): la luna y el reflejo siguen al cursor SOLO si está encima de ellos (botón magnético), suavizado
+  const objetivo = iman(s.cursor, lx, ly, lr, asp);
+  s.sigue = [s.sigue[0] + (objetivo[0] - s.sigue[0]) * 0.08, s.sigue[1] + (objetivo[1] - s.sigue[1]) * 0.08];
+  const dr = d ? t.alto(d.radio) : 0.2;
+  const objetivoAgua = iman(s.cursor, rx, ry, dr, asp);
+  s.sigueAgua = [s.sigueAgua[0] + (objetivoAgua[0] - s.sigueAgua[0]) * 0.08, s.sigueAgua[1] + (objetivoAgua[1] - s.sigueAgua[1]) * 0.08];
   const dist = s.cursor ? Math.hypot((s.cursor[0] - lx) * asp, s.cursor[1] - ly) : 9;
   s.cerca += (Math.max(0, 1 - dist / (lr * 3)) - s.cerca) * 0.08;
   return {
     cubre: t.uniforme,
     mascara: [d ? t.aPantalla(0, d.horizonte)[1] : 0, d ? t.aPantalla(0, d.piso)[1] : 1],
     lunaCielo: [lx + s.sigue[0], ly + s.sigue[1], lr],
-    disco: [rx + s.sigue[0], ry - s.sigue[1], d ? t.alto(d.radio) : 0.2],
+    disco: [rx + s.sigueAgua[0], ry + s.sigueAgua[1], dr],
     eclipse: eclipseDe(s.p),
     cerca: s.cerca,
     visible,
@@ -87,13 +101,14 @@ export function RioLuna() {
   const seccion = useRef<HTMLElement>(null);
   const lienzo = useRef<HTMLCanvasElement>(null);
   const etiqueta = useRef<HTMLDivElement>(null);
-  const estado = useRef<Estado>({ p: sinMovimiento() ? 1 : 0, datos: null, escena: null, cursor: null, cerca: 0, sigue: [0, 0] });
+  const estado = useRef<Estado>({ p: sinMovimiento() ? 1 : 0, datos: null, escena: null, cursor: null, cerca: 0, sigue: [0, 0], sigueAgua: [0, 0] });
 
   useEffect(() => {
     const el = seccion.current, c = lienzo.current;
     if (!el || !c) return;
     const agua = sinMovimiento() ? null : AguaGL.crear(c);
     const cuadros = precargar(rutasSecuencia(BASE, "rio", N), () => undefined);
+    const cache = new CacheCuadros(cuadros);
     const fotos = PROYECTOS.map((pr) => { const i = new Image(); i.src = pr.img; return i; });
     const texLuna = new Image();
     texLuna.onload = () => agua?.ponerLuna(texLuna);
@@ -111,11 +126,13 @@ export function RioLuna() {
       s.escena = e;
       if (agua) {
         agua.ajustar();
-        if (f !== ultimoCuadro) { agua.ponerCuadro(img); ultimoCuadro = f; }
+        // el cuadro sube ya decodificado (si no, decodificarlo al vuelo trababa la bajada de la cámara)
+        cache.alrededor(f, c.width);
+        if (f !== ultimoCuadro) { agua.ponerCuadro(cache.listo(f) ?? img); ultimoCuadro = f; }
         if (indice !== ultimoProy && fotos[indice].complete) { agua.ponerProyecto(fotos[indice]); ultimoProy = indice; }
-        // ondas a ritmo de agua real (Alejo, 13-oct: iban muy rápido): ~30 pasos por segundo, no uno por cuadro
+        // ondas a ritmo de agua real (Alejo, 13 y 14-oct: iban muy rápido): ~20 pasos por segundo, no uno por cuadro
         const ahora = performance.now();
-        if (ahora - ultimoPaso >= 33) { agua.paso(); ultimoPaso = ahora; }
+        if (ahora - ultimoPaso >= 50) { agua.paso(); ultimoPaso = ahora; }
         agua.dibujar(e);
       } else pintarCubriendo(c, img);
       pintarEtiqueta(etiqueta.current, e, indice, c);
@@ -132,6 +149,7 @@ export function RioLuna() {
       const x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
       estado.current.cursor = [x, y];
       if (y <= e.mascara[0] + 0.02 || y >= e.mascara[1] - 0.01) { previo = null; return; }   // el piso y el cielo no se mojan
+      if (estado.current.p < PELICULA * 0.95) { previo = null; return; }   // el dedo moja el agua solo cuando ya la estás mirando
       const dist = previo ? Math.hypot(x - previo[0], y - previo[1]) : 1;
       if (dist < 0.004) return;
       agua.gota(x, y, 0.035, Math.min(0.07, 0.012 + dist * 1.6));
@@ -139,7 +157,7 @@ export function RioLuna() {
       pedir();
     };
     c.addEventListener("pointermove", mover);
-    return () => { vivo = false; texLuna.onload = null; io.disconnect(); dejarDeObservar(); c.removeEventListener("pointermove", mover); if (raf) cancelAnimationFrame(raf); agua?.destruir(); };
+    return () => { vivo = false; cache.vaciar(); texLuna.onload = null; io.disconnect(); dejarDeObservar(); c.removeEventListener("pointermove", mover); if (raf) cancelAnimationFrame(raf); agua?.destruir(); };
   }, []);
 
   const tocarAgua = (ev: React.MouseEvent<HTMLCanvasElement>) => {

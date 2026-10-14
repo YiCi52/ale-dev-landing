@@ -121,7 +121,7 @@ export class AguaGL {
     }
   }
 
-  ponerCuadro(img: HTMLImageElement): void {
+  ponerCuadro(img: HTMLImageElement | ImageBitmap): void {
     if (this.muerto) return;
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.cuadro);

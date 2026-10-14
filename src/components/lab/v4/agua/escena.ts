@@ -37,8 +37,9 @@ export function proyectoDe(p: number, cantidad: number): { indice: number; visib
   const s = seg - indice;
   const ultimo = indice === cantidad - 1;
   let visible = 1;
-  if (s < 0.3) visible = s / 0.3;
-  else if (s > 0.7 && !ultimo) visible = 1 - (s - 0.7) / 0.3;
+  // sube despacio desde el fondo (casi la mitad de su tramo) y se va más rápido
+  if (s < 0.45) visible = s / 0.45;
+  else if (s > 0.75 && !ultimo) visible = 1 - (s - 0.75) / 0.25;
   return { indice, visible: Math.min(1, Math.max(0, visible)) };
 }
 
