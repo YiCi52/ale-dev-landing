@@ -6,7 +6,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-import { CENTRO, ESTRELLAS, LINEAS, type Estrella } from "./estrellas";
+import { CENTRO, ESTRELLAS, LINEAS, MENORES, type Estrella } from "./estrellas";
 
 const VERTICE = /* glsl */ `
 attribute float aBrillo; attribute float aGrupo;
@@ -60,7 +60,7 @@ export class MotorConstelacion {
     const gl = new THREE.BufferGeometry();
     gl.setAttribute("position", new THREE.Float32BufferAttribute(LINEAS.flatMap(([a, b]) => [...a.pos, ...b.pos]), 3));
     this.lineas = new THREE.LineSegments(gl, new THREE.LineBasicMaterial({ color: 0xb89c6e, transparent: true, opacity: 0.35 }));
-    this.escena.add(this.lineas, this.estrellas, this.cielo());
+    this.escena.add(this.lineas, this.estrellas, this.cielo(), this.menores());
   }
 
   /** Polvo de estrellas lejanas, muy tenue (Alejo pidió pocas estrellas: son 260 y casi no se ven). */
@@ -74,13 +74,19 @@ export class MotorConstelacion {
     return new THREE.Points(g, new THREE.PointsMaterial({ color: 0x9a978f, size: 0.05, transparent: true, opacity: 0.5 }));
   }
 
+  /** Las estrellas menores de cada grupo: chicas y tenues, sin nombre. */
+  private menores(): THREE.Points {
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(MENORES.flat(), 3));
+    return new THREE.Points(g, new THREE.PointsMaterial({ color: 0xd9d5cc, size: 0.045, transparent: true, opacity: 0.55, depthWrite: false }));
+  }
+
   medir(): void {
     const w = this.lienzo.clientWidth, h = this.lienzo.clientHeight;
     this.render.setSize(w, h, false);
     this.camara.aspect = w / Math.max(1, h);
     // la constelación se corre fuera del título: a la derecha en pantalla ancha, hacia abajo en celular
     const angosto = w < 720;
-    this.camara.position.setLength(angosto ? 20 : 11);
+    this.camara.position.setLength(angosto ? 19 : 10.5);
     this.camara.setViewOffset(w, h, angosto ? 0 : -w * 0.14, angosto ? -h * 0.2 : 0, w, h);
     this.camara.updateProjectionMatrix();
   }

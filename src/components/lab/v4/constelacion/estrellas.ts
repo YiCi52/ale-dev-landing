@@ -16,7 +16,7 @@ const FIGURAS: { dir: [number, number, number]; puntos: [number, number][] }[] =
   { dir: [-0.6, 0.6, -0.5], puntos: [[-0.4, -0.3], [0.0, 0.25], [0.45, -0.1]] },
 ];
 
-const RADIO = 2.7, ESCALA_FIGURA = 1.05;
+const RADIO = 1.95, ESCALA_FIGURA = 0.85;   // 14-oct noche (Alejo): "se siente vacío porque es muy grande para 5"
 
 function normal(v: [number, number, number]): [number, number, number] {
   const l = Math.hypot(...v);
@@ -47,3 +47,13 @@ export const LINEAS: [Estrella, Estrella][] = ESTRATOS.flatMap((_, g) => {
   const del = ESTRELLAS.filter((s) => s.grupo === g);
   return [[CENTRO, del[0]] as [Estrella, Estrella], ...del.slice(1).map((s, i) => [del[i], s] as [Estrella, Estrella])];
 });
+
+/**
+ * Estrellas menores sin nombre alrededor de cada constelación (como los cúmulos de un cielo real): le dan cuerpo
+ * a cada grupo sin agregar etiquetas. Semilla fija: siempre las mismas.
+ */
+export const MENORES: [number, number, number][] = (() => {
+  let semilla = 11;
+  const azar = () => ((semilla = (semilla * 16807) % 2147483647) / 2147483647) * 2 - 1;
+  return ESTRELLAS.flatMap((e) => Array.from({ length: 5 }, () => [e.pos[0] + azar() * 0.45, e.pos[1] + azar() * 0.45, e.pos[2] + azar() * 0.45] as [number, number, number]));
+})();
