@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { AguaGL, type Escena } from "./agua/AguaGL";
-import { PELICULA, cuadroDe, cubrir, eclipseDe, proyectoDe, type Datos } from "./agua/escena";
+import { PELICULA, cuadroExacto, cubrir, eclipseDe, mezclarDatos, proyectoDe, type Datos } from "./agua/escena";
 import { CacheCuadros } from "./agua/cache";
 import { lienzoCielo } from "./cielo/estrellas";
 import { observarProgreso, pintarCubriendo, precargar, rutasSecuencia, sinMovimiento } from "./scroll";
@@ -16,7 +16,6 @@ import { observarProgreso, pintarCubriendo, precargar, rutasSecuencia, sinMovimi
   "como azúcar en agua" con el scroll. El cursor mueve el agua (no el piso).
   Cuadros pre-renderizados en Blender (scripts/v4/rio_luna.py) + WebGL propio.
 */
-const N = 74;
 const BASE = "/lab/v4/rio";
 const PROYECTOS = [
   { id: "mh", nombre: "MH Interior", tipo: "Sitio de cliente · 2026", href: "/trabajo/mh-interior", img: "/lab/v4/proyectos/mh-sala.webp" },
@@ -59,7 +58,7 @@ function entrarPorElAgua(x: number, y: number, img: string, destino: string) {
 
 /** Escena del cuadro actual en coordenadas de pantalla (máscara del agua, luna del cielo, su reflejo). */
 function calcularEscena(c: HTMLCanvasElement, img: HTMLImageElement, f: number, s: Estado, visible: number): Escena {
-  const d = s.datos?.[f];
+  const entero = Math.floor(f), d = mezclarDatos(s.datos?.[entero], s.datos?.[entero + 1], f - entero);
   const asp = c.clientWidth / c.clientHeight;
   const t = cubrir(c.clientWidth, c.clientHeight, img.naturalWidth || 1920, img.naturalHeight || 1080);
   const [rx, ry] = d ? t.aPantalla(d.reflejo[0], d.reflejo[1]) : [0.5, 0.5];
@@ -108,29 +107,41 @@ export function RioLuna() {
     const el = seccion.current, c = lienzo.current;
     if (!el || !c) return;
     const agua = sinMovimiento() ? null : AguaGL.crear(c);
-    const cuadros = precargar(rutasSecuencia(BASE, "rio", N), () => undefined);
-    const cache = new CacheCuadros(cuadros);
+    // cuántos cuadros hay lo dicen los datos del render (74 antes, 110 desde la playa): se cargan después de leerlos
+    let cuadros: HTMLImageElement[] = [], N = 0, cache: CacheCuadros | null = null;
     const fotos = PROYECTOS.map((pr) => { const i = new Image(); i.src = pr.img; return i; });
     const texLuna = new Image();
     texLuna.onload = () => agua?.ponerLuna(texLuna);
     texLuna.src = "/lab/v4/luna/luna-nasa-2k.jpg";
     agua?.ponerEstrellas(lienzoCielo(1024));
-    fetch(`${BASE}/datos.json`).then((r) => r.json()).then((d: Datos) => { estado.current.datos = d; }).catch(() => undefined);
-    let ultimoCuadro = -1, ultimoProy = -1, vivo = true, visible = false, raf = 0, ultimoPaso = 0;
+    fetch(`${BASE}/datos.json`).then((r) => r.json()).then((d: Datos) => {
+      if (!vivo) return;
+      estado.current.datos = d;
+      N = Object.keys(d).length;
+      cuadros = precargar(rutasSecuencia(BASE, "rio", N), () => undefined);
+      cache = new CacheCuadros(cuadros);
+      pedir();
+    }).catch(() => undefined);
+    let ultimoCuadro = -1, ultimoSiguiente = -1, ultimoProy = -1, vivo = true, visible = false, raf = 0, ultimoPaso = 0;
 
     const tick = () => {
       raf = 0;
       const s = estado.current;
-      const f = cuadroDe(s.p, N), img = cuadros[f - 1];
+      if (!N) { if (vivo && visible) raf = requestAnimationFrame(tick); return; }
+      const exacto = cuadroExacto(s.p, N), f = Math.floor(exacto), sig = Math.min(N, f + 1), img = cuadros[f - 1];
       const { indice, visible: vis } = proyectoDe(s.p, PROYECTOS.length);
       if (!img?.complete) { if (vivo && visible) raf = requestAnimationFrame(tick); return; }
-      const e = calcularEscena(c, img, f, s, vis);
+      const e = calcularEscena(c, img, exacto, s, vis);
       s.escena = e;
       if (agua) {
         agua.ajustar();
         // el cuadro sube ya decodificado (si no, decodificarlo al vuelo trababa la bajada de la cámara)
-        cache.alrededor(f, c.width);
-        if (f !== ultimoCuadro) { agua.ponerCuadro(cache.listo(f) ?? img); ultimoCuadro = f; }
+        cache?.alrededor(f, c.width);
+        if (f !== ultimoCuadro) { agua.ponerCuadro(cache?.listo(f) ?? img, 0); ultimoCuadro = f; }
+        // el siguiente cuadro se funde según el scroll: la cámara baja continua, no a saltos (Alejo, 14-oct)
+        const imgSig = cuadros[sig - 1];
+        if (sig !== ultimoSiguiente && imgSig?.complete) { agua.ponerCuadro(cache?.listo(sig) ?? imgSig, 1); ultimoSiguiente = sig; }
+        agua.ponerMezcla(sig === ultimoSiguiente ? exacto - f : 0);
         if (indice !== ultimoProy && fotos[indice].complete) { agua.ponerProyecto(fotos[indice]); ultimoProy = indice; }
         // ondas a ritmo de agua real (Alejo, 13 y 14-oct: iban muy rápido): ~20 pasos por segundo, no uno por cuadro
         const ahora = performance.now();
@@ -165,7 +176,7 @@ export function RioLuna() {
       pedir();
     };
     c.addEventListener("pointermove", mover);
-    return () => { vivo = false; cache.vaciar(); texLuna.onload = null; io.disconnect(); dejarDeObservar(); c.removeEventListener("pointermove", mover); if (raf) cancelAnimationFrame(raf); agua?.destruir(); };
+    return () => { vivo = false; cache?.vaciar(); texLuna.onload = null; io.disconnect(); dejarDeObservar(); c.removeEventListener("pointermove", mover); if (raf) cancelAnimationFrame(raf); agua?.destruir(); };
   }, []);
 
   const tocarAgua = (ev: React.MouseEvent<HTMLCanvasElement>) => {

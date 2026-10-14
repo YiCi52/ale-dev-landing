@@ -70,6 +70,8 @@ void main() {
 export const FINAL = `#version 300 es
 precision highp float;
 uniform sampler2D uCuadro;
+uniform sampler2D uCuadro2;   // el cuadro siguiente: se funde con uMezcla (la cámara se mueve sin saltos)
+uniform float uMezcla;
 uniform sampler2D uSim;
 uniform sampler2D uProyecto;
 uniform sampler2D uLuna;
@@ -123,12 +125,13 @@ vec3 aura(float l, float fuerza) {
 vec3 corona(vec2 d, float l, float eclipse) {
   if (l < 1.0 || eclipse <= 0.0) return vec3(0.0);
   vec2 dir = d / l;
-  float rayos = 0.55 + 0.3 * ruido(dir * 2.2 + 3.1) + 0.25 * ruido(dir * 6.5 + 7.3);
-  float largas = pow(max(0.0, dot(dir, normalize(vec2(0.82, -0.57)))), 5.0) * 0.9
-               + pow(max(0.0, dot(dir, normalize(vec2(-0.9, 0.35)))), 7.0) * 0.6;   // dos serpentinas largas, como en la foto
+  float rayos = 0.25 + 0.75 * ruido(dir * 1.6 + 3.1) + 0.35 * ruido(dir * 5.0 + 7.3) + 0.15 * ruido(dir * 14.0 + 1.3);
+  float largas = pow(max(0.0, dot(dir, normalize(vec2(0.82, -0.57)))), 4.0) * 1.3
+               + pow(max(0.0, dot(dir, normalize(vec2(-0.9, 0.35)))), 6.0) * 0.9
+               + pow(max(0.0, dot(dir, normalize(vec2(0.2, 0.98)))), 9.0) * 0.5;   // serpentinas largas, como en la foto
   float x = l - 1.0;
-  float pegada = exp(-x * 11.0);
-  float abierta = exp(-x * (3.4 - largas * 2.0)) * rayos * 0.55;
+  float pegada = exp(-x * 9.0) * (0.75 + 0.25 * rayos);
+  float abierta = exp(-x * max(0.9, 3.0 - largas * 2.2)) * rayos * 0.7;
   float sinEscalon = smoothstep(0.0, 0.02, x);
   return vec3(0.95, 0.96, 1.0) * smoothstep(0.55, 1.0, eclipse) * sinEscalon * (pegada * 0.85 + abierta);
 }
@@ -160,7 +163,8 @@ void main() {
   vec2 n = (g * 0.00055 / prof + vec2(hx, -hy) * 0.5) * agua;      // inclinación total de la superficie
 
   vec2 p = pant + n * 0.9;
-  vec3 col = texture(uCuadro, p * uCubre.xy + uCubre.zw).rgb;
+  vec2 uvc = p * uCubre.xy + uCubre.zw;
+  vec3 col = mix(texture(uCuadro, uvc).rgb, texture(uCuadro2, uvc).rgb, uMezcla);
 
   // luna en el cielo (por encima del horizonte)
   vec2 dc = (pant - uLunaCielo.xy) * vec2(uAspecto, 1.0) / max(uLunaCielo.z, 1e-4);

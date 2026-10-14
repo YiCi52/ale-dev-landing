@@ -55,6 +55,8 @@ export class AguaGL {
   /** ya destruido: ignora cargas que lleguen tarde (si no, escriben en texturas ajenas del mismo contexto) */
   private muerto = false;
   private cuadro: WebGLTexture;
+  private cuadro2: WebGLTexture;
+  private mezcla = 0;
   private proyecto: WebGLTexture;
   private luna: WebGLTexture;
   private estrellas: WebGLTexture;
@@ -75,6 +77,7 @@ export class AguaGL {
     this.pPaso = compilar(gl, PASO);
     this.pFinal = compilar(gl, FINAL);
     this.cuadro = textura(gl, gl.LINEAR);
+    this.cuadro2 = textura(gl, gl.LINEAR);
     this.proyecto = textura(gl, gl.LINEAR);
     this.luna = textura(gl, gl.LINEAR);
     this.estrellas = textura(gl, gl.LINEAR);
@@ -123,11 +126,16 @@ export class AguaGL {
     }
   }
 
-  ponerCuadro(img: HTMLImageElement | ImageBitmap): void {
+  /** `ranura` 0 = el cuadro entero de abajo, 1 = el siguiente; `ponerMezcla` dice cuánto se ve el siguiente. */
+  ponerCuadro(img: HTMLImageElement | ImageBitmap, ranura: 0 | 1 = 0): void {
     if (this.muerto) return;
     const gl = this.gl;
-    gl.bindTexture(gl.TEXTURE_2D, this.cuadro);
+    gl.bindTexture(gl.TEXTURE_2D, ranura === 0 ? this.cuadro : this.cuadro2);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  }
+
+  ponerMezcla(t: number): void {
+    this.mezcla = t;
   }
 
   /** El cielo de estrellas (cielo/estrellas.ts → lienzoCielo): 2,4 × 1 alturas, horizonte abajo. */
@@ -197,6 +205,8 @@ export class AguaGL {
     const gl = this.gl;
     this.pasada(this.pFinal, null, (p) => {
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.cuadro); gl.uniform1i(p.u("uCuadro"), 1);
+      gl.activeTexture(gl.TEXTURE5); gl.bindTexture(gl.TEXTURE_2D, this.cuadro2); gl.uniform1i(p.u("uCuadro2"), 5);
+      gl.uniform1f(p.u("uMezcla"), this.mezcla);
       gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.proyecto); gl.uniform1i(p.u("uProyecto"), 2);
       gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, this.luna); gl.uniform1i(p.u("uLuna"), 3);
       gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, this.estrellas); gl.uniform1i(p.u("uEstrellas"), 4);
@@ -225,7 +235,7 @@ export class AguaGL {
   destruir(): void {
     this.muerto = true;
     const gl = this.gl;
-    [this.cuadro, this.proyecto, this.luna, this.estrellas, ...this.sim.map((o) => o.tex)].forEach((t) => gl.deleteTexture(t));
+    [this.cuadro, this.cuadro2, this.proyecto, this.luna, this.estrellas, ...this.sim.map((o) => o.tex)].forEach((t) => gl.deleteTexture(t));
     this.sim.forEach((o) => gl.deleteFramebuffer(o.fb));
     [this.pGota, this.pPaso, this.pFinal].forEach((p) => gl.deleteProgram(p.prog));
   }

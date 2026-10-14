@@ -21,6 +21,23 @@ export type Datos = Record<
   { reflejo: [number, number]; radio: number; piso: number; horizonte: number; luna?: [number, number]; luna_radio?: number }
 >;
 
+/** Cuadro con decimales (1..total): la galería funde el entero de abajo con el de arriba para que no se vea a saltos. */
+export function cuadroExacto(p: number, total: number): number {
+  const t = Math.min(1, Math.max(0, p / PELICULA));
+  return 1 + t * (total - 1);
+}
+
+/** Datos de un cuadro intermedio: mezcla lineal de los dos vecinos (luna, reflejo y horizonte se mueven parejo). */
+export function mezclarDatos(a: Datos[string] | undefined, b: Datos[string] | undefined, t: number): Datos[string] | undefined {
+  if (!a || !b || t <= 0) return a;
+  const m = (x: number, y: number) => x + (y - x) * t;
+  const mp = (x: [number, number], y: [number, number]): [number, number] => [m(x[0], y[0]), m(x[1], y[1])];
+  return {
+    reflejo: mp(a.reflejo, b.reflejo), radio: m(a.radio, b.radio), piso: m(a.piso, b.piso), horizonte: m(a.horizonte, b.horizonte),
+    luna: a.luna && b.luna ? mp(a.luna, b.luna) : a.luna, luna_radio: a.luna_radio !== undefined && b.luna_radio !== undefined ? m(a.luna_radio, b.luna_radio) : a.luna_radio,
+  };
+}
+
 export function cuadroDe(p: number, total: number): number {
   const t = Math.min(1, Math.max(0, p / PELICULA));
   return Math.min(total, Math.max(1, Math.round(1 + t * (total - 1))));

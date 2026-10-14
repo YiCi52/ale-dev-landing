@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { FIN_ECLIPSE, PELICULA, cuadroDe, cubrir, eclipseDe, proyectoDe } from "./escena";
+import { FIN_ECLIPSE, PELICULA, cuadroDe, cuadroExacto, cubrir, eclipseDe, mezclarDatos, proyectoDe } from "./escena";
 
 describe("cuadroDe", () => {
   it("recorre la película en la primera parte del scroll y se queda en el último cuadro", () => {
@@ -45,5 +45,21 @@ describe("eclipseDe", () => {
     expect(eclipseDe(0.2)).toBe(0);
     expect(eclipseDe((PELICULA + FIN_ECLIPSE) / 2)).toBeCloseTo(0.5);
     expect(eclipseDe(0.8)).toBe(1);
+  });
+});
+
+describe("fundido entre cuadros", () => {
+  it("el cuadro exacto recorre de 1 al último con decimales", () => {
+    expect(cuadroExacto(0, 110)).toBe(1);
+    expect(cuadroExacto(PELICULA, 110)).toBe(110);
+    expect(cuadroExacto(PELICULA / 2, 110)).toBeCloseTo(55.5);
+  });
+
+  it("los datos intermedios quedan a mitad de camino", () => {
+    const a = { reflejo: [0.5, 0.9] as [number, number], radio: 0.1, piso: 0.8, horizonte: 0.5, luna: [0.5, 0.2] as [number, number], luna_radio: 0.1 };
+    const b = { ...a, horizonte: 0.3, luna: [0.5, 0.0] as [number, number] };
+    const m = mezclarDatos(a, b, 0.5);
+    expect(m?.horizonte).toBeCloseTo(0.4);
+    expect(m?.luna?.[1]).toBeCloseTo(0.1);
   });
 });
