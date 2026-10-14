@@ -397,3 +397,57 @@ body:has(.v4-raiz) {
     --v4-intro: 0ms;
   }
 }
+
+/* ── Muro de materiales (14-oct) ── */
+.v4-muro-losas {
+  --escribe: 1;
+  --brillo: 0;
+  --margen: clamp(20px, 6vw, 96px);
+}
+.v4-losa {
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+  /* junta entre losas: una línea fina de sombra, como el canto de una placa */
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.55), inset 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+.v4-muro-frase {
+  position: absolute;
+  top: 50%;
+  /* la frase mide lo mismo en las tres copias: el ancho del muro menos los márgenes */
+  width: calc(300% - 2 * var(--margen));
+  transform: translateY(-50%);
+  font-size: clamp(34px, 7.6vw, 132px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.v4-muro-frase span {
+  /* cada palabra se "graba" cuando el scroll la alcanza */
+  opacity: clamp(0.08, calc(var(--escribe) * (var(--n) + 2) - var(--i)), 1);
+}
+.v4-losa-nombre {
+  position: absolute;
+  left: 18px;
+  bottom: 22px;
+}
+/* el brillo del pulido: una franja diagonal suave que cruza el muro mientras se escribe la frase */
+.v4-losa-brillo {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 252, 245, 0.16) 48%, rgba(255, 252, 245, 0.05) 53%, transparent 62%);
+  transform: translateX(calc((var(--brillo) * 2 - 1) * 60%));
+  mix-blend-mode: screen;
+}
+@media (prefers-reduced-motion: reduce) {
+  .v4-muro {
+    height: auto;
+  }
+  .v4-muro > div {
+    position: relative;
+  }
+  .v4-losa-brillo {
+    display: none;
+  }
+}
