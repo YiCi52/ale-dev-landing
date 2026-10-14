@@ -46,11 +46,17 @@ void main() {
     texture(uSim, vUv - vec2(uDelta.x, 0.0)).r + texture(uSim, vUv + vec2(uDelta.x, 0.0)).r +
     texture(uSim, vUv - vec2(0.0, uDelta.y)).r + texture(uSim, vUv + vec2(0.0, uDelta.y)).r
   ) * 0.25;
-  // 14-oct (Alejo): el agua real es más lenta. Coeficiente bajo = ondas que avanzan despacio y duran más
-  info.g += (promedio - info.r) * 0.9;
-  info.g *= 0.996;
+  // 14-oct: el agua a veces se "rompía" sola, sin que nadie la tocara. Tres seguros:
+  //  - coeficiente 1.6 (no 2.0): 2.0 es justo el borde de estabilidad del patrón más fino (tablero de ajedrez);
+  //  - un poquito de suavizado hacia el promedio, que apaga ese patrón sin tocar las ondas grandes;
+  //  - tope a la altura y la velocidad, y cero si llega un valor inválido.
+  // La lentitud que pidió Alejo sale de dar menos pasos por segundo (RioLuna: uno cada ~33 ms).
+  info.g += (promedio - info.r) * 1.6;
+  info.g *= 0.993;
   info.r += info.g;
-  info.r *= 0.998;
+  info.r = mix(info.r, promedio, 0.015) * 0.996;
+  info.rg = clamp(info.rg, vec2(-0.3), vec2(0.3));
+  if (isnan(info.r) || isnan(info.g)) info.rg = vec2(0.0);
   color = info;
 }`;
 

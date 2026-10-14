@@ -52,6 +52,8 @@ function textura(gl: WebGL2RenderingContext, filtro: number): WebGLTexture {
 
 export class AguaGL {
   private sim: [Objetivo, Objetivo];
+  /** ya destruido: ignora cargas que lleguen tarde (si no, escriben en texturas ajenas del mismo contexto) */
+  private muerto = false;
   private cuadro: WebGLTexture;
   private proyecto: WebGLTexture;
   private luna: WebGLTexture;
@@ -95,12 +97,17 @@ export class AguaGL {
     const fb = gl.createFramebuffer()!;
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    // 14-oct: el agua salía "rota" sin que nadie la tocara: la simulación debe arrancar quieta, en cero
+    gl.viewport(0, 0, this.ancho, this.alto);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     return { tex, fb };
   }
 
   /** Ajusta el lienzo al tamaño mostrado y la resolución de la simulación a su proporción. */
   ajustar(): void {
+    if (this.muerto) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const w = Math.round(this.canvas.clientWidth * dpr);
     const h = Math.round(this.canvas.clientHeight * dpr);
@@ -115,18 +122,21 @@ export class AguaGL {
   }
 
   ponerCuadro(img: HTMLImageElement): void {
+    if (this.muerto) return;
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.cuadro);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
   }
 
   ponerLuna(img: HTMLImageElement): void {
+    if (this.muerto) return;
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.luna);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
   }
 
   ponerProyecto(img: HTMLImageElement): void {
+    if (this.muerto) return;
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.proyecto);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
@@ -151,6 +161,7 @@ export class AguaGL {
 
   /** Gota en coordenadas de pantalla (x, y en 0-1, y hacia abajo); radio en alturas de pantalla. */
   gota(x: number, y: number, radio: number, fuerza: number): void {
+    if (this.muerto) return;
     const gl = this.gl;
     this.pasada(this.pGota, this.sim[1], (p) => {
       this.conSim(p);
@@ -163,6 +174,7 @@ export class AguaGL {
   }
 
   paso(): void {
+    if (this.muerto) return;
     this.pasada(this.pPaso, this.sim[1], (p) => {
       this.conSim(p);
       this.gl.uniform2f(p.u("uDelta"), 1 / this.ancho, 1 / this.alto);
@@ -171,6 +183,7 @@ export class AguaGL {
   }
 
   dibujar(e: Escena): void {
+    if (this.muerto) return;
     const gl = this.gl;
     this.pasada(this.pFinal, null, (p) => {
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.cuadro); gl.uniform1i(p.u("uCuadro"), 1);
@@ -194,9 +207,12 @@ export class AguaGL {
   /*
     Libera texturas y programas pero NO pierde el contexto: en desarrollo React
     monta el efecto dos veces sobre el MISMO <canvas>, y un contexto perdido
-    deja el lienzo en blanco para el segundo montaje (pasó el 13-oct).
+    deja el lienzo en blanco para el segundo montaje (pasó el 13-oct). Ojo (14-oct): la primera
+    instancia sigue recibiendo cargas tardías (la textura de la luna); si escribiera, caería en
+    una textura de la segunda — así se colaba la imagen en la simulación y el agua salía rota.
   */
   destruir(): void {
+    this.muerto = true;
     const gl = this.gl;
     [this.cuadro, this.proyecto, this.luna, ...this.sim.map((o) => o.tex)].forEach((t) => gl.deleteTexture(t));
     this.sim.forEach((o) => gl.deleteFramebuffer(o.fb));

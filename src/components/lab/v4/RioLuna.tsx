@@ -99,7 +99,7 @@ export function RioLuna() {
     texLuna.onload = () => agua?.ponerLuna(texLuna);
     texLuna.src = "/lab/v4/luna/luna-nasa-2k.jpg";
     fetch(`${BASE}/datos.json`).then((r) => r.json()).then((d: Datos) => { estado.current.datos = d; }).catch(() => undefined);
-    let ultimoCuadro = -1, ultimoProy = -1, vivo = true, visible = false, raf = 0;
+    let ultimoCuadro = -1, ultimoProy = -1, vivo = true, visible = false, raf = 0, ultimoPaso = 0;
 
     const tick = () => {
       raf = 0;
@@ -113,7 +113,10 @@ export function RioLuna() {
         agua.ajustar();
         if (f !== ultimoCuadro) { agua.ponerCuadro(img); ultimoCuadro = f; }
         if (indice !== ultimoProy && fotos[indice].complete) { agua.ponerProyecto(fotos[indice]); ultimoProy = indice; }
-        agua.paso(); agua.dibujar(e);   // un paso por cuadro: ondas al ritmo del agua real
+        // ondas a ritmo de agua real (Alejo, 13-oct: iban muy rápido): ~30 pasos por segundo, no uno por cuadro
+        const ahora = performance.now();
+        if (ahora - ultimoPaso >= 33) { agua.paso(); ultimoPaso = ahora; }
+        agua.dibujar(e);
       } else pintarCubriendo(c, img);
       pintarEtiqueta(etiqueta.current, e, indice, c);
       if (vivo && visible && agua) raf = requestAnimationFrame(tick);
@@ -136,7 +139,7 @@ export function RioLuna() {
       pedir();
     };
     c.addEventListener("pointermove", mover);
-    return () => { vivo = false; io.disconnect(); dejarDeObservar(); c.removeEventListener("pointermove", mover); if (raf) cancelAnimationFrame(raf); agua?.destruir(); };
+    return () => { vivo = false; texLuna.onload = null; io.disconnect(); dejarDeObservar(); c.removeEventListener("pointermove", mover); if (raf) cancelAnimationFrame(raf); agua?.destruir(); };
   }, []);
 
   const tocarAgua = (ev: React.MouseEvent<HTMLCanvasElement>) => {
