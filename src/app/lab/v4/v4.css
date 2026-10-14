@@ -49,16 +49,6 @@ body:has(.v4-raiz) {
     url("/lab/v4/materiales/piedra-fondo.webp") center / cover;
 }
 
-.v4-cab {
-  position: fixed;
-  inset: 0 0 auto 0;
-  z-index: 30;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 18px clamp(16px, 4vw, 48px);
-  mix-blend-mode: difference;
-}
 
 .v4-chip {
   display: inline-block;
@@ -519,6 +509,13 @@ body:has(.v4-raiz) {
   transform: translateY(-50%);
   pointer-events: none;
 }
+.v4-losas-indice {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.v4-losas-indice[data-visible] {
+  opacity: 1;
+}
 .v4-losas-indice li {
   opacity: 0.35;
   transition: opacity 300ms ease, color 300ms ease;
@@ -643,6 +640,155 @@ body:has(.v4-raiz) {
 }
 @media (prefers-reduced-motion: reduce) {
   .v4-casilla-frase span {
+    transition: none;
+  }
+}
+
+/* ── Cabecera: logo + nombre como un solo botón, y menú de vidrio (15-oct) ── */
+.v4-cabecera {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 90;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px clamp(16px, 4vw, 48px);
+  pointer-events: none;
+}
+.v4-cabecera > * {
+  pointer-events: auto;
+}
+.v4-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 6px 6px;
+  margin-left: -6px;
+  color: var(--cuarzo-50);
+  mix-blend-mode: difference;   /* se lee sobre la piedra y sobre el papel de cuarzo */
+  border-radius: 999px;
+  transition: transform 160ms var(--ease-salida);
+}
+.v4-marca:active {
+  transform: scale(0.97);
+}
+.v4-marca:focus-visible,
+.v4-menu-boton:focus-visible,
+.v4-menu-item:focus-visible {
+  outline: 1px solid var(--veta-oro);
+  outline-offset: 3px;
+}
+.v4-marca-logo {
+  width: 26px;
+  height: 26px;
+  transition: transform 500ms var(--ease-salida);
+}
+.v4-marca:hover .v4-marca-logo {
+  transform: rotate(-24deg);
+}
+.v4-menu-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  color: var(--cuarzo-50);
+  border-radius: 999px;
+  background: rgba(14, 14, 18, 0.55);
+  border: 1px solid rgba(243, 240, 234, 0.16);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  transition: background-color 200ms ease, transform 160ms var(--ease-salida);
+}
+.v4-menu-boton:hover {
+  background: rgba(40, 40, 46, 0.5);
+}
+.v4-menu-boton:active {
+  transform: scale(0.97);
+}
+.v4-menu-rayas {
+  position: relative;
+  width: 14px;
+  height: 8px;
+}
+.v4-menu-rayas::before,
+.v4-menu-rayas::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: currentColor;
+  transition: transform 260ms var(--ease-salida), top 260ms var(--ease-salida);
+}
+.v4-menu-rayas::before {
+  top: 0;
+}
+.v4-menu-rayas::after {
+  top: 7px;
+}
+.v4-menu-rayas[data-abierto="true"]::before {
+  top: 3.5px;
+  transform: rotate(45deg);
+}
+.v4-menu-rayas[data-abierto="true"]::after {
+  top: 3.5px;
+  transform: rotate(-45deg);
+}
+/* el panel: vidrio esmerilado que cae desde el botón */
+.v4-menu {
+  position: fixed;
+  top: 68px;
+  right: clamp(16px, 4vw, 48px);
+  z-index: 89;
+  width: min(420px, calc(100vw - 32px));
+  padding: 22px;
+  border-radius: 22px;
+  background: rgba(14, 14, 18, 0.66);   /* oscuro de base: se lee igual sobre la piedra y sobre el papel de cuarzo */
+  border: 1px solid rgba(243, 240, 234, 0.14);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+  color: var(--cuarzo-50);
+  transform-origin: top right;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+  visibility: hidden;
+  transition: opacity 220ms var(--ease-salida), transform 260ms var(--ease-salida), visibility 0s linear 260ms;
+}
+.v4-menu[data-abierto="true"] {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  transition: opacity 220ms var(--ease-salida), transform 260ms var(--ease-salida), visibility 0s;
+}
+.v4-menu-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  transition: background-color 200ms ease;
+}
+.v4-menu-item:hover,
+.v4-menu-item[aria-current="page"] {
+  background: rgba(243, 240, 234, 0.07);
+}
+.v4-menu-nombre {
+  font-size: clamp(30px, 3.2vw, 40px);
+  line-height: 1.1;
+}
+.v4-menu-pie {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px 12px 2px;
+  border-top: 1px solid rgba(243, 240, 234, 0.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .v4-menu,
+  .v4-menu[data-abierto="true"] {
     transition: none;
   }
 }

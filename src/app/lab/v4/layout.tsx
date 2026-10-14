@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Marcellus, Manrope } from "next/font/google";
 
+import { Cabecera } from "@/components/lab/v4/Cabecera";
+
 import "./v4.css";
 
 /*
@@ -18,5 +20,10 @@ export const metadata: Metadata = {
 };
 
 export default function V4Layout({ children }: { children: React.ReactNode }) {
-  return <div className={`v4-raiz ${marcellus.variable} ${manrope.variable}`}>{children}</div>;
+  return (
+    <div className={`v4-raiz ${marcellus.variable} ${manrope.variable}`}>
+      <Cabecera />
+      {children}
+    </div>
+  );
 }

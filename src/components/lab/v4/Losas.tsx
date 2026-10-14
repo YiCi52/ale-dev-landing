@@ -53,6 +53,7 @@ export function Losas() {
     if (!el || sinMovimiento()) return;
     const losas = Array.from(el.querySelectorAll<HTMLElement>("[data-losa]"));
     const indice = Array.from(el.querySelectorAll<HTMLElement>("[data-indice]"));
+    const lista = el.querySelector<HTMLElement>(".v4-losas-indice");
     return observarProgreso(el, (p) => {
       // p recorre las tres losas: cada tercio, la siguiente sube y tapa a la anterior
       const pos = p * (LOSAS.length - 1);
@@ -62,6 +63,7 @@ export function Losas() {
         l.style.filter = `brightness(${(1 - tapada * 0.45).toFixed(3)})`;
       });
       indice.forEach((n, i) => n.toggleAttribute("data-activo", Math.round(pos) === i));
+      lista?.toggleAttribute("data-visible", p > 0 && p < 1);   // el índice solo se ve mientras se recorren las losas
     });
   }, []);
 

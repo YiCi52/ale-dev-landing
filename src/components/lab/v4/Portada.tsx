@@ -10,19 +10,6 @@ const NOMBRE = "CASTILLO";
 export function Portada() {
   return (
     <section aria-labelledby="v4-titulo" className="v4-portada relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 text-center">
-      <header className="v4-cab">
-        <span className="v4-mono" style={{ color: "var(--cuarzo-50)" }}>
-          Castillo Studio
-        </span>
-        <nav aria-label="Secciones" className="flex gap-6">
-          <a className="v4-mono" href="#v4-proyectos" style={{ color: "var(--cuarzo-50)" }}>
-            Proyectos
-          </a>
-          <a className="v4-mono" href="#v4-contacto" style={{ color: "var(--cuarzo-50)" }}>
-            Contacto
-          </a>
-        </nav>
-      </header>
       <ArcoLuz />
       <div className="relative mt-[18svh] flex flex-col items-center">
         <p className="v4-mono v4-entra" style={{ animationDelay: "calc(var(--v4-intro) + 1300ms)" }}>
