@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { AguaGL, type Escena } from "./agua/AguaGL";
 import { PELICULA, cuadroDe, cubrir, eclipseDe, proyectoDe, type Datos } from "./agua/escena";
 import { CacheCuadros } from "./agua/cache";
+import { lienzoCielo } from "./cielo/estrellas";
 import { observarProgreso, pintarCubriendo, precargar, rutasSecuencia, sinMovimiento } from "./scroll";
 
 /*
@@ -113,6 +114,7 @@ export function RioLuna() {
     const texLuna = new Image();
     texLuna.onload = () => agua?.ponerLuna(texLuna);
     texLuna.src = "/lab/v4/luna/luna-nasa-2k.jpg";
+    agua?.ponerEstrellas(lienzoCielo(1024));
     fetch(`${BASE}/datos.json`).then((r) => r.json()).then((d: Datos) => { estado.current.datos = d; }).catch(() => undefined);
     let ultimoCuadro = -1, ultimoProy = -1, vivo = true, visible = false, raf = 0, ultimoPaso = 0;
 
@@ -141,7 +143,13 @@ export function RioLuna() {
     const pedir = () => { if (!raf) raf = requestAnimationFrame(tick); };
     const io = new IntersectionObserver(([en]) => { visible = en.isIntersecting; if (visible) pedir(); });
     io.observe(el);
-    const dejarDeObservar = observarProgreso(el, (v) => { estado.current.p = sinMovimiento() ? 1 : v; pedir(); });
+    // la galería se monta una pantalla por debajo de la sección de la luna (margen −200svh): durante esa primera
+    // pantalla queda quieta en su inicio (p = 0) mientras la luna termina de subir y se vuelve transparente encima
+    const dejarDeObservar = observarProgreso(el, (v) => {
+      const largo = el.offsetHeight - window.innerHeight, espera = window.innerHeight;
+      estado.current.p = sinMovimiento() ? 1 : Math.max(0, (v * largo - espera) / Math.max(1, largo - espera));
+      pedir();
+    });
     let previo: [number, number] | null = null;
     const mover = (ev: PointerEvent) => {
       const e = estado.current.escena, r = c.getBoundingClientRect();
@@ -171,7 +179,7 @@ export function RioLuna() {
   };
 
   return (
-    <section id="v4-proyectos" ref={seccion} aria-labelledby="v4-proyectos-titulo" className="relative h-[620vh]">
+    <section id="v4-proyectos" ref={seccion} aria-labelledby="v4-proyectos-titulo" className="relative z-0 -mt-[200svh] h-[720vh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <canvas ref={lienzo} onClick={tocarAgua} className="absolute inset-0 h-full w-full" aria-hidden />
         <h2 id="v4-proyectos-titulo" className="v4-mono absolute left-4 top-24 z-10 sm:left-12">Proyectos</h2>

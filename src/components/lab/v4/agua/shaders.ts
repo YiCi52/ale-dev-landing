@@ -73,6 +73,7 @@ uniform sampler2D uCuadro;
 uniform sampler2D uSim;
 uniform sampler2D uProyecto;
 uniform sampler2D uLuna;
+uniform sampler2D uEstrellas;   // cielo/estrellas.ts: 2,4 × 1 alturas, horizonte abajo
 uniform vec4 uCubre;
 uniform vec2 uMascara;     // y del horizonte y del borde del piso (pantalla)
 uniform vec3 uLunaCielo;   // centro y radio de la luna en el cielo (pantalla; radio en alturas)
@@ -163,6 +164,12 @@ void main() {
   vec2 dc = (pant - uLunaCielo.xy) * vec2(uAspecto, 1.0) / max(uLunaCielo.z, 1e-4);
   float lc = length(dc);
   float cielo = 1.0 - smoothstep(uMascara.x - 0.004, uMascara.x + 0.004, pant.y);
+  // estrellas (las mismas de la sección de la luna): fijas al horizonte, detrás de la luna
+  float sobre = uMascara.x - pant.y;
+  if (sobre > 0.0) {
+    vec2 sc = vec2((pant.x - 0.5) * uAspecto / 2.4 + 0.5, 1.0 - sobre);
+    col += texture(uEstrellas, sc).rgb * cielo * smoothstep(1.0, 1.2, lc);
+  }
   col += (luna(dc, uEclipse) + aura(lc, (1.0 - uEclipse) * (0.8 + uCerca * 0.9)) + anillo(lc, uEclipse)) * cielo;
 
   // reflejo en el agua: misma luna invertida, deformada por las olas, un poco más tenue

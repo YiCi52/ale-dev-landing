@@ -140,7 +140,7 @@ body:has(.v4-raiz) {
   --llamadas: 0;
   --corte: 0;
   --corte-etiquetas: 0;
-  --noche: 0;
+  --cielo: 0;
   --titulo: 0;
   --pista: 1;
   --tinta: #1c1b1e;
@@ -229,9 +229,11 @@ body:has(.v4-raiz) {
   opacity: var(--pista);
   pointer-events: none;
 }
-.v4-luna-noche {
-  background: var(--piedra-950);
-  opacity: var(--noche);
+/* el cielo de noche al que sube la luna: el mismo azul muy oscuro del primer cuadro de la galería */
+.v4-luna-cielo {
+  pointer-events: none;
+  background: linear-gradient(180deg, #04060c 0%, #070a14 40%, #10141f 62%, #171c28 100%);
+  opacity: var(--cielo);
 }
 .v4-luna-texto {
   position: absolute;

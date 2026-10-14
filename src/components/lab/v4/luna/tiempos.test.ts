@@ -17,10 +17,24 @@ describe("estadoDe", () => {
     expect(e.papel).toBe(1);
   });
 
-  it("las llamadas se trazan antes del corte y el corte termina antes del fundido final", () => {
+  it("las llamadas se trazan antes del corte y la luna vuelve después del corte", () => {
     expect(TRAMOS.llamadas[1]).toBeLessThanOrEqual(TRAMOS.corte[0]);
-    expect(TRAMOS.corte[1]).toBeLessThanOrEqual(TRAMOS.noche[0]);
-    expect(estadoDe(1).noche).toBe(1);
+    expect(TRAMOS.corte[1]).toBeLessThanOrEqual(TRAMOS.vuelve[0]);
+    const e = estadoDe(TRAMOS.vuelve[1]);
+    expect(e.plano).toBe(0);
+    expect(e.papel).toBe(0);
+    expect(e.alinear).toBe(1);
+  });
+
+  it("termina exactamente en la luna de la galería, con el cielo encendido, y se vuelve transparente", () => {
+    const destino: [number, number, number] = [0.5, 0.2, 0.09];
+    const e = estadoDe(1, 16 / 9, destino);
+    expect(e.x).toBeCloseTo(0.5);
+    expect(e.y).toBeCloseTo(0.2);
+    expect(e.radio).toBeCloseTo(0.09);
+    expect(e.cielo).toBe(1);
+    expect(e.revelar).toBe(1);
+    expect(TRAMOS.cielo[1]).toBeLessThanOrEqual(TRAMOS.revelar[0]);
   });
 
   it("en celular la luna nunca es más ancha que la pantalla", () => {

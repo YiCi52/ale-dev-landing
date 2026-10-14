@@ -57,6 +57,7 @@ export class AguaGL {
   private cuadro: WebGLTexture;
   private proyecto: WebGLTexture;
   private luna: WebGLTexture;
+  private estrellas: WebGLTexture;
   private proyAspecto = 1.5;
   private pGota: Programa;
   private pPaso: Programa;
@@ -76,6 +77,7 @@ export class AguaGL {
     this.cuadro = textura(gl, gl.LINEAR);
     this.proyecto = textura(gl, gl.LINEAR);
     this.luna = textura(gl, gl.LINEAR);
+    this.estrellas = textura(gl, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
     this.sim = [this.objetivo(), this.objetivo()];
   }
@@ -126,6 +128,14 @@ export class AguaGL {
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.cuadro);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  }
+
+  /** El cielo de estrellas (cielo/estrellas.ts → lienzoCielo): 2,4 × 1 alturas, horizonte abajo. */
+  ponerEstrellas(lienzo: HTMLCanvasElement): void {
+    if (this.muerto) return;
+    const gl = this.gl;
+    gl.bindTexture(gl.TEXTURE_2D, this.estrellas);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lienzo);
   }
 
   ponerLuna(img: HTMLImageElement): void {
@@ -189,6 +199,7 @@ export class AguaGL {
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.cuadro); gl.uniform1i(p.u("uCuadro"), 1);
       gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.proyecto); gl.uniform1i(p.u("uProyecto"), 2);
       gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, this.luna); gl.uniform1i(p.u("uLuna"), 3);
+      gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, this.estrellas); gl.uniform1i(p.u("uEstrellas"), 4);
       this.conSim(p);
       gl.uniform4f(p.u("uCubre"), ...e.cubre);
       gl.uniform2f(p.u("uMascara"), ...e.mascara);
@@ -214,7 +225,7 @@ export class AguaGL {
   destruir(): void {
     this.muerto = true;
     const gl = this.gl;
-    [this.cuadro, this.proyecto, this.luna, ...this.sim.map((o) => o.tex)].forEach((t) => gl.deleteTexture(t));
+    [this.cuadro, this.proyecto, this.luna, this.estrellas, ...this.sim.map((o) => o.tex)].forEach((t) => gl.deleteTexture(t));
     this.sim.forEach((o) => gl.deleteFramebuffer(o.fb));
     [this.pGota, this.pPaso, this.pFinal].forEach((p) => gl.deleteProgram(p.prog));
   }
