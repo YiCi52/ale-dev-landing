@@ -1,10 +1,15 @@
+import { ArcoLuz } from "./ArcoLuz";
+
 /*
-  Portada sobria (referencia: Zentro / StringTune): piedra negra de fondo,
-  el nombre gigante en Marcellus y una línea que dice qué se hace y para quién.
+  Hero v4 — "el arco de luz" (plantilla 165-5, elegida por Alejo el 14-oct): piedra negra
+  de base, una línea de luz como el halo del eclipse que anuncia la galería, y el nombre
+  abierto en Marcellus. Las letras suben una a una cuando el arco termina de dibujarse.
 */
+const NOMBRE = "CASTILLO";
+
 export function Portada() {
   return (
-    <section aria-labelledby="v4-titulo" className="v4-piedra relative flex min-h-[100svh] flex-col justify-end overflow-hidden px-4 pb-10 sm:px-12">
+    <section aria-labelledby="v4-titulo" className="v4-portada relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 text-center">
       <header className="v4-cab">
         <span className="v4-mono" style={{ color: "var(--cuarzo-50)" }}>
           Castillo Studio
@@ -18,15 +23,29 @@ export function Portada() {
           </a>
         </nav>
       </header>
-      <p className="v4-mono mb-6 max-w-[34ch]">Para estudios de arquitectura e interiorismo</p>
-      <h1 id="v4-titulo" className="v4-display text-[clamp(56px,17vw,260px)] leading-[0.82] tracking-[-0.01em]">
-        CASTILLO
-      </h1>
-      <div className="mt-8 flex flex-col gap-6 border-t pt-6 sm:flex-row sm:items-end sm:justify-between" style={{ borderColor: "var(--linea)" }}>
-        <p className="max-w-[46ch] text-lg leading-relaxed" style={{ color: "var(--cuarzo-200)" }}>
-          Sitios donde el proyecto se recorre, y cada consulta llega registrada a tu correo.
+      <ArcoLuz />
+      <div className="relative mt-[18svh] flex flex-col items-center">
+        <p className="v4-mono v4-entra" style={{ animationDelay: "1500ms" }}>
+          Estudio web para arquitectura e interiorismo
         </p>
-        <span className="v4-mono">Baja ↓</span>
+        <h1 id="v4-titulo" aria-label={NOMBRE} className="v4-display v4-nombre mt-6">
+          {NOMBRE.split("").map((letra, i) => (
+            <span key={i} aria-hidden className="v4-letra" style={{ animationDelay: `${1150 + i * 70}ms` }}>
+              {letra}
+            </span>
+          ))}
+        </h1>
+        <p className="v4-entra mt-8 max-w-[44ch] text-balance text-lg leading-relaxed" style={{ color: "var(--cuarzo-200)", animationDelay: "1800ms" }}>
+          Sitios donde tu obra se recorre, y cada consulta llega a tu correo.
+        </p>
+        <div className="v4-entra mt-10 flex flex-wrap justify-center gap-3" style={{ animationDelay: "1950ms" }}>
+          <a href="#v4-contacto" className="v4-boton v4-boton-lleno">
+            Agendar 15 minutos
+          </a>
+          <a href="#v4-proyectos" className="v4-boton">
+            Ver proyectos
+          </a>
+        </div>
       </div>
     </section>
   );
