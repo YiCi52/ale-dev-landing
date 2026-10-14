@@ -100,7 +100,7 @@ export function LunaPlano() {
         {/* el texto real para lectores de pantalla y para movimiento reducido */}
         <div className="v4-luna-texto">
           <ul>{RASGOS.map((r) => <li key={r.nombre}>{r.nombre}</li>)}</ul>
-          <ol>{ESTRATOS.map((e) => <li key={e.nombre}>{e.nombre}: {e.detalle}</li>)}</ol>
+          <ol>{ESTRATOS.map((e) => <li key={e.nombre}>{e.nombre}: {e.capas.join(", ")}</li>)}</ol>
         </div>
         <div className="v4-luna-noche pointer-events-none absolute inset-0" aria-hidden />
       </div>

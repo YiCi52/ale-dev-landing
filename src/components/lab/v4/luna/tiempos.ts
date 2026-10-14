@@ -28,13 +28,16 @@ export const RASGOS = [
   { nombre: "Cráter Tycho", lat: -43.31, lon: -11.36 },
 ] as const;
 
-/** Estratos del corte: de la superficie hacia adentro, cada uno con su material de trama. */
+/**
+ * Estratos del corte: de la superficie hacia adentro. Son las 14 capas de producción agrupadas en 5 (Alejo, 14-oct:
+ * catorce etiquetas en un corte no se leen). `capas` suma exactamente las 14.
+ */
 export const ESTRATOS = [
-  { nombre: "Diseño a la medida", detalle: "la superficie que ve tu cliente", material: "cuarzo" },
-  { nombre: "Recorrido de cada proyecto", detalle: "la obra se camina, no solo se mira", material: "nogal" },
-  { nombre: "Formulario que filtra", detalle: "base de datos propia, permisos cerrados", material: "piedra" },
-  { nombre: "Aviso a tu correo", detalle: "cada consulta, ese mismo minuto", material: "nogal" },
-  { nombre: "Respaldo y seguridad", detalle: "copia semanal, cabeceras, freno al spam", material: "piedra" },
+  { nombre: "Lo que ve tu cliente", capas: ["Diseño a la medida", "Carga inmediata", "Lista para buscadores"], material: "cuarzo" },
+  { nombre: "Lo que captura", capas: ["Formulario que filtra", "Base de datos propia", "Freno al spam"], material: "nogal" },
+  { nombre: "Lo que te avisa", capas: ["Aviso si algo falla"], material: "cuarzo" },
+  { nombre: "Lo que lo sostiene", capas: ["Servidor sin mantenimiento", "Crece con las visitas", "Aguanta los picos", "Publicación automática"], material: "piedra" },
+  { nombre: "Lo que lo protege", capas: ["Permisos cerrados", "Cabeceras de seguridad", "Respaldo semanal"], material: "nogal" },
 ] as const;
 
 export function tramo(p: number, [a, b]: Tramo): number {
@@ -75,8 +78,8 @@ export function estadoDe(p: number, aspecto = 16 / 9): EstadoLuna {
     // en pantalla ancha la luna se corre a la derecha para dejar lugar al título y a la lista del corte
     // en celular la luna baja para dejar arriba el título y abajo la lista del corte
     x: angosto ? 0.5 : 0.56,
-    y: angosto ? 0.5 : 0.5,
-    radio: angosto ? 0.4 * aspecto : Math.min(0.36, 0.44 * aspecto),
+    y: angosto ? 0.44 : 0.5,
+    radio: angosto ? 0.34 * aspecto : Math.min(0.36, 0.44 * aspecto),
   };
 }
 

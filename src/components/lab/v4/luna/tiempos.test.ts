@@ -45,8 +45,11 @@ describe("enDisco", () => {
 });
 
 describe("contenido", () => {
-  it("cinco estratos con material de trama conocido", () => {
+  it("cinco estratos que suman exactamente las 14 capas, sin repetir", () => {
     expect(ESTRATOS).toHaveLength(5);
+    const todas = ESTRATOS.flatMap((e) => [...e.capas]);
+    expect(todas).toHaveLength(14);
+    expect(new Set(todas).size).toBe(14);
     for (const e of ESTRATOS) expect(["piedra", "nogal", "cuarzo"]).toContain(e.material);
   });
 });

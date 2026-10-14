@@ -178,24 +178,35 @@ body:has(.v4-raiz) {
 }
 .v4-plano-nombre {
   font-family: var(--font-manrope), system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 500;
   fill: var(--tinta);
 }
 .v4-plano-coord {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  fill: #6d6a63;
+  fill: #5e5b55;
 }
 .v4-corte-cuerda {
   stroke-dashoffset: calc(1 - min(1, var(--corte) * 3));
 }
-/* la tapa cortada baja un poco, como un despiece, mientras aparecen los estratos de arriba abajo */
+/* el corte es parte del mismo dibujo: nada se despega; los estratos aparecen de la cuerda hacia abajo */
 .v4-corte-tapa {
-  transform: translateY(calc(var(--corte) * 16px));
   opacity: min(1, calc(var(--corte) * 4));
+}
+.v4-corte-material {
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+.v4-trama {
+  fill: none;
+  stroke: var(--tinta);
+  stroke-width: 0.55;
+}
+.v4-trama-punto {
+  fill: var(--tinta);
 }
 .v4-corte-cortina {
   transform-box: fill-box;
@@ -204,11 +215,12 @@ body:has(.v4-raiz) {
 }
 .v4-corte-estrato {
   stroke: var(--tinta);
-  stroke-width: 0.6;
+  stroke-width: 0.7;
 }
 .v4-corte-nucleo {
-  fill: var(--piedra-950);
-  opacity: 0.92;
+  fill: url(#rayado-piedra);
+  stroke: var(--tinta);
+  stroke-width: 0.7;
 }
 .v4-luna-titulo {
   opacity: var(--titulo);
