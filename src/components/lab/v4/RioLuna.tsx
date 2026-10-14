@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { AguaGL, type Escena } from "./agua/AguaGL";
-import { cuadroDe, cubrir, luzDe, proyectoDe, type Datos } from "./agua/escena";
+import { cuadroDe, cubrir, eclipseDe, proyectoDe, type Datos } from "./agua/escena";
 import { observarProgreso, pintarCubriendo, precargar, rutasSecuencia, sinMovimiento } from "./scroll";
 
 /*
@@ -14,14 +14,18 @@ import { observarProgreso, pintarCubriendo, precargar, rutasSecuencia, sinMovimi
   "como azúcar en agua" con el scroll. El cursor mueve el agua (no el piso).
   Cuadros pre-renderizados en Blender (scripts/v4/rio_luna.py) + WebGL propio.
 */
-const N = 130;
+const N = 74;
 const BASE = "/lab/v4/rio";
 const PROYECTOS = [
   { id: "mh", nombre: "MH Interior", tipo: "Sitio de cliente · 2026", href: "/trabajo/mh-interior", img: "/lab/v4/proyectos/mh-sala.webp" },
   { id: "villa", nombre: "Villa Savoye", tipo: "Lab · casas icónicas Nº 1", href: "/lab/villa-savoye", img: "/lab/v4/proyectos/villa-salon.webp" },
 ] as const;
 
-type Estado = { p: number; datos: Datos | null; escena: Escena | null; cursor: [number, number] | null; cerca: number };
+type Estado = {
+  p: number; datos: Datos | null; escena: Escena | null; cursor: [number, number] | null; cerca: number;
+  /** desplazamiento suavizado de la luna hacia el cursor */
+  sigue: [number, number];
+};
 
 function entrarPorElAgua(x: number, y: number, img: string, destino: string) {
   if (sinMovimiento()) return window.location.assign(destino);
@@ -41,19 +45,28 @@ function entrarPorElAgua(x: number, y: number, img: string, destino: string) {
   window.setTimeout(() => window.location.assign(destino), 950);
 }
 
-/** Escena del cuadro actual en coordenadas de pantalla (máscara del agua, disco del eclipse, luna del cielo). */
+/** Escena del cuadro actual en coordenadas de pantalla (máscara del agua, luna del cielo, su reflejo). */
 function calcularEscena(c: HTMLCanvasElement, img: HTMLImageElement, f: number, s: Estado, visible: number): Escena {
   const d = s.datos?.[f];
-  const t = cubrir(c.clientWidth, c.clientHeight, img.naturalWidth || 1280, img.naturalHeight || 720);
-  const [cx, cy] = d ? t.aPantalla(d.reflejo[0], d.reflejo[1]) : [0.5, 0.5];
-  const horizonte = d ? t.aPantalla(0, d.horizonte)[1] : 0;
-  const piso = d ? t.aPantalla(0, d.piso)[1] : 1;
-  const [lx, ly] = d?.luna ? t.aPantalla(d.luna[0], d.luna[1]) : [-1, -1];
-  const lr = d?.luna_radio ? t.alto(d.luna_radio) : 0;
-  // cercanía del cursor a la luna, suavizada para que el resplandor crezca y se apague sin saltos
-  const dist = s.cursor && lr ? Math.hypot((s.cursor[0] - lx) * (c.clientWidth / c.clientHeight), s.cursor[1] - ly) : 9;
-  s.cerca += (Math.max(0, 1 - dist / (lr * 3)) - s.cerca) * 0.12;
-  return { cubre: t.uniforme, mascara: [horizonte, piso], disco: [cx, cy, d ? t.alto(d.radio) : 0.2], visible, luz: luzDe(f), lunaCielo: [lx, ly, lr, s.cerca] };
+  const asp = c.clientWidth / c.clientHeight;
+  const t = cubrir(c.clientWidth, c.clientHeight, img.naturalWidth || 1920, img.naturalHeight || 1080);
+  const [rx, ry] = d ? t.aPantalla(d.reflejo[0], d.reflejo[1]) : [0.5, 0.5];
+  const [lx, ly] = d?.luna ? t.aPantalla(d.luna[0], d.luna[1]) : [0.5, -1];
+  const lr = d?.luna_radio ? t.alto(d.luna_radio) : 0.1;
+  // la luna sigue un poco al cursor (suavizado); el reflejo se mueve igual en x y al revés en y
+  const objetivo: [number, number] = s.cursor ? [(s.cursor[0] - lx) * 0.07, (s.cursor[1] - ly) * 0.05] : [0, 0];
+  s.sigue = [s.sigue[0] + (objetivo[0] - s.sigue[0]) * 0.06, s.sigue[1] + (objetivo[1] - s.sigue[1]) * 0.06];
+  const dist = s.cursor ? Math.hypot((s.cursor[0] - lx) * asp, s.cursor[1] - ly) : 9;
+  s.cerca += (Math.max(0, 1 - dist / (lr * 3)) - s.cerca) * 0.08;
+  return {
+    cubre: t.uniforme,
+    mascara: [d ? t.aPantalla(0, d.horizonte)[1] : 0, d ? t.aPantalla(0, d.piso)[1] : 1],
+    lunaCielo: [lx + s.sigue[0], ly + s.sigue[1], lr],
+    disco: [rx + s.sigue[0], ry - s.sigue[1], d ? t.alto(d.radio) : 0.2],
+    eclipse: eclipseDe(s.p),
+    cerca: s.cerca,
+    visible,
+  };
 }
 
 function pintarEtiqueta(el: HTMLElement | null, e: Escena, indice: number, c: HTMLCanvasElement) {
@@ -74,7 +87,7 @@ export function RioLuna() {
   const seccion = useRef<HTMLElement>(null);
   const lienzo = useRef<HTMLCanvasElement>(null);
   const etiqueta = useRef<HTMLDivElement>(null);
-  const estado = useRef<Estado>({ p: sinMovimiento() ? 1 : 0, datos: null, escena: null, cursor: null, cerca: 0 });
+  const estado = useRef<Estado>({ p: sinMovimiento() ? 1 : 0, datos: null, escena: null, cursor: null, cerca: 0, sigue: [0, 0] });
 
   useEffect(() => {
     const el = seccion.current, c = lienzo.current;
@@ -82,6 +95,9 @@ export function RioLuna() {
     const agua = sinMovimiento() ? null : AguaGL.crear(c);
     const cuadros = precargar(rutasSecuencia(BASE, "rio", N), () => undefined);
     const fotos = PROYECTOS.map((pr) => { const i = new Image(); i.src = pr.img; return i; });
+    const texLuna = new Image();
+    texLuna.onload = () => agua?.ponerLuna(texLuna);
+    texLuna.src = "/lab/v4/luna/luna-nasa-2k.jpg";
     fetch(`${BASE}/datos.json`).then((r) => r.json()).then((d: Datos) => { estado.current.datos = d; }).catch(() => undefined);
     let ultimoCuadro = -1, ultimoProy = -1, vivo = true, visible = false, raf = 0;
 
@@ -97,7 +113,7 @@ export function RioLuna() {
         agua.ajustar();
         if (f !== ultimoCuadro) { agua.ponerCuadro(img); ultimoCuadro = f; }
         if (indice !== ultimoProy && fotos[indice].complete) { agua.ponerProyecto(fotos[indice]); ultimoProy = indice; }
-        agua.paso(); agua.paso(); agua.dibujar(e);
+        agua.paso(); agua.dibujar(e);   // un paso por cuadro: ondas al ritmo del agua real
       } else pintarCubriendo(c, img);
       pintarEtiqueta(etiqueta.current, e, indice, c);
       if (vivo && visible && agua) raf = requestAnimationFrame(tick);
@@ -115,7 +131,7 @@ export function RioLuna() {
       if (y <= e.mascara[0] + 0.02 || y >= e.mascara[1] - 0.01) { previo = null; return; }   // el piso y el cielo no se mojan
       const dist = previo ? Math.hypot(x - previo[0], y - previo[1]) : 1;
       if (dist < 0.004) return;
-      agua.gota(x, y, 0.025, Math.min(0.12, 0.025 + dist * 2.5));
+      agua.gota(x, y, 0.035, Math.min(0.07, 0.012 + dist * 1.6));
       previo = [x, y];
       pedir();
     };

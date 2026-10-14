@@ -28,7 +28,7 @@ function lineas(ctx: CanvasRenderingContext2D, texto: string, maximo: number): s
 
 /** Bloques de una frase centrada en (ancho/2, centroY), en px CSS. */
 export function bloquesDeFrase(texto: string, ancho: number, centroY: number, fuente: string, lado: number): Bloque[] {
-  const tam = Math.round(Math.min(56, Math.max(26, ancho * 0.036)));
+  const tam = Math.round(Math.min(56, Math.max(28, ancho * 0.036)));
   const lienzo = document.createElement("canvas");
   lienzo.width = ancho;
   lienzo.height = tam * 4;

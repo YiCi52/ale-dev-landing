@@ -73,7 +73,7 @@ export class MotorLuna {
   }
 
   /** Arma el polvo: un grano por cada punto del texto, que sale de la cara visible de la luna. */
-  ponerTexto(puntos: Punto[], ancho: number, alto: number): void {
+  ponerTexto(puntos: Punto[], ancho: number, alto: number, paso: number): void {
     if (this.polvo) { this.escena.remove(this.polvo); this.polvo.geometry.dispose(); this.polvo.material.dispose(); }
     const n = puntos.length;
     const inicio = new Float32Array(n * 3), destino = new Float32Array(n * 3), azar = new Float32Array(n * 4), tinta = new Float32Array(n * 3);
@@ -96,7 +96,7 @@ export class MotorLuna {
     const m = new THREE.ShaderMaterial({
       glslVersion: THREE.GLSL3, transparent: true, depthWrite: false, depthTest: false, premultipliedAlpha: true,
       vertexShader: POLVO_VERTICE, fragmentShader: POLVO_FRAGMENTO,
-      uniforms: { uMapa: { value: this.mapa }, uRotInv: { value: new THREE.Matrix3() }, uCentro: { value: new THREE.Vector3() }, uRadio: { value: 1 }, uPolvo: { value: 0 }, uTiempo: { value: 0 }, uTam: { value: 2.4 * dpr } },
+      uniforms: { uMapa: { value: this.mapa }, uRotInv: { value: new THREE.Matrix3() }, uCentro: { value: new THREE.Vector3() }, uRadio: { value: 1 }, uPolvo: { value: 0 }, uTiempo: { value: 0 }, uTam: { value: (paso * 0.9 + 0.6) * dpr } },
     });
     this.polvo = new THREE.Points(g, m);
     this.polvo.frustumCulled = false;

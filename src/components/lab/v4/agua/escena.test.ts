@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { PELICULA, cuadroDe, cubrir, luzDe, proyectoDe } from "./escena";
+import { FIN_ECLIPSE, PELICULA, cuadroDe, cubrir, eclipseDe, proyectoDe } from "./escena";
 
 describe("cuadroDe", () => {
   it("recorre la película en la primera parte del scroll y se queda en el último cuadro", () => {
-    expect(cuadroDe(0, 130)).toBe(1);
-    expect(cuadroDe(PELICULA, 130)).toBe(130);
-    expect(cuadroDe(0.9, 130)).toBe(130);
+    expect(cuadroDe(0, 74)).toBe(1);
+    expect(cuadroDe(PELICULA, 74)).toBe(74);
+    expect(cuadroDe(0.9, 74)).toBe(74);
   });
 });
 
@@ -16,10 +16,10 @@ describe("proyectoDe", () => {
   });
 
   it("muestra uno a la vez: aparece, se queda y se disuelve antes del siguiente", () => {
-    const tramo = (1 - PELICULA) / 2;
-    expect(proyectoDe(PELICULA + tramo * 0.5, 2)).toEqual({ indice: 0, visible: 1 });
-    expect(proyectoDe(PELICULA + tramo * 0.95, 2).visible).toBeLessThan(0.3);
-    expect(proyectoDe(PELICULA + tramo * 1.5, 2).indice).toBe(1);
+    const tramo = (1 - FIN_ECLIPSE) / 2;
+    expect(proyectoDe(FIN_ECLIPSE + tramo * 0.5, 2)).toEqual({ indice: 0, visible: 1 });
+    expect(proyectoDe(FIN_ECLIPSE + tramo * 0.95, 2).visible).toBeLessThan(0.3);
+    expect(proyectoDe(FIN_ECLIPSE + tramo * 1.5, 2).indice).toBe(1);
   });
 
   it("el último proyecto no se disuelve al final", () => {
@@ -40,10 +40,10 @@ describe("cubrir", () => {
   });
 });
 
-describe("luzDe", () => {
-  it("la luna brilla llena hasta el eclipse y se apaga al cerrarse", () => {
-    expect(luzDe(1)).toBe(1);
-    expect(luzDe(92)).toBeCloseTo(0.5);
-    expect(luzDe(120)).toBe(0);
+describe("eclipseDe", () => {
+  it("la luna está llena durante la película y se eclipsa mientras se mira el agua", () => {
+    expect(eclipseDe(0.2)).toBe(0);
+    expect(eclipseDe((PELICULA + FIN_ECLIPSE) / 2)).toBeCloseTo(0.5);
+    expect(eclipseDe(0.8)).toBe(1);
   });
 });

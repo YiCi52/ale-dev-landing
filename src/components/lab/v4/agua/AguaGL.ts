@@ -10,12 +10,13 @@ import { FINAL, GOTA, PASO, VERTICE } from "./shaders";
 export type Escena = {
   cubre: [number, number, number, number];
   mascara: [number, number];
+  /** reflejo de la luna en el agua: x, y, radio (pantalla) */
   disco: [number, number, number];
+  /** luna en el cielo: x, y, radio (pantalla) */
+  lunaCielo: [number, number, number];
+  eclipse: number;
+  cerca: number;
   visible: number;
-  /** brillo de la luna 0-1 (camino de luz) */
-  luz: number;
-  /** luna del cielo: x, y, radio en pantalla y cercanía del cursor 0-1 */
-  lunaCielo: [number, number, number, number];
 };
 
 type Programa = { prog: WebGLProgram; u: (n: string) => WebGLUniformLocation | null };
@@ -53,6 +54,7 @@ export class AguaGL {
   private sim: [Objetivo, Objetivo];
   private cuadro: WebGLTexture;
   private proyecto: WebGLTexture;
+  private luna: WebGLTexture;
   private proyAspecto = 1.5;
   private pGota: Programa;
   private pPaso: Programa;
@@ -71,6 +73,8 @@ export class AguaGL {
     this.pFinal = compilar(gl, FINAL);
     this.cuadro = textura(gl, gl.LINEAR);
     this.proyecto = textura(gl, gl.LINEAR);
+    this.luna = textura(gl, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
     this.sim = [this.objetivo(), this.objetivo()];
   }
 
@@ -113,6 +117,12 @@ export class AguaGL {
   ponerCuadro(img: HTMLImageElement): void {
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.cuadro);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  }
+
+  ponerLuna(img: HTMLImageElement): void {
+    const gl = this.gl;
+    gl.bindTexture(gl.TEXTURE_2D, this.luna);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
   }
 
@@ -165,6 +175,7 @@ export class AguaGL {
     this.pasada(this.pFinal, null, (p) => {
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.cuadro); gl.uniform1i(p.u("uCuadro"), 1);
       gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.proyecto); gl.uniform1i(p.u("uProyecto"), 2);
+      gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, this.luna); gl.uniform1i(p.u("uLuna"), 3);
       this.conSim(p);
       gl.uniform4f(p.u("uCubre"), ...e.cubre);
       gl.uniform2f(p.u("uMascara"), ...e.mascara);
@@ -174,8 +185,9 @@ export class AguaGL {
       gl.uniform1f(p.u("uProyAspecto"), this.proyAspecto);
       gl.uniform2f(p.u("uDelta"), 1 / this.ancho, 1 / this.alto);
       gl.uniform1f(p.u("uTiempo"), performance.now() / 1000);
-      gl.uniform1f(p.u("uLuz"), e.luz);
-      gl.uniform4f(p.u("uLunaCielo"), ...e.lunaCielo);
+      gl.uniform3f(p.u("uLunaCielo"), ...e.lunaCielo);
+      gl.uniform1f(p.u("uEclipse"), e.eclipse);
+      gl.uniform1f(p.u("uCerca"), e.cerca);
     });
   }
 
@@ -186,7 +198,7 @@ export class AguaGL {
   */
   destruir(): void {
     const gl = this.gl;
-    [this.cuadro, this.proyecto, ...this.sim.map((o) => o.tex)].forEach((t) => gl.deleteTexture(t));
+    [this.cuadro, this.proyecto, this.luna, ...this.sim.map((o) => o.tex)].forEach((t) => gl.deleteTexture(t));
     this.sim.forEach((o) => gl.deleteFramebuffer(o.fb));
     [this.pGota, this.pPaso, this.pFinal].forEach((p) => gl.deleteProgram(p.prog));
   }

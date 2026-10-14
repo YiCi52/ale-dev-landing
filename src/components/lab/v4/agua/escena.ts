@@ -4,18 +4,22 @@
   pasar coordenadas del cuadro pre-renderizado a coordenadas de pantalla.
 */
 
-/** Parte del scroll que ocupa la película (caminar, bajar la mirada, eclipse). El resto es para los proyectos. */
-export const PELICULA = 0.55;
+/*
+  Reparto del scroll (14-oct): la película de Blender es solo caminar y bajar la mirada; el eclipse y los proyectos
+  ocurren en vivo sobre el agua, con el reflejo quieto y el agua moviéndose sola.
+*/
+export const PELICULA = 0.35;
+export const FIN_ECLIPSE = 0.5;
+
+/** Avance del eclipse 0 (llena) → 1 (eclipsada), mientras se mira el agua. */
+export function eclipseDe(p: number): number {
+  return Math.min(1, Math.max(0, (p - PELICULA) / (FIN_ECLIPSE - PELICULA)));
+}
 
 export type Datos = Record<
   string,
   { reflejo: [number, number]; radio: number; piso: number; horizonte: number; luna?: [number, number]; luna_radio?: number }
 >;
-
-/** Brillo de la luna según el cuadro: llena hasta que empieza el eclipse (cuadro 76) y apagada al cerrarse (108). */
-export function luzDe(cuadro: number): number {
-  return Math.min(1, Math.max(0, (108 - cuadro) / (108 - 76)));
-}
 
 export function cuadroDe(p: number, total: number): number {
   const t = Math.min(1, Math.max(0, p / PELICULA));
@@ -27,8 +31,8 @@ export function cuadroDe(p: number, total: number): number {
  * el último no se disuelve para que la sección termine con algo en el agua.
  */
 export function proyectoDe(p: number, cantidad: number): { indice: number; visible: number } {
-  if (p <= PELICULA || cantidad <= 0) return { indice: 0, visible: 0 };
-  const seg = Math.min(cantidad - 1e-6, ((p - PELICULA) / (1 - PELICULA)) * cantidad);
+  if (p <= FIN_ECLIPSE || cantidad <= 0) return { indice: 0, visible: 0 };
+  const seg = Math.min(cantidad - 1e-6, ((p - FIN_ECLIPSE) / (1 - FIN_ECLIPSE)) * cantidad);
   const indice = Math.floor(seg);
   const s = seg - indice;
   const ultimo = indice === cantidad - 1;

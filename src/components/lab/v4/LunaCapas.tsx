@@ -14,7 +14,6 @@ import { observarProgreso, sinMovimiento } from "./scroll";
 */
 const MAPA = "/lab/v4/luna/luna-nasa-2k.jpg";
 const PRIMER_CUADRO = "/lab/v4/rio/rio-001.webp";
-const LADO = 4;
 // Logo B (creciente fina): círculo de radio 100 menos uno de 91 corrido 24 a la derecha
 const C_LOGO = (() => {
   const R = 100, r = 91, dx = 24, x = (R * R - r * r + dx * dx) / (2 * dx), y = Math.sqrt(R * R - x * x);
@@ -61,6 +60,7 @@ export function LunaCapas() {
     let destino: [number, number, number] = [0.5, 0.12, 0.05];
     let datos: Datos | null = null;
     let frases: Bloque[][] = [];
+    let lado = 4;
     const ctx = c2.getContext("2d");
 
     const medir = () => {
@@ -73,10 +73,12 @@ export function LunaCapas() {
         destino = [...t.aPantalla(d.luna[0], d.luna[1]), t.alto(d.luna_radio)];
       }
       const titulo = familia(el, "--font-marcellus", "serif"), mono = familia(el, "--font-geist-mono", "monospace");
-      frases = FRASES.map((f) => bloquesDeFrase(f, w, h * 0.83, titulo, LADO));
-      const paso = 2;
+      // en celular la letra es chica: píxeles y polvo más finos para que se siga leyendo
+      lado = w < 720 ? 2 : 4;
+      frases = FRASES.map((f) => bloquesDeFrase(f, w, h * 0.83, titulo, lado));
+      const paso = w < 720 ? 1 : 2;
       motor?.medir();
-      motor?.ponerTexto(puntosDeCapas(CAPAS, w, h, { titulo, mono }, paso), w, h);
+      motor?.ponerTexto(puntosDeCapas(CAPAS, w, h, { titulo, mono }, paso), w, h, paso);
     };
 
     const tick = (ahora: number) => {
@@ -91,7 +93,7 @@ export function LunaCapas() {
       if (ctx) {
         ctx.clearRect(0, 0, w, h);
         const f = fraseDe(p);
-        if (f.indice >= 0 && frases[f.indice]) pintarBloques(ctx, frases[f.indice], f.entra, f.sale, LADO, h, "#f3f0ea");
+        if (f.indice >= 0 && frases[f.indice]) pintarBloques(ctx, frases[f.indice], f.entra, f.sale, lado, h, "#f3f0ea");
       }
       const cuadro: Cuadro = { x: e.x, y: e.y, radio: e.radio, solida: e.solida, polvo: e.polvo, tiempo: ahora / 1000 };
       motor?.dibujar(cuadro, dt);
