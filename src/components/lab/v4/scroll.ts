@@ -80,13 +80,3 @@ export function pintarCubriendo(canvas: HTMLCanvasElement, img: HTMLImageElement
   ctx.clearRect(0, 0, w, h);
   ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
 }
-
-/** Convierte una posición normalizada de la imagen (0-1) a coordenadas del canvas mostrado con "cover". */
-export function aPantalla(canvas: HTMLCanvasElement, img: HTMLImageElement | undefined, x: number, y: number): [number, number] {
-  const cw = canvas.clientWidth;
-  const ch = canvas.clientHeight;
-  const iw = img?.naturalWidth || 16;
-  const ih = img?.naturalHeight || 9;
-  const escala = Math.max(cw / iw, ch / ih);
-  return [(cw - iw * escala) / 2 + x * iw * escala, (ch - ih * escala) / 2 + y * ih * escala];
-}
