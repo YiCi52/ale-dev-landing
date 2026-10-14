@@ -1,12 +1,12 @@
 import { Cruce } from "@/components/lab/v4/Cruce";
-import { ObjetoPlano } from "@/components/lab/v4/ObjetoPlano";
+import { LunaCapas } from "@/components/lab/v4/LunaCapas";
 import { Portada } from "@/components/lab/v4/Portada";
 import { RioLuna } from "@/components/lab/v4/RioLuna";
 
 /*
   Prototipo de la página v4 (13-oct-2026), para que Alejo juzgue la ESTRUCTURA:
-  portada sobria → filas que se cruzan con los materiales → muestra que se vuelve
-  plano → galería del río con la luna. Servicios y contacto se rediseñan después
+  portada sobria → filas que se cruzan con los materiales → la luna (14 capas,
+  14-oct, reemplaza la muestra que se volvía plano) → galería del río con la luna. Servicios y contacto se rediseñan después
   con la misma piel; acá solo queda marcado su lugar.
 */
 export default function V4Page() {
@@ -14,7 +14,7 @@ export default function V4Page() {
     <main>
       <Portada />
       <Cruce />
-      <ObjetoPlano />
+      <LunaCapas />
       <RioLuna />
       <section id="v4-contacto" aria-labelledby="v4-cierre" className="v4-piedra flex min-h-[70svh] flex-col justify-center px-4 sm:px-12">
         <p className="v4-mono mb-4">Siguiente fase</p>

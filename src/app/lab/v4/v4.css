@@ -134,3 +134,65 @@ body:has(.v4-raiz) {
     transition: none;
   }
 }
+
+/* ── La luna y las 14 capas (14-oct) ── */
+.v4-luna-logo {
+  transform-origin: 0 0;
+  will-change: transform;
+  pointer-events: none;
+}
+/* el texto real vive para lectores de pantalla; en pantalla lo dibujan los píxeles y el polvo */
+.v4-luna-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .v4-luna {
+    height: auto;
+  }
+  .v4-luna > div {
+    position: relative;
+    height: auto;
+    display: grid;
+    gap: 48px;
+    padding: 120px clamp(16px, 4vw, 48px);
+    background-color: var(--piedra-950) !important;
+  }
+  .v4-luna canvas,
+  .v4-luna img {
+    display: none;
+  }
+  .v4-luna-logo {
+    position: relative !important;
+    width: 140px;
+    height: 140px;
+    color: var(--cuarzo-50);
+  }
+  .v4-luna-logo circle {
+    stroke-dashoffset: 0;
+  }
+  .v4-luna-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    display: grid;
+    gap: 48px;
+  }
+  .v4-luna-frases {
+    display: grid;
+    gap: 12px;
+    font-size: clamp(24px, 3.4vw, 44px);
+    line-height: 1.15;
+  }
+  .v4-luna-capas {
+    columns: 2 280px;
+    line-height: 2;
+  }
+}
