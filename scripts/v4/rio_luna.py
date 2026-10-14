@@ -14,7 +14,8 @@ MUESTRAS = int(ARGS[2]) if len(ARGS) > 2 else 48
 ANCHO = int(ARGS[3]) if len(ARGS) > 3 else 1600
 TEX_LUNA = os.path.expanduser("~/CastilloStudio/assets/nasa-luna/luna-nasa-4k.png")   # NASA SVS CGI Moon Kit (LRO), dominio público
 GIRO_LUNA = float(os.environ.get("GIRO_LUNA", "270"))
-N = 130
+N = int(os.environ.get("N_CUADROS", "74"))   # 14-oct: el resto (agua mirando abajo, eclipse) va EN VIVO en WebGL
+SIN_LUNA = os.environ.get("SIN_LUNA", "1") == "1"
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 esc = bpy.context.scene
@@ -123,16 +124,20 @@ ln.new(tcp.outputs["Object"], mpp.inputs["Vector"]); ln.new(mpp.outputs[0], tp.i
 
 # ── piso de nogal: tablones que corren hacia el agua y terminan en un borde ─────────────────────────────────────────
 m_nogal, nodos, ln = mat("nogal"); b = bsdf_de(nodos)
-b.inputs["Roughness"].default_value = 0.42
-b.inputs["Coat Weight"].default_value = 0.35; b.inputs["Coat Roughness"].default_value = 0.18
-coord = nodos.new("ShaderNodeTexCoord"); mapeo = nodos.new("ShaderNodeMapping"); mapeo.inputs["Scale"].default_value = (40, 1.5, 40)
-veta = nodos.new("ShaderNodeTexWave"); veta.wave_type = "BANDS"; veta.bands_direction = "X"
-veta.inputs["Scale"].default_value = 1.2; veta.inputs["Distortion"].default_value = 9; veta.inputs["Detail"].default_value = 4
+b.inputs["Roughness"].default_value = 0.38; b.inputs["Coat Weight"].default_value = 0.45; b.inputs["Coat Roughness"].default_value = 0.14
+coord = nodos.new("ShaderNodeTexCoord"); mapeo = nodos.new("ShaderNodeMapping"); mapeo.inputs["Scale"].default_value = (30, 1.2, 30)
+veta = nodos.new("ShaderNodeTexWave"); veta.wave_type = "BANDS"; veta.bands_direction = "X"   # vetas a lo largo del tablón (eje Y)
+veta.inputs["Scale"].default_value = 1.0; veta.inputs["Distortion"].default_value = 5.5; veta.inputs["Detail"].default_value = 6
+fig = nodos.new("ShaderNodeTexNoise"); fig.inputs["Scale"].default_value = 4.0; fig.inputs["Detail"].default_value = 5
+mez = nodos.new("ShaderNodeMath"); mez.operation = "MULTIPLY_ADD"; mez.inputs[1].default_value = 0.7
 rampa = nodos.new("ShaderNodeValToRGB")
-rampa.color_ramp.elements[0].color = (0.028, 0.011, 0.005, 1)   # #23140d lineal ≈
-rampa.color_ramp.elements[1].color = (0.085, 0.040, 0.020, 1)    # #40291d lineal ≈
-ln.new(coord.outputs["Object"], mapeo.inputs["Vector"]); ln.new(mapeo.outputs[0], veta.inputs["Vector"])
-ln.new(veta.outputs["Fac"], rampa.inputs["Fac"]); ln.new(rampa.outputs["Color"], b.inputs["Base Color"])
+rampa.color_ramp.elements[0].color = (0.020, 0.008, 0.004, 1); rampa.color_ramp.elements[1].color = (0.11, 0.055, 0.028, 1)
+medio = rampa.color_ramp.elements.new(0.55); medio.color = (0.055, 0.026, 0.013, 1)
+ln.new(coord.outputs["Object"], mapeo.inputs["Vector"]); ln.new(mapeo.outputs[0], veta.inputs["Vector"]); ln.new(mapeo.outputs[0], fig.inputs["Vector"])
+ln.new(veta.outputs["Fac"], mez.inputs[0]); ln.new(fig.outputs["Fac"], mez.inputs[2]); ln.new(mez.outputs[0], rampa.inputs["Fac"])
+ln.new(rampa.outputs["Color"], b.inputs["Base Color"])
+rel = nodos.new("ShaderNodeBump"); rel.inputs["Strength"].default_value = 0.15; rel.inputs["Distance"].default_value = 0.001
+ln.new(veta.outputs["Fac"], rel.inputs["Height"]); ln.new(rel.outputs[0], b.inputs["Normal"])
 Y_BORDE = -2.6; Z_PISO = 1.0
 for i in range(38):
     x = -3.46 + i * 0.187
@@ -140,7 +145,11 @@ for i in range(38):
     t.scale = (0.088, 2.6, 0.03); t.data.materials.append(m_nogal)
     bpy.ops.object.modifier_add(type="BEVEL"); t.modifiers[-1].width = 0.006; t.modifiers[-1].segments = 2
 bpy.ops.mesh.primitive_cube_add(location=(0, Y_BORDE + 0.04, Z_PISO - 0.09)); viga = bpy.context.object
-viga.scale = (3.6, 0.05, 0.09); viga.data.materials.append(m_nogal)
+# la viga corre a lo ancho (eje X): con el material de los tablones la veta quedaba atravesada y se leía como zigzag.
+# copia del nogal con la veta girada para que corra a lo largo de la viga
+m_viga = m_nogal.copy(); m_viga.name = "nogal_viga"
+next(n for n in m_viga.node_tree.nodes if n.type == "MAPPING").inputs["Scale"].default_value = (1.2, 30, 30)
+viga.scale = (3.6, 0.05, 0.09); viga.data.materials.append(m_viga)
 
 # ── luna llena REAL (textura NASA) + eclipse como sombra + halo FINO ────────────────────────────────────────────────
 # 13-oct (Alejo): luna realista y grande; al llegar al borde se baja la mirada y SOLO se ve el agua: la luna llena se
@@ -175,13 +184,15 @@ SOMBRA = corr.inputs[1]
 for f, v in ((1, -R_LUNA * 1.4), (76, -R_LUNA * 1.4), (108, R_LUNA * 1.4)):
     SOMBRA.default_value = v; SOMBRA.keyframe_insert("default_value", frame=f)
 luna.data.materials.append(m_luna)
+luna.hide_render = SIN_LUNA
 # luz cálida desde atrás (la casa a tu espalda): el nogal se lee como nogal
 bpy.ops.object.light_add(type="AREA", location=(0, -14.5, 4.2)); calida = bpy.context.object
-calida.data.energy = 650; calida.data.size = 6; calida.data.color = (1.0, 0.68, 0.42)
+calida.data.energy = 1900; calida.data.size = 7; calida.data.color = (1.0, 0.68, 0.42)
 calida.rotation_euler = (math.radians(62), 0, 0)
 bpy.ops.object.light_add(type="SUN", location=(0, 0, 10)); sol = bpy.context.object
 sol.data.energy = 0.9; sol.data.color = (0.82, 0.86, 1.0); sol.data.angle = math.radians(1.0)
 sol.rotation_euler = (math.radians(90) - ELEV, 0, math.radians(180))
+sol.visible_glossy = False   # sin destello de "sol" en el agua: el reflejo de la luna lo pinta la web
 # halo: plano detrás de la luna, mirando a la cámara; línea fina en el borde + aura corta
 bpy.ops.mesh.primitive_plane_add(size=R_LUNA * 5.2, location=c_luna + dir_luna * 12); halo = bpy.context.object
 halo.rotation_euler = (math.radians(90) + ELEV, 0, 0)   # normal hacia la cámara
@@ -203,6 +214,7 @@ ln.new(grad.outputs["Fac"], rp.inputs["Fac"]); ln.new(rp.outputs["Color"], mx.in
 ln.new(tr.outputs[0], mx.inputs[1]); ln.new(em.outputs[0], mx.inputs[2])
 ln.new(mx.outputs[0], next(n for n in nodos if n.type == "OUTPUT_MATERIAL").inputs[0])
 halo.data.materials.append(m_halo)
+halo.hide_render = SIN_LUNA
 s_h = em.inputs["Strength"]
 for f, v in ((1, 0.18), (80, 0.25), (106, 2.6), (N, 2.8)): s_h.default_value = v; s_h.keyframe_insert("default_value", frame=f)
 fz = next(n for n in m_luna.node_tree.nodes if n.type == "EMISSION").inputs["Strength"]
