@@ -1,75 +1,52 @@
 import { describe, expect, it } from "vitest";
 
-import { CAPAS, FRASES, TRAMOS, estadoDe, fraseDe } from "./tiempos";
-
-const DESTINO: [number, number, number] = [0.5, 0.12, 0.05];
+import { ESTRATOS, RASGOS, TRAMOS, enDisco, estadoDe } from "./tiempos";
 
 describe("estadoDe", () => {
-  it("empieza en blanco con la C sola y sin luna 3D", () => {
-    const e = estadoDe(0, DESTINO);
-    expect(e.noche).toBe(0);
-    expect(e.linea).toBe(0);
-    expect(e.solida).toBe(0);
-    expect(e.polvo).toBe(0);
+  it("empieza de noche con la luna libre y en foto", () => {
+    const e = estadoDe(0);
+    expect(e.papel).toBe(0);
+    expect(e.plano).toBe(0);
+    expect(e.alinear).toBe(0);
   });
 
-  it("al acercarse la luna ocupa ~80% del alto de la pantalla", () => {
-    const e = estadoDe(TRAMOS.acercar[1], DESTINO);
-    expect(e.radio * 2).toBeCloseTo(0.8);
-    expect(e.solida).toBe(1);
+  it("la luna ya está de frente cuando la foto termina de volverse plano", () => {
+    const e = estadoDe(TRAMOS.plano[1]);
+    expect(e.alinear).toBe(1);
+    expect(e.plano).toBe(1);
+    expect(e.papel).toBe(1);
   });
 
-  it("el polvo sale con el viento, se queda escribiendo y vuelve a la luna", () => {
-    expect(estadoDe(TRAMOS.viento[0], DESTINO).polvo).toBe(0);
-    expect(estadoDe(0.82, DESTINO).polvo).toBe(1);
-    expect(estadoDe(TRAMOS.rearme[1], DESTINO).polvo).toBe(0);
+  it("las llamadas se trazan antes del corte y el corte termina antes del fundido final", () => {
+    expect(TRAMOS.llamadas[1]).toBeLessThanOrEqual(TRAMOS.corte[0]);
+    expect(TRAMOS.corte[1]).toBeLessThanOrEqual(TRAMOS.noche[0]);
+    expect(estadoDe(1).noche).toBe(1);
   });
 
-  it("termina exactamente donde está la luna del primer cuadro de la galería", () => {
-    const e = estadoDe(1, DESTINO);
-    expect(e.x).toBeCloseTo(DESTINO[0]);
-    expect(e.y).toBeCloseTo(DESTINO[1]);
-    expect(e.radio).toBeCloseTo(DESTINO[2]);
-    expect(e.galeria).toBe(1);
+  it("en celular la luna nunca es más ancha que la pantalla", () => {
+    const aspecto = 375 / 812;
+    expect(estadoDe(0.5, aspecto).radio * 2).toBeLessThanOrEqual(aspecto);
   });
 });
 
-describe("fraseDe", () => {
-  it("no hay frase antes ni después de su tramo", () => {
-    expect(fraseDe(0.1).indice).toBe(-1);
-    expect(fraseDe(0.7).indice).toBe(-1);
+describe("enDisco", () => {
+  it("el centro de la cara visible es el centro del disco y el este queda a la derecha", () => {
+    expect(enDisco(0, 0)).toEqual([0, -0]);
+    expect(enDisco(0, 30)[0]).toBeCloseTo(0.5);
+    expect(enDisco(30, 0)[1]).toBeCloseTo(-0.5);
   });
 
-  it("recorre las frases en orden, una a la vez", () => {
-    const [a, b] = TRAMOS.frases;
-    const paso = (b - a) / FRASES.length;
-    expect(fraseDe(a + paso * 0.5).indice).toBe(0);
-    expect(fraseDe(a + paso * (FRASES.length - 0.5)).indice).toBe(FRASES.length - 1);
-  });
-
-  it("cada frase entra completa antes de empezar a irse", () => {
-    const [a, b] = TRAMOS.frases;
-    const paso = (b - a) / FRASES.length;
-    const mitad = fraseDe(a + paso * 0.55);
-    expect(mitad.entra).toBe(1);
-    expect(mitad.sale).toBe(0);
+  it("todos los rasgos caen dentro del disco", () => {
+    for (const r of RASGOS) {
+      const [x, y] = enDisco(r.lat, r.lon);
+      expect(Math.hypot(x, y)).toBeLessThan(1);
+    }
   });
 });
 
 describe("contenido", () => {
-  it("son 14 capas y entre 4 y 6 frases", () => {
-    expect(CAPAS).toHaveLength(14);
-    expect(FRASES.length).toBeGreaterThanOrEqual(4);
-    expect(FRASES.length).toBeLessThanOrEqual(6);
-  });
-});
-
-describe("celular", () => {
-  it("la luna nunca es más ancha que la pantalla", () => {
-    const aspecto = 375 / 812;
-    for (const p of [0.3, 0.6, 0.8]) {
-      const e = estadoDe(p, DESTINO, aspecto);
-      expect(e.radio * 2).toBeLessThanOrEqual(aspecto);
-    }
+  it("cinco estratos con material de trama conocido", () => {
+    expect(ESTRATOS).toHaveLength(5);
+    for (const e of ESTRATOS) expect(["piedra", "nogal", "cuarzo"]).toContain(e.material);
   });
 });
