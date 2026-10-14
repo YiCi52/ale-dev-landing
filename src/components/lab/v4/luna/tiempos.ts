@@ -15,10 +15,12 @@ export const TRAMOS = {
   alinear: [0.08, 0.24],
   papel: [0.16, 0.3],
   plano: [0.2, 0.32],
-  llamadas: [0.32, 0.46],
-  corte: [0.46, 0.6],
-  vuelve: [0.62, 0.7],
-  cielo: [0.7, 0.82],
+  llamadas: [0.32, 0.45],
+  corte: [0.45, 0.57],
+  // Alejo (15-oct): las capas se van con la misma animación con la que aparecieron, ANTES de que vuelva la luna
+  retira: [0.58, 0.64],
+  vuelve: [0.64, 0.71],
+  cielo: [0.71, 0.82],
   revelar: [0.85, 0.98],
 } as const satisfies Record<string, Tramo>;
 
@@ -77,7 +79,7 @@ export type EstadoLuna = {
  */
 export function estadoDe(p: number, aspecto = 16 / 9, destino: [number, number, number] = [0.5, 0.19, 0.1]): EstadoLuna {
   const angosto = aspecto < 0.9;
-  const vuelve = suave(tramo(p, TRAMOS.vuelve)), sube = suave(tramo(p, TRAMOS.cielo));
+  const vuelve = suave(tramo(p, TRAMOS.vuelve)), sube = suave(tramo(p, TRAMOS.cielo)), retira = tramo(p, TRAMOS.retira);
   const x0 = angosto ? 0.5 : 0.56, y0 = angosto ? 0.44 : 0.5;
   const r0 = angosto ? 0.34 * aspecto : Math.min(0.36, 0.44 * aspecto);
   // al volver la luna se centra; al subir va al lugar exacto de la luna de la galería
@@ -86,8 +88,8 @@ export function estadoDe(p: number, aspecto = 16 / 9, destino: [number, number, 
     alinear: suave(tramo(p, TRAMOS.alinear)),
     papel: suave(tramo(p, TRAMOS.papel)) * (1 - vuelve),
     plano: suave(tramo(p, TRAMOS.plano)) * (1 - vuelve),
-    llamadas: tramo(p, TRAMOS.llamadas) * (1 - vuelve),
-    corte: suave(tramo(p, TRAMOS.corte)) * (1 - vuelve),
+    llamadas: tramo(p, TRAMOS.llamadas) * (1 - retira),
+    corte: suave(tramo(p, TRAMOS.corte)) * (1 - retira),
     cielo: sube,
     revelar: suave(tramo(p, TRAMOS.revelar)),
     x: xc + (destino[0] - xc) * sube,

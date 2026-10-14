@@ -50,11 +50,11 @@ void main() {
   //  - coeficiente 1.6 (no 2.0): 2.0 es justo el borde de estabilidad del patrón más fino (tablero de ajedrez);
   //  - un poquito de suavizado hacia el promedio, que apaga ese patrón sin tocar las ondas grandes;
   //  - tope a la altura y la velocidad, y cero si llega un valor inválido.
-  // La lentitud que pidió Alejo sale de dar menos pasos por segundo (RioLuna: uno cada ~33 ms).
+  // Ritmo: un paso por cuadro de pantalla (RioLuna); el coeficiente 1.6 las deja apenas más lentas que el original.
   info.g += (promedio - info.r) * 1.6;
-  info.g *= 0.993;
+  info.g *= 0.985;                                   // 15-oct: vida corta (se ven y se van)
   info.r += info.g;
-  info.r = mix(info.r, promedio, 0.015) * 0.996;
+  info.r = mix(info.r, promedio, 0.015) * 0.992;
   info.rg = clamp(info.rg, vec2(-0.3), vec2(0.3));
   if (isnan(info.r) || isnan(info.g)) info.rg = vec2(0.0);
   color = info;

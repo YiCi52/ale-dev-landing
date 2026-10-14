@@ -198,7 +198,16 @@ body:has(.v4-raiz) {
 }
 .v4-corte-material {
   mix-blend-mode: multiply;
-  opacity: 0.55;
+}
+/* tono plano de cada material bajo la trama en tinta (las fotos en patrón se desfasaban entre bandas) */
+.v4-tinte-piedra {
+  fill: #6b6a6e;
+}
+.v4-tinte-nogal {
+  fill: #8a6a52;
+}
+.v4-tinte-cuarzo {
+  fill: #e6e0d4;
 }
 .v4-trama {
   fill: none;

@@ -143,9 +143,10 @@ export function RioLuna() {
         if (sig !== ultimoSiguiente && imgSig?.complete) { agua.ponerCuadro(cache?.listo(sig) ?? imgSig, 1); ultimoSiguiente = sig; }
         agua.ponerMezcla(sig === ultimoSiguiente ? exacto - f : 0);
         if (indice !== ultimoProy && fotos[indice].complete) { agua.ponerProyecto(fotos[indice]); ultimoProy = indice; }
-        // ondas a ritmo de agua real (Alejo, 13 y 14-oct: iban muy rápido): ~20 pasos por segundo, no uno por cuadro
+        // ondas del cursor (Alejo, 15-oct): rápidas como al principio, apenas más lentas, y de vida corta: muy visibles
+        // pero no molestan. Un paso por cuadro de pantalla (tope ~60 por segundo).
         const ahora = performance.now();
-        if (ahora - ultimoPaso >= 50) { agua.paso(); ultimoPaso = ahora; }
+        if (ahora - ultimoPaso >= 15) { agua.paso(); ultimoPaso = ahora; }
         agua.dibujar(e);
       } else pintarCubriendo(c, img);
       pintarEtiqueta(etiqueta.current, e, indice, c);

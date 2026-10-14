@@ -35,11 +35,6 @@ export function PlanoSvg({ w, h, cx, cy, r, angosto }: Props) {
   return (
     <svg className="v4-plano-svg absolute inset-0 h-full w-full" viewBox={`0 0 ${w} ${h}`} aria-hidden>
       <defs>
-        {["piedra", "nogal", "cuarzo"].map((m) => (
-          <pattern key={m} id={`trama-${m}`} patternUnits="userSpaceOnUse" width={m === "nogal" ? 350 : 225} height={m === "nogal" ? 350 : 450}>
-            <image href={`/lab/v4/materiales/trama-${m}.webp`} width={m === "nogal" ? 350 : 225} height={m === "nogal" ? 350 : 450} preserveAspectRatio="xMidYMid slice" />
-          </pattern>
-        ))}
         {/* tramas de corte en tinta, como en un plano de arquitectura: piedra a 45°, nogal en veta, cuarzo punteado */}
         <pattern id="rayado-piedra" patternUnits="userSpaceOnUse" width={7} height={7} patternTransform="rotate(45)">
           <line x1={0} y1={0} x2={0} y2={7} className="v4-trama" />
@@ -77,7 +72,7 @@ export function PlanoSvg({ w, h, cx, cy, r, angosto }: Props) {
       <g className="v4-corte-tapa" clipPath="url(#v4-corte-baja)">
         {ESTRATOS.map((e, i) => (
           <g key={e.nombre}>
-            <path d={banda(cx, cy, r * (1 - i * GROSOR), r * (1 - (i + 1) * GROSOR), yc)} fill={`url(#trama-${e.material})`} className="v4-corte-material" />
+            <path d={banda(cx, cy, r * (1 - i * GROSOR), r * (1 - (i + 1) * GROSOR), yc)} className={`v4-corte-material v4-tinte-${e.material}`} />
             <path d={banda(cx, cy, r * (1 - i * GROSOR), r * (1 - (i + 1) * GROSOR), yc)} fill={`url(#rayado-${e.material})`} className="v4-corte-estrato" />
           </g>
         ))}
@@ -87,16 +82,20 @@ export function PlanoSvg({ w, h, cx, cy, r, angosto }: Props) {
         ))}
       </g>
       {ESTRATOS.map((e, i) => {
-        // en celular cada etiqueta ocupa lo que miden sus renglones (si no, las de 2 y 3 renglones se montan)
+        // Alejo (15-oct): las líneas se cruzaban y los textos se montaban. En pantalla ancha las etiquetas van en una
+        // fila DEBAJO de la luna, en el mismo orden (izquierda → derecha) que los estratos sobre la cuerda del corte:
+        // así ninguna línea cruza a otra. En celular van en lista, cada una con el alto de sus renglones.
+        const rOut = r * (1 - i * GROSOR), rIn = r * (1 - (i + 1) * GROSOR), d = yc - cy;
+        const px = cx - (Math.sqrt(rOut * rOut - d * d) + Math.sqrt(Math.max(0, rIn * rIn - d * d))) / 2, py = yc + 5;
         const antes = ESTRATOS.slice(0, i).reduce((suma, x) => suma + 30 + 14 * renglones(x.capas, 46).length, 0);
-        const rm = r * (1 - (i + 0.5) * GROSOR), ang = ((122 + i * 3) * Math.PI) / 180;
-        const px = cx + rm * Math.cos(ang), py = cy + rm * Math.sin(ang);
-        const lx = angosto ? 16 : Math.max(24, cx - r - 360), ly = angosto ? cy + r + 30 + antes : yc - 150 + i * 66;
-        const lineas = renglones(e.capas, angosto ? 46 : 40);
+        const columna = Math.min(230, (w - 48) / ESTRATOS.length);
+        const lx = angosto ? 16 : 24 + i * columna, ly = angosto ? cy + r + 30 + antes : cy + r + 52;
+        const lineas = renglones(e.capas, angosto ? 46 : 26);
         const v = paso(i, ESTRATOS.length, "--corte-etiquetas");
         return (
           <g key={`e${e.nombre}`} style={{ opacity: v }}>
-            {!angosto && <polyline points={`${px},${py} ${lx + 330},${ly} ${lx + 318},${ly}`} pathLength={1} className="v4-plano-linea" style={{ strokeDashoffset: `calc(1 - ${v})` }} />}
+            {!angosto && <polyline points={`${px},${py} ${lx},${ly - 24}`} pathLength={1} className="v4-plano-linea" style={{ strokeDashoffset: `calc(1 - ${v})` }} />}
+            {!angosto && <circle cx={px} cy={py} r={2.2} className="v4-plano-tinta" />}
             <text x={lx} y={ly - 3} className="v4-plano-nombre">{String(i + 1).padStart(2, "0")} · {e.nombre}</text>
             <text x={lx} y={ly + 15} className="v4-plano-coord">
               {lineas.map((t, j) => <tspan key={t} x={lx} dy={j === 0 ? 0 : 14}>{t}</tspan>)}

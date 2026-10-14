@@ -17,9 +17,13 @@ describe("estadoDe", () => {
     expect(e.papel).toBe(1);
   });
 
-  it("las llamadas se trazan antes del corte y la luna vuelve después del corte", () => {
+  it("las llamadas y el corte se retiran del todo antes de que vuelva la luna", () => {
     expect(TRAMOS.llamadas[1]).toBeLessThanOrEqual(TRAMOS.corte[0]);
-    expect(TRAMOS.corte[1]).toBeLessThanOrEqual(TRAMOS.vuelve[0]);
+    expect(TRAMOS.corte[1]).toBeLessThanOrEqual(TRAMOS.retira[0]);
+    expect(TRAMOS.retira[1]).toBeLessThanOrEqual(TRAMOS.vuelve[0]);
+    const antes = estadoDe(TRAMOS.vuelve[0]);
+    expect(antes.corte).toBe(0);
+    expect(antes.llamadas).toBe(0);
     const e = estadoDe(TRAMOS.vuelve[1]);
     expect(e.plano).toBe(0);
     expect(e.papel).toBe(0);
