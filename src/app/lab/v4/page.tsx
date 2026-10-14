@@ -1,4 +1,5 @@
 import { Cruce } from "@/components/lab/v4/Cruce";
+import { Intro } from "@/components/lab/v4/Intro";
 import { LunaCapas } from "@/components/lab/v4/LunaCapas";
 import { Portada } from "@/components/lab/v4/Portada";
 import { RioLuna } from "@/components/lab/v4/RioLuna";
@@ -12,6 +13,7 @@ import { RioLuna } from "@/components/lab/v4/RioLuna";
 export default function V4Page() {
   return (
     <main>
+      <Intro />
       <Portada />
       <Cruce />
       <LunaCapas />

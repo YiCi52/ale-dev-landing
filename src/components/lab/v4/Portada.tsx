@@ -25,20 +25,20 @@ export function Portada() {
       </header>
       <ArcoLuz />
       <div className="relative mt-[18svh] flex flex-col items-center">
-        <p className="v4-mono v4-entra" style={{ animationDelay: "1500ms" }}>
+        <p className="v4-mono v4-entra" style={{ animationDelay: "calc(var(--v4-intro) + 1300ms)" }}>
           Estudio web para arquitectura e interiorismo
         </p>
         <h1 id="v4-titulo" aria-label={NOMBRE} className="v4-display v4-nombre mt-6">
           {NOMBRE.split("").map((letra, i) => (
-            <span key={i} aria-hidden className="v4-letra" style={{ animationDelay: `${1150 + i * 70}ms` }}>
+            <span key={i} aria-hidden className="v4-letra" style={{ animationDelay: `calc(var(--v4-intro) + ${950 + i * 70}ms)` }}>
               {letra}
             </span>
           ))}
         </h1>
-        <p className="v4-entra mt-8 max-w-[44ch] text-balance text-lg leading-relaxed" style={{ color: "var(--cuarzo-200)", animationDelay: "1800ms" }}>
+        <p className="v4-entra mt-8 max-w-[44ch] text-balance text-lg leading-relaxed" style={{ color: "var(--cuarzo-200)", animationDelay: "calc(var(--v4-intro) + 1600ms)" }}>
           Sitios donde tu obra se recorre, y cada consulta llega a tu correo.
         </p>
-        <div className="v4-entra mt-10 flex flex-wrap justify-center gap-3" style={{ animationDelay: "1950ms" }}>
+        <div className="v4-entra mt-10 flex flex-wrap justify-center gap-3" style={{ animationDelay: "calc(var(--v4-intro) + 1750ms)" }}>
           <a href="#v4-contacto" className="v4-boton v4-boton-lleno">
             Agendar 15 minutos
           </a>

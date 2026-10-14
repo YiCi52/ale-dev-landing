@@ -214,7 +214,7 @@ body:has(.v4-raiz) {
 .v4-arco path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: v4-arco-dibuja 1600ms cubic-bezier(0.65, 0, 0.35, 1) 200ms forwards;
+  animation: v4-arco-dibuja 1600ms cubic-bezier(0.65, 0, 0.35, 1) var(--v4-intro, 0ms) forwards;
 }
 .v4-arco-halo {
   opacity: 0.16;
@@ -315,5 +315,85 @@ body:has(.v4-raiz) {
     opacity: 1;
     transform: none;
     filter: none;
+  }
+}
+
+/* ── Pantalla de carga: luna llena → eclipse → la C (14-oct) ──
+   Tiempos (total ~2 s, como StringTune): 0–0,45 s aparece la luna · 0,45–1,25 s la sombra la eclipsa
+   · 1,1–1,5 s la C se vuelve luz · 1,55–2,0 s se abre la cortina. El hero arranca con --v4-intro de retraso. */
+.v4-raiz {
+  --v4-intro: 1900ms;
+}
+.v4-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: var(--piedra-950);
+  pointer-events: none;
+  animation: v4-intro-sale 450ms var(--ease-salida) 1550ms forwards;
+}
+.v4-intro-luna {
+  position: relative;
+  width: clamp(120px, 24vmin, 220px);
+  aspect-ratio: 1;
+  animation: v4-intro-luna-entra 450ms var(--ease-salida) both;
+}
+.v4-intro-disco,
+.v4-intro-c {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* la sombra es un círculo del color de la noche: termina justo en el hueco de la C (radio 91 %, corrida 24 %) */
+.v4-intro-sombra {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 91%;
+  height: 91%;
+  border-radius: 50%;
+  background: var(--piedra-950);
+  box-shadow: 0 0 6px 2px var(--piedra-950);
+  transform: translate(-50%, -50%) translateX(240%);
+  animation: v4-intro-eclipse 800ms cubic-bezier(0.65, 0, 0.35, 1) 450ms forwards;
+}
+.v4-intro-c {
+  color: var(--cuarzo-50);
+  opacity: 0;
+  filter: drop-shadow(0 0 10px rgba(243, 240, 234, 0.35));
+  animation: v4-intro-c 400ms ease 1100ms forwards;
+}
+@keyframes v4-intro-luna-entra {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+    filter: blur(8px);
+  }
+}
+@keyframes v4-intro-eclipse {
+  to {
+    transform: translate(-50%, -50%) translateX(13.2%);   /* 24 % del radio de la luna = 12 % de la caja = 13,2 % del ancho de la sombra */
+  }
+}
+@keyframes v4-intro-c {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes v4-intro-sale {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v4-intro {
+    display: none;
+  }
+  .v4-raiz {
+    --v4-intro: 0ms;
   }
 }
