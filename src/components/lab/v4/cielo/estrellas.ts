@@ -44,7 +44,7 @@ export const CIELO: Estrella[] = [
   ...figura(ESCORPION, 0.42, 0.44, 0.0085, -0.6),
   ...figura(OSA_MAYOR, -0.3, 0.6, 0.0085, 0.2),
   ...figura(CASIOPEA, 0.8, 0.62, 0.009, 0.1),
-  ...sueltas(46).map((e) => ({ ...e, y: 0.06 + e.y })),
+  ...sueltas(22).map((e) => ({ ...e, y: 0.06 + e.y })),
 ];
 
 /** Lado del lienzo del cielo: 2,4 alturas de ancho × 1 de alto. */

@@ -59,7 +59,7 @@ nt.links.new(pocas.outputs[0], brillo_e.inputs[1])
 alto = nt.nodes.new("ShaderNodeMath"); alto.operation = "GREATER_THAN"; alto.inputs[1].default_value = 0.01
 nt.links.new(sep.outputs["Z"], alto.inputs[0])             # solo sobre el horizonte
 est = nt.nodes.new("ShaderNodeMath"); est.operation = "MULTIPLY"; nt.links.new(brillo_e.outputs[0], est.inputs[0]); nt.links.new(alto.outputs[0], est.inputs[1])
-est2 = nt.nodes.new("ShaderNodeMath"); est2.operation = "MULTIPLY"; est2.inputs[1].default_value = 4.5; nt.links.new(est.outputs[0], est2.inputs[0])
+est2 = nt.nodes.new("ShaderNodeMath"); est2.operation = "MULTIPLY"; est2.inputs[1].default_value = 0.0   # 14-oct noche: las estrellas las pone la página; nt.links.new(est.outputs[0], est2.inputs[0])
 # las estrellas brillan en el CIELO; en el reflejo del agua casi no (con las ondas se estiraban en rayas que parecían lluvia)
 camino = nt.nodes.new("ShaderNodeLightPath"); solo_cam = nt.nodes.new("ShaderNodeMapRange")
 solo_cam.inputs["To Min"].default_value = 0.06; solo_cam.inputs["To Max"].default_value = 1.0
@@ -130,25 +130,45 @@ bpy.ops.mesh.primitive_plane_add(size=1, location=(0, Y_ORILLA, 0)); arena = bpy
 arena.scale = (160, 80, 1); arena.rotation_euler = (-math.atan(0.03), 0, 0)   # 3 % de pendiente: se mete bajo el agua en la orilla
 bpy.ops.object.transform_apply(scale=True, rotation=True)
 m_arena, nodos, ln = mat("arena"); b = bsdf_de(nodos)
+# texturas escaneadas de Poly Haven (CC0): arena seca ondulada (aerial_beach_01) y arena mojada de orilla (damp_beach_sand_02)
+ARENA = os.path.expanduser("~/CastilloStudio/assets/polyhaven/arena")
+tc_a = nodos.new("ShaderNodeTexCoord")
+
+
+def capa(nombre, escala, no_color=False):
+    mp = nodos.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (escala, escala, escala)
+    ln.new(tc_a.outputs["Object"], mp.inputs["Vector"])
+    t = nodos.new("ShaderNodeTexImage"); t.image = bpy.data.images.load(os.path.join(ARENA, nombre))
+    if no_color: t.image.colorspace_settings.name = "Non-Color"
+    ln.new(mp.outputs[0], t.inputs["Vector"])
+    return t
+
+
 geo_a = nodos.new("ShaderNodeNewGeometry"); sep_a = nodos.new("ShaderNodeSeparateXYZ"); ln.new(geo_a.outputs["Position"], sep_a.inputs[0])
-mojada = nodos.new("ShaderNodeMapRange"); mojada.inputs["From Min"].default_value = Y_ORILLA - 2.2; mojada.inputs["From Max"].default_value = Y_ORILLA - 0.2
+mojada = nodos.new("ShaderNodeMapRange"); mojada.inputs["From Min"].default_value = Y_ORILLA - 2.4; mojada.inputs["From Max"].default_value = Y_ORILLA - 0.3
 ln.new(sep_a.outputs["Y"], mojada.inputs["Value"])
-grano = nodos.new("ShaderNodeTexNoise"); grano.inputs["Scale"].default_value = 140; grano.inputs["Detail"].default_value = 3
-color_seca = nodos.new("ShaderNodeValToRGB"); color_seca.color_ramp.elements[0].color = (0.30, 0.27, 0.22, 1); color_seca.color_ramp.elements[1].color = (0.44, 0.40, 0.33, 1)
-ln.new(grano.outputs["Fac"], color_seca.inputs["Fac"])
-tinte = nodos.new("ShaderNodeMix"); tinte.data_type = "RGBA"; tinte.inputs[7].default_value = (0.07, 0.065, 0.06, 1)
-ln.new(mojada.outputs["Result"], tinte.inputs["Factor"]); ln.new(color_seca.outputs["Color"], tinte.inputs[6])
-ln.new(tinte.outputs[2], b.inputs["Base Color"])
-rug = nodos.new("ShaderNodeMapRange"); rug.inputs["To Min"].default_value = 0.92; rug.inputs["To Max"].default_value = 0.12
-ln.new(mojada.outputs["Result"], rug.inputs["Value"]); ln.new(rug.outputs["Result"], b.inputs["Roughness"])
-# ondulaciones de viento en la arena seca + el grano
-ondas_a = nodos.new("ShaderNodeTexWave"); ondas_a.wave_type = "BANDS"; ondas_a.bands_direction = "Y"
-ondas_a.inputs["Scale"].default_value = 1.6; ondas_a.inputs["Distortion"].default_value = 6; ondas_a.inputs["Detail"].default_value = 3
-tc_a = nodos.new("ShaderNodeTexCoord"); ln.new(tc_a.outputs["Object"], ondas_a.inputs["Vector"]); ln.new(tc_a.outputs["Object"], grano.inputs["Vector"])
-alto_a = nodos.new("ShaderNodeMath"); alto_a.operation = "MULTIPLY_ADD"; alto_a.inputs[1].default_value = 0.6
-ln.new(ondas_a.outputs["Fac"], alto_a.inputs[0]); ln.new(grano.outputs["Fac"], alto_a.inputs[2])
-bmp_a = nodos.new("ShaderNodeBump"); bmp_a.inputs["Strength"].default_value = 0.6; bmp_a.inputs["Distance"].default_value = 0.02
-ln.new(alto_a.outputs[0], bmp_a.inputs["Height"]); ln.new(bmp_a.outputs[0], b.inputs["Normal"])
+seca_c, seca_r, seca_n = capa("aerial_beach_01_diff_2k.jpg", 0.16), capa("aerial_beach_01_rough_2k.jpg", 0.16, True), capa("aerial_beach_01_nor_gl_2k.jpg", 0.16, True)
+moja_c, moja_r, moja_n = capa("damp_beach_sand_02_diff_2k.jpg", 0.55), capa("damp_beach_sand_02_rough_2k.jpg", 0.55, True), capa("damp_beach_sand_02_nor_gl_2k.jpg", 0.55, True)
+
+
+def mezcla(tipo, a_, b_):
+    m = nodos.new("ShaderNodeMix"); m.data_type = tipo
+    ln.new(mojada.outputs["Result"], m.inputs["Factor"])
+    i_a, i_b, sal = (6, 7, 2) if tipo == "RGBA" else (4, 5, 1) if tipo == "VECTOR" else (2, 3, 0)
+    ln.new(a_, m.inputs[i_a]); ln.new(b_, m.inputs[i_b])
+    return m.outputs[sal]
+
+
+# la arena mojada es más oscura y casi espejo; la seca, mate
+oscurece = nodos.new("ShaderNodeMix"); oscurece.data_type = "RGBA"; oscurece.blend_type = "MULTIPLY"; oscurece.inputs["Factor"].default_value = 1.0
+oscurece.inputs[7].default_value = (0.45, 0.45, 0.47, 1); ln.new(moja_c.outputs["Color"], oscurece.inputs[6])
+ln.new(mezcla("RGBA", seca_c.outputs["Color"], oscurece.outputs[2]), b.inputs["Base Color"])
+rug_m = nodos.new("ShaderNodeMath"); rug_m.operation = "MULTIPLY"; rug_m.inputs[1].default_value = 0.35
+ln.new(moja_r.outputs["Color"], rug_m.inputs[0])
+ln.new(mezcla("FLOAT", seca_r.outputs["Color"], rug_m.outputs[0]), b.inputs["Roughness"])
+nm = nodos.new("ShaderNodeNormalMap"); nm.inputs["Strength"].default_value = 1.0
+ln.new(mezcla("RGBA", seca_n.outputs["Color"], moja_n.outputs["Color"]), nm.inputs["Color"])
+ln.new(nm.outputs["Normal"], b.inputs["Normal"])
 arena.data.materials.append(m_arena)
 
 # ── luna llena REAL (textura NASA) + eclipse como sombra + halo FINO ────────────────────────────────────────────────
@@ -223,7 +243,7 @@ sol.data.keyframe_insert("energy", frame=80); sol.data.energy = 0.12; sol.data.k
 
 # ── cámara: camina por la arena hacia la orilla mirando la luna; en la orilla BAJA LA MIRADA hasta ver solo el agua ──
 bpy.ops.object.camera_add(); cam = bpy.context.object; esc.camera = cam; cam.data.sensor_width = 36
-for f, y, z, pitch, lente in ((1, -15.0, 1.75, -5.0, 24), (48, -7.4, 1.68, -6.5, 24), (74, -6.2, 1.6, -22.0, 40), (N, -6.18, 1.6, -22.0, 40)):
+for f, y, z, pitch, lente in ((1, -15.0, 2.35, -4.0, 24), (48, -6.9, 2.25, -6.0, 24), (74, -6.0, 2.15, -24.0, 40), (N, -5.98, 2.15, -24.0, 40)):
     cam.location = (0.0, y, z); cam.rotation_euler = (math.radians(90 + pitch), 0, 0); cam.data.lens = lente
     cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f); cam.data.keyframe_insert("lens", frame=f)
 

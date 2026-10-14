@@ -99,12 +99,6 @@ float ruido(vec2 p) {
   return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
 }
 
-float causticas(vec2 p, float t) {
-  float a = ruido(p + vec2(t * 0.6, -t * 0.4));
-  float b = ruido(p * 1.7 + vec2(-t * 0.5, t * 0.7));
-  return pow(1.0 - abs(a - b), 9.0);
-}
-
 // luna como esfera: d = posición dentro del disco (-1..1, y hacia abajo)
 vec3 luna(vec2 d, float eclipse) {
   float r2 = dot(d, d);
@@ -124,11 +118,19 @@ vec3 aura(float l, float fuerza) {
   return vec3(0.92, 0.94, 1.0) * fuerza * (afuera * 0.38 + encima);
 }
 
-// anillo fino del eclipse con un aura corta
-vec3 anillo(float l, float eclipse) {
-  float linea = exp(-pow((l - 1.012) / 0.012, 2.0));
-  float halo = exp(-max(0.0, l - 1.0) * 14.0) * step(1.0, l) * 0.35;
-  return vec3(0.95, 0.96, 1.0) * smoothstep(0.55, 1.0, eclipse) * (linea * 1.4 + halo);
+// corona del eclipse (Alejo, 14-oct, con foto de referencia): nada de aro rígido. Brilla pegada al borde sin línea
+// dura y se abre en rayos irregulares que se desvanecen; el ruido se toma sobre un círculo para que no haya costura.
+vec3 corona(vec2 d, float l, float eclipse) {
+  if (l < 1.0 || eclipse <= 0.0) return vec3(0.0);
+  vec2 dir = d / l;
+  float rayos = 0.55 + 0.3 * ruido(dir * 2.2 + 3.1) + 0.25 * ruido(dir * 6.5 + 7.3);
+  float largas = pow(max(0.0, dot(dir, normalize(vec2(0.82, -0.57)))), 5.0) * 0.9
+               + pow(max(0.0, dot(dir, normalize(vec2(-0.9, 0.35)))), 7.0) * 0.6;   // dos serpentinas largas, como en la foto
+  float x = l - 1.0;
+  float pegada = exp(-x * 11.0);
+  float abierta = exp(-x * (3.4 - largas * 2.0)) * rayos * 0.55;
+  float sinEscalon = smoothstep(0.0, 0.02, x);
+  return vec3(0.95, 0.96, 1.0) * smoothstep(0.55, 1.0, eclipse) * sinEscalon * (pegada * 0.85 + abierta);
 }
 
 // altura de las olas en el plano del agua (perspectiva aproximada): suma de trenes de onda lentos
@@ -170,7 +172,10 @@ void main() {
     vec2 sc = vec2((pant.x - 0.5) * uAspecto / 2.4 + 0.5, 1.0 - sobre);
     col += texture(uEstrellas, sc).rgb * cielo * smoothstep(1.0, 1.2, lc);
   }
-  col += (luna(dc, uEclipse) + aura(lc, (1.0 - uEclipse) * (0.8 + uCerca * 0.9)) + anillo(lc, uEclipse)) * cielo;
+  // la luna del cielo es SÓLIDA: dentro del disco tapa el cielo (antes se sumaba y se veían estrellas a través)
+  float disco = 1.0 - smoothstep(0.996, 1.004, lc);
+  col = mix(col, luna(dc, uEclipse), disco * cielo);
+  col += (aura(lc, (1.0 - uEclipse) * (0.8 + uCerca * 0.9)) + corona(dc, lc, uEclipse)) * cielo;
 
   // reflejo en el agua: misma luna invertida, deformada por las olas, un poco más tenue
   // el reflejo se deforma más que el fondo (es luz sobre la superficie): de lado más que de arriba abajo, como en el agua real
@@ -179,7 +184,7 @@ void main() {
   vec2 dr = (pr - uDisco.xy) * vec2(uAspecto, 1.0) / max(uDisco.z, 1e-4);
   dr.y = -dr.y;
   float lr = length(dr);
-  vec3 refl = luna(dr, uEclipse) * 0.82 + aura(lr, (1.0 - uEclipse) * 0.55) + anillo(lr, uEclipse) * 0.9;
+  vec3 refl = luna(dr, uEclipse) * 0.82 + aura(lr, (1.0 - uEclipse) * 0.55) + corona(dr, lr, uEclipse) * 0.9;
   col += refl * agua;
 
   // el agua se ve viva aunque el reflejo esté quieto: un brillo muy leve donde las olas se inclinan
@@ -197,8 +202,8 @@ void main() {
     vec2 tu = pu + ola * 0.12 * hondo + n * 0.3;
     float enFoto = step(0.0, tu.x) * step(tu.x, 1.0) * step(0.0, tu.y) * step(tu.y, 1.0);
     vec3 proy = texture(uProyecto, tu).rgb * enFoto;
-    proy = mix(vec3(0.004, 0.010, 0.014), proy, pow(uVisible, 1.6));   // la luz llega de arriba: lo hondo es negro
-    proy += vec3(0.7, 0.88, 1.0) * causticas(pu * 6.0, t * 0.6) * 0.2 * sin(PI * uVisible);
+    // solo el degradado de la profundidad (sin manchas de luz): negro abajo, se aclara recién al llegar arriba
+    proy = mix(vec3(0.004, 0.010, 0.014), proy, smoothstep(0.45, 1.0, uVisible));
     col = mix(col, proy, smoothstep(0.0, 0.25, uVisible) * dentro);
   }
   color = vec4(col, 1.0);

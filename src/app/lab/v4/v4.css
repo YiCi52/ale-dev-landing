@@ -497,3 +497,143 @@ body:has(.v4-raiz) {
     margin-top: 32px;
   }
 }
+
+/* ── Pitch C: tres losas que se apilan (14-oct) ── */
+.v4-losas-indice {
+  position: sticky;
+  top: 50svh;
+  z-index: 20;
+  float: right;
+  margin-right: clamp(10px, 2vw, 28px);
+  display: grid;
+  gap: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.v4-losas-indice li {
+  opacity: 0.35;
+  transition: opacity 300ms ease, color 300ms ease;
+}
+.v4-losas-indice li[data-activo] {
+  opacity: 1;
+  color: var(--veta-oro);
+}
+.v4-losa-c {
+  position: sticky;
+  height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 80px);
+  padding: clamp(80px, 12vh, 140px) clamp(16px, 6vw, 96px);
+  border-top: 1px solid rgba(184, 156, 110, 0.7);
+  transform-origin: top center;
+  will-change: transform, filter;
+}
+.v4-losa-piedra {
+  background:
+    linear-gradient(180deg, rgba(10, 11, 15, 0.35), rgba(10, 11, 15, 0.6)),
+    url("/lab/v4/materiales/losa-piedra.webp") center / cover;
+  color: var(--cuarzo-50);
+}
+.v4-losa-cuarzo {
+  background:
+    linear-gradient(180deg, rgba(243, 240, 234, 0.3), rgba(243, 240, 234, 0.45)),
+    url("/lab/v4/materiales/losa-cuarzo.webp") center / cover;
+  color: var(--piedra-950);
+}
+.v4-losa-frase {
+  margin-top: 18px;
+  font-size: clamp(36px, 5.2vw, 84px);
+  line-height: 1.02;
+  max-width: 14ch;
+}
+.v4-losa-detalle {
+  margin-top: 22px;
+  max-width: 40ch;
+  font-size: 17px;
+  line-height: 1.6;
+  opacity: 0.72;
+}
+.v4-losa-foto img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+}
+.v4-correo {
+  background: #fbfaf7;
+  border: 1px solid rgba(184, 156, 110, 0.55);
+  padding: 28px 30px;
+  box-shadow: 0 24px 50px rgba(30, 24, 16, 0.18);
+  max-width: 420px;
+}
+@media (max-width: 767px) {
+  .v4-losa-c {
+    grid-template-columns: 1fr;
+    align-content: center;
+    gap: 28px;
+  }
+  .v4-losas-indice {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v4-losa-c {
+    position: relative;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* ── Pitch B de prueba: la casilla que cambia de frase (14-oct) ── */
+.v4-casilla-fija {
+  background:
+    linear-gradient(180deg, rgba(10, 11, 15, 0.82), rgba(10, 11, 15, 0.94)),
+    url("/lab/v4/materiales/piedra-fondo.webp") center / cover;
+}
+.v4-casilla-caja {
+  position: relative;
+  width: min(1180px, 92vw);
+  height: calc(clamp(34px, 6vw, 88px) * 1.25);
+  overflow: hidden;
+  border-left: 1px solid rgba(184, 156, 110, 0.7);
+  border-right: 1px solid rgba(184, 156, 110, 0.7);
+}
+.v4-casilla-frase {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+  font-size: clamp(30px, 5.6vw, 88px);
+  line-height: 1;
+}
+.v4-casilla-frase span {
+  display: inline-block;
+  transition:
+    transform 520ms cubic-bezier(0.23, 1, 0.32, 1) calc(var(--j) * 16ms),
+    opacity 420ms ease calc(var(--j) * 16ms),
+    color 600ms ease calc(240ms + var(--j) * 16ms);
+}
+.v4-casilla-frase[data-estado="dentro"] span {
+  transform: translateY(0);
+  opacity: 1;
+  color: var(--cuarzo-50);
+}
+.v4-casilla-frase[data-estado="arriba"] span {
+  transform: translateY(-110%);
+  opacity: 0;
+  color: var(--apagado);
+}
+.v4-casilla-frase[data-estado="abajo"] span {
+  transform: translateY(110%);
+  opacity: 0;
+  color: var(--apagado);
+}
+@media (prefers-reduced-motion: reduce) {
+  .v4-casilla-frase span {
+    transition: none;
+  }
+}
