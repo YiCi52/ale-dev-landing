@@ -57,8 +57,13 @@ alto = nt.nodes.new("ShaderNodeMath"); alto.operation = "GREATER_THAN"; alto.inp
 nt.links.new(sep.outputs["Z"], alto.inputs[0])             # solo sobre el horizonte
 est = nt.nodes.new("ShaderNodeMath"); est.operation = "MULTIPLY"; nt.links.new(brillo_e.outputs[0], est.inputs[0]); nt.links.new(alto.outputs[0], est.inputs[1])
 est2 = nt.nodes.new("ShaderNodeMath"); est2.operation = "MULTIPLY"; est2.inputs[1].default_value = 7.0; nt.links.new(est.outputs[0], est2.inputs[0])
+# las estrellas brillan en el CIELO; en el reflejo del agua casi no (con las ondas se estiraban en rayas que parecían lluvia)
+camino = nt.nodes.new("ShaderNodeLightPath"); solo_cam = nt.nodes.new("ShaderNodeMapRange")
+solo_cam.inputs["To Min"].default_value = 0.06; solo_cam.inputs["To Max"].default_value = 1.0
+nt.links.new(camino.outputs["Is Camera Ray"], solo_cam.inputs["Value"])
+est3 = nt.nodes.new("ShaderNodeMath"); est3.operation = "MULTIPLY"; nt.links.new(est2.outputs[0], est3.inputs[0]); nt.links.new(solo_cam.outputs["Result"], est3.inputs[1])
 suma = nt.nodes.new("ShaderNodeMixRGB"); suma.blend_type = "ADD"; suma.inputs["Fac"].default_value = 1.0
-nt.links.new(rw.outputs["Color"], suma.inputs["Color1"]); nt.links.new(est2.outputs[0], suma.inputs["Color2"])
+nt.links.new(rw.outputs["Color"], suma.inputs["Color1"]); nt.links.new(est3.outputs[0], suma.inputs["Color2"])
 nt.links.new(suma.outputs["Color"], fondo.inputs["Color"]); fondo.inputs["Strength"].default_value = 1.0
 
 # ── agua ────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -72,7 +77,7 @@ ruido = nodos.new("ShaderNodeTexNoise"); ruido.inputs["Scale"].default_value = 2
 ruido.noise_dimensions = "4D"
 w = ruido.inputs["W"]; w.default_value = 0.0; w.keyframe_insert("default_value", frame=1); w.default_value = 1.6
 w.keyframe_insert("default_value", frame=N)
-bump = nodos.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.22; bump.inputs["Distance"].default_value = 0.4
+bump = nodos.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.14; bump.inputs["Distance"].default_value = 0.4
 ln.new(coord.outputs["Object"], mapeo.inputs["Vector"]); ln.new(mapeo.outputs[0], ruido.inputs["Vector"])
 rizo = nodos.new("ShaderNodeTexNoise"); rizo.inputs["Scale"].default_value = 26.0; rizo.inputs["Detail"].default_value = 4
 rizo.noise_dimensions = "4D"; wr = rizo.inputs["W"]; wr.default_value = 0.0; wr.keyframe_insert("default_value", frame=1)
