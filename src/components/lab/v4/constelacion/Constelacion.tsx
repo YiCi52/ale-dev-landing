@@ -11,7 +11,9 @@ import type { MotorConstelacion } from "./MotorConstelacion";
   Prueba de la constelación (Alejo, 14-oct). Las etiquetas salen RADIALMENTE desde el centro de la pantalla
   (lección L-030: centradas debajo del punto se pisaban siempre) y se apagan las que quedan detrás.
 */
-export function Constelacion() {
+/** `encabezado`: "h1" en la página de prueba; "h2" dentro de la página Trabajo (los servicios en detalle). */
+export function Constelacion({ encabezado = "h1", etiqueta = "Prueba · la constelación" }: { encabezado?: "h1" | "h2"; etiqueta?: string }) {
+  const Titulo = encabezado;
   const lienzo = useRef<HTMLCanvasElement>(null);
   const etiquetas = useRef<HTMLDivElement>(null);
   const [grupo, setGrupo] = useState(-2);
@@ -62,8 +64,8 @@ export function Constelacion() {
   return (
     <section aria-labelledby="v4-const-titulo" className="relative h-[100svh] overflow-hidden" style={{ background: "var(--piedra-950)" }}>
       <div className="absolute left-4 top-24 z-10 max-w-[34ch] sm:left-12">
-        <p className="v4-mono">Prueba · la constelación</p>
-        <h1 id="v4-const-titulo" className="v4-display mt-4 text-[clamp(30px,3.6vw,56px)] leading-[1.02]">Catorce capas alrededor de tu sitio</h1>
+        <p className="v4-mono">{etiqueta}</p>
+        <Titulo id="v4-const-titulo" className="v4-display mt-4 text-[clamp(30px,3.6vw,56px)] leading-[1.02]">Catorce capas alrededor de tu sitio</Titulo>
         <p className="mt-4 text-[15px] leading-relaxed" style={{ color: "var(--cuarzo-200)" }}>
           Cada constelación es un grupo: lo que ve tu cliente, lo que captura, lo que te avisa, lo que lo sostiene y lo que lo protege.
         </p>
