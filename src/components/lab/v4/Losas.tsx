@@ -59,7 +59,7 @@ export function Losas() {
       const pos = p * (LOSAS.length - 1);
       losas.forEach((l, i) => {
         const tapada = Math.min(1, Math.max(0, pos - i));
-        l.style.transform = `scale(${(1 - tapada * 0.04).toFixed(4)})`;
+        l.style.transform = `scale(${(1 - tapada * 0.05).toFixed(4)})`;
         l.style.filter = `brightness(${(1 - tapada * 0.45).toFixed(3)})`;
       });
       indice.forEach((n, i) => n.toggleAttribute("data-activo", Math.round(pos) === i));
@@ -68,12 +68,12 @@ export function Losas() {
   }, []);
 
   return (
-    <section ref={seccion} id="v4-losas" aria-label="Lo que hago" className="v4-losas relative" style={{ height: `${LOSAS.length * 100}svh` }}>
+    <section ref={seccion} id="v4-losas" aria-label="Lo que hago" className="v4-losas relative pt-[10vh]" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 30%, #15161b, var(--piedra-950) 70%)" }}>
       <ol className="v4-losas-indice" aria-hidden>
         {LOSAS.map((l, i) => <li key={l.frase} data-indice className="v4-mono">{String(i + 1).padStart(2, "0")}</li>)}
       </ol>
       {LOSAS.map((l, i) => (
-        <article key={l.frase} data-losa className={`v4-losa-c v4-losa-${l.material}`} style={{ top: `${i * 14}px`, zIndex: i + 1 }}>
+        <article key={l.frase} data-losa className={`v4-losa-c v4-losa-${l.material}`} style={{ top: `calc(16vh + ${i * 22}px)`, zIndex: i + 1 }}>
           <div className="v4-losa-texto">
             <p className="v4-mono" style={{ color: "var(--veta-oro)" }}>{String(i + 1).padStart(2, "0")} / {String(LOSAS.length).padStart(2, "0")}</p>
             <h3 className="v4-display v4-losa-frase">{l.frase}</h3>
