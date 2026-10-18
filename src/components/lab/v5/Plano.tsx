@@ -50,7 +50,13 @@ export function Plano() {
         trazos[i]?.setAttribute("x1", `${ax * 100}%`); trazos[i]?.setAttribute("y1", `${ay * 100}%`);
         trazos[i]?.setAttribute("x2", `${lx * 100}%`); trazos[i]?.setAttribute("y2", `${ly * 100}%`);
         const c = llamadas[i];
-        if (c) { c.style.left = `${lx * 100}%`; c.style.top = `${ly * 100}%`; c.style.transform = `translate(${lx > ax ? "8px" : "calc(-100% - 8px)"}, -50%)`; }
+        if (c) {
+          // la etiqueta va del lado de la línea, salvo que no quepa: entonces se voltea al otro lado
+          const ancho = c.offsetWidth + 8, margen = 16;
+          const izquierda = lx < ax ? lx * w - ancho >= margen : lx * w + ancho > w - margen;
+          c.style.left = `${lx * 100}%`; c.style.top = `${ly * 100}%`;
+          c.style.transform = `translate(${izquierda ? "calc(-100% - 8px)" : "8px"}, -50%)`;
+        }
       });
     };
     ubicar();

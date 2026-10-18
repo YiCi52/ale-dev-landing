@@ -262,6 +262,11 @@ html:has(.v5-raiz) {
   overflow: hidden;
   background: var(--noche-950);
 }
+@media (orientation: portrait) {
+  .v5-hero-poster {
+    object-position: 34% 50%;
+  }
+}
 .v5-hero-lienzo,
 .v5-hero-poster {
   position: absolute;
@@ -304,10 +309,10 @@ html:has(.v5-raiz) {
 }
 .v5-consulta {
   position: absolute;
-  left: 50%;
-  top: 46%;
-  width: min(340px, calc(100vw - 32px));
-  transform: translate(-50%, 12px);
+  right: max(16px, 4vw);
+  top: 17%;
+  width: min(320px, calc(100vw - 32px));
+  transform: translateY(12px);
   opacity: 0;
   padding: 16px 18px;
   border-radius: 14px;
@@ -316,14 +321,15 @@ html:has(.v5-raiz) {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: var(--cuarzo);
-  transition: opacity 500ms var(--ease-salida), transform 500ms var(--ease-salida);
+  transition: opacity 500ms var(--ease-salida), transform 500ms var(--ease-salida), visibility 0s linear 500ms;
 }
 .v5-consulta:not([data-visible]) {
   visibility: hidden;
 }
 .v5-consulta[data-visible] {
+  transition-delay: 0s;
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: none;
 }
 .v5-consulta-punto {
   display: inline-block;
@@ -423,6 +429,11 @@ html:has(.v5-raiz) {
 .v5-llamada {
   position: absolute;
   max-width: 230px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(5, 6, 10, 0.78);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   font-size: 14px;
   line-height: 1.35;
   color: var(--cuarzo);
@@ -443,7 +454,7 @@ html:has(.v5-raiz) {
 }
 @media (max-width: 860px) {
   .v5-llamada,
-  .v5-plano-svg line {
+  .v5-plano-svg {
     display: none;
   }
   .v5-plano-lista {
@@ -524,7 +535,10 @@ html:has(.v5-raiz) {
   transition: --r 500ms var(--ease-salida);
 }
 .v5-obra:focus-within .v5-linterna-encendida {
-  --r: 150%;
+  --r: 1400px;
+}
+.v5-linterna .v5-linterna-encendida {
+  transition: transform 900ms var(--ease-salida), --r 500ms var(--ease-salida);
 }
 .v5-linterna:hover img {
   transform: scale(1.025);

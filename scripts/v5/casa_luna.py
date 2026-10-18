@@ -303,11 +303,11 @@ def pasada_lineas():
     hn = h.nodes.new("ShaderNodeHoldout"); h.links.new(hn.outputs[0], next(n for n in h.nodes if n.type == "OUTPUT_MATERIAL").inputs[0])
     for o in list(esc.objects):
         if o.type == "MESH":
-            if o.name in ("tierra", "luna") or o.name.startswith(("copa",)) or o.name.startswith("Ico"): o.hide_render = True; continue
+            if o.name in ("tierra", "luna", "vidrio_f", "vidrio_o", "agua", "plaza") or o.name.startswith(("copa",)) or o.name.startswith("Ico"): o.hide_render = True; continue
             o.data.materials.clear(); o.data.materials.append(hold)
             for md in o.modifiers: md.show_render = False
     esc.render.film_transparent = True; esc.render.image_settings.color_mode = "RGBA"
-    esc.cycles.samples = 1; esc.render.use_freestyle = True; esc.render.line_thickness_mode = "ABSOLUTE"; esc.render.line_thickness = 1.2
+    esc.cycles.samples = 1; esc.render.use_freestyle = True; esc.render.line_thickness_mode = "ABSOLUTE"; esc.render.line_thickness = 1.4
     vl = esc.view_layers[0]; vl.use_freestyle = True
     fs = vl.freestyle_settings; ls = fs.linesets[0] if fs.linesets else fs.linesets.new("lineas")
     ls.select_by_visibility = True; ls.select_silhouette = ls.select_border = ls.select_crease = True

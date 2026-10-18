@@ -23,8 +23,14 @@ function mover(e: PointerEvent<HTMLAnchorElement>) {
   luz.style.setProperty("--y", `${e.clientY - r.top}px`);
 }
 
-function encender(e: PointerEvent<HTMLAnchorElement>, radio: string) {
-  e.currentTarget.querySelector<HTMLElement>(".v5-linterna-encendida")?.style.setProperty("--r", radio);
+function encender(e: PointerEvent<HTMLAnchorElement>) {
+  if (e.pointerType === "touch") return;
+  mover(e);   // la luz nace donde entra el cursor, no en el centro
+  e.currentTarget.querySelector<HTMLElement>(".v5-linterna-encendida")?.style.setProperty("--r", "220px");
+}
+
+function apagar(e: PointerEvent<HTMLAnchorElement>) {
+  e.currentTarget.querySelector<HTMLElement>(".v5-linterna-encendida")?.style.removeProperty("--r");
 }
 
 export function Trabajo() {
@@ -40,7 +46,7 @@ export function Trabajo() {
       <div className="v5-trabajo-grilla">
         {OBRAS.map((o) => (
           <article key={o.id} className="v5-obra">
-            <Link href={o.href} className="v5-linterna" onPointerMove={mover} onPointerEnter={(e) => encender(e, "220px")} onPointerLeave={(e) => encender(e, "0px")} tabIndex={-1} aria-hidden="true">
+            <Link href={o.href} className="v5-linterna" onPointerMove={mover} onPointerEnter={encender} onPointerLeave={apagar} tabIndex={-1} aria-hidden="true">
               {/* eslint-disable-next-line @next/next/no-img-element -- foto del proyecto, a oscuras */}
               <img src={o.img} alt="" className="v5-linterna-apagada" loading="lazy" />
               {/* eslint-disable-next-line @next/next/no-img-element -- la misma foto, iluminada donde está el cursor */}

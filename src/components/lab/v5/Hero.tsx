@@ -27,7 +27,8 @@ function ordenDeCarga(): number[] {
 }
 
 function pintar(canvas: HTMLCanvasElement, img: HTMLImageElement, foco: number): void {
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  // no tiene sentido un lienzo más denso que la imagen: se limita a ~2000 px de ancho
+  const dpr = Math.min(2, window.devicePixelRatio || 1, 2000 / Math.max(1, canvas.clientWidth));
   const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const ctx = canvas.getContext("2d");
@@ -48,8 +49,8 @@ export function Hero() {
   useEffect(() => {
     const el = seccion.current, canvas = lienzo.current;
     if (!el || !canvas) return;
-    const ancho = window.innerWidth <= 820 ? 960 : 1440;
-    const angosta = () => window.innerWidth / window.innerHeight < 1;
+    const ancho = window.matchMedia("(max-width: 820px)").matches ? 960 : 1440;
+    const angosta = () => canvas.clientWidth / Math.max(1, canvas.clientHeight) < 1;
     const cuadros: (HTMLImageElement | null)[] = Array(TOTAL).fill(null);
     let actual = 0;
 
@@ -70,17 +71,28 @@ export function Hero() {
     };
 
     let vivo = true;
-    for (const i of ordenDeCarga()) {
+    const pedidas: HTMLImageElement[] = [];
+    ordenDeCarga().forEach((i, k) => {
       const img = new Image();
       img.decoding = "async";
+      if (k >= TOTAL / 8) img.fetchPriority = "low";   // la primera pasada (1 de cada 8) va normal; el relleno, después
       img.onload = () => { if (!vivo) return; cuadros[i] = img; if (Math.abs(i - actual) < 9) dibujar(); };
       img.src = ruta(ancho, i);
-    }
+      pedidas.push(img);
+    });
+    const alRedimensionar = () => dibujar();
+    window.addEventListener("resize", alRedimensionar);
+    const soltar = () => {
+      vivo = false;
+      window.removeEventListener("resize", alRedimensionar);
+      for (const img of pedidas) { img.onload = null; img.src = ""; }
+    };
 
     if (sinMovimiento()) {
       actual = TOTAL - 1;
       consulta.current?.setAttribute("data-visible", "");
-      return () => { vivo = false; };
+      if (pista.current) pista.current.hidden = true;
+      return soltar;
     }
     const quitar = observarProgreso(el, (p) => {
       const t = Math.min(1, p / FIN_PELICULA);
@@ -89,9 +101,7 @@ export function Hero() {
       if (pista.current) pista.current.style.opacity = p > 0.06 ? "0" : "1";
       if (i !== actual) { actual = i; dibujar(); }
     });
-    const alRedimensionar = () => dibujar();
-    window.addEventListener("resize", alRedimensionar);
-    return () => { vivo = false; quitar(); window.removeEventListener("resize", alRedimensionar); };
+    return () => { quitar(); soltar(); };
   }, []);
 
   return (
