@@ -1,0 +1,130 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef } from "react";
+
+import { HABLEMOS } from "./marca";
+import { observarProgreso, sinMovimiento } from "./scroll";
+
+/*
+  Hero v5, "Luz prestada": la casa de piedra, nogal y cuarzo de noche (120 cuadros renderizados en Blender,
+  scripts/v5/casa_luna.py). El scroll hace salir la luna creciente, la cámara se acerca y al final se encienden las
+  luces de adentro; en ese momento aparece la consulta que llega. En celular el encuadre se corre de la luna a la casa.
+*/
+const TOTAL = 120;
+const FIN_PELICULA = 0.86;            // el último 14 % del recorrido se queda en el cuadro final, con la consulta a la vista
+const ENCIENDE = 100 / TOTAL;         // desde este cuadro la casa ya está encendida
+
+function ruta(ancho: number, i: number): string {
+  return `/lab/v5/casa/${ancho}/c-${String(i + 1).padStart(3, "0")}.webp`;
+}
+
+/** Orden de carga: primero uno de cada 8 cuadros (el scroll ya tiene algo que mostrar), luego se rellenan los huecos. */
+function ordenDeCarga(): number[] {
+  const orden: number[] = [];
+  for (const paso of [8, 4, 2, 1]) for (let i = 0; i < TOTAL; i += paso) if (!orden.includes(i)) orden.push(i);
+  return orden;
+}
+
+function pintar(canvas: HTMLCanvasElement, img: HTMLImageElement, foco: number): void {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const escala = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  const dw = img.naturalWidth * escala, dh = img.naturalHeight * escala;
+  const x = Math.min(0, Math.max(w - dw, w / 2 - dw * foco));   // `foco` = qué parte horizontal queda al centro
+  ctx.drawImage(img, x, (h - dh) / 2, dw, dh);
+}
+
+export function Hero() {
+  const seccion = useRef<HTMLElement>(null);
+  const lienzo = useRef<HTMLCanvasElement>(null);
+  const poster = useRef<HTMLImageElement>(null);
+  const consulta = useRef<HTMLDivElement>(null);
+  const pista = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = seccion.current, canvas = lienzo.current;
+    if (!el || !canvas) return;
+    const ancho = window.innerWidth <= 820 ? 960 : 1440;
+    const angosta = () => window.innerWidth / window.innerHeight < 1;
+    const cuadros: (HTMLImageElement | null)[] = Array(TOTAL).fill(null);
+    let actual = 0;
+
+    const cercano = (i: number): HTMLImageElement | null => {
+      for (let d = 0; d < TOTAL; d++) {
+        const a = cuadros[i - d], b = cuadros[i + d];
+        if (a) return a;
+        if (b) return b;
+      }
+      return null;
+    };
+    const dibujar = () => {
+      const img = cercano(actual);
+      if (!img) return;
+      const foco = angosta() ? 0.34 + 0.18 * (actual / (TOTAL - 1)) : 0.5;
+      pintar(canvas, img, foco);
+      poster.current?.setAttribute("hidden", "");
+    };
+
+    let vivo = true;
+    for (const i of ordenDeCarga()) {
+      const img = new Image();
+      img.decoding = "async";
+      img.onload = () => { if (!vivo) return; cuadros[i] = img; if (Math.abs(i - actual) < 9) dibujar(); };
+      img.src = ruta(ancho, i);
+    }
+
+    if (sinMovimiento()) {
+      actual = TOTAL - 1;
+      consulta.current?.setAttribute("data-visible", "");
+      return () => { vivo = false; };
+    }
+    const quitar = observarProgreso(el, (p) => {
+      const t = Math.min(1, p / FIN_PELICULA);
+      const i = Math.round(t * (TOTAL - 1));
+      consulta.current?.toggleAttribute("data-visible", t >= ENCIENDE + 0.04);
+      if (pista.current) pista.current.style.opacity = p > 0.06 ? "0" : "1";
+      if (i !== actual) { actual = i; dibujar(); }
+    });
+    const alRedimensionar = () => dibujar();
+    window.addEventListener("resize", alRedimensionar);
+    return () => { vivo = false; quitar(); window.removeEventListener("resize", alRedimensionar); };
+  }, []);
+
+  return (
+    <section ref={seccion} className="v5-hero" aria-labelledby="v5-titulo">
+      <div className="v5-hero-fija">
+        {/* eslint-disable-next-line @next/next/no-img-element -- primer cuadro, visible antes de que cargue la secuencia */}
+        <img ref={poster} src={ruta(1440, 0)} alt="" className="v5-hero-poster" fetchPriority="high" width={1440} height={810} />
+        <canvas ref={lienzo} className="v5-hero-lienzo" aria-hidden />
+        <div className="v5-hero-velo" />
+        <div ref={consulta} className="v5-consulta" role="img" aria-label="Ejemplo de cómo llega una consulta nueva">
+          <p className="v5-mono flex items-center gap-2" style={{ color: "var(--calido)" }}>
+            <span className="v5-consulta-punto" /> Consulta nueva · ejemplo
+          </p>
+          <p className="mt-2 text-[17px] font-medium">Casa en Chía · 280 m²</p>
+          <p className="mt-1 text-[14px]" style={{ color: "var(--luna-300)" }}>Tiene lote, busca diseño · para el próximo año</p>
+        </div>
+        <p ref={pista} className="v5-hero-pista v5-mono">Desliza: sale la luna</p>
+        <div className="v5-hero-texto v5-gutter">
+          <p className="v5-mono">Estudio web para arquitectura e interiorismo</p>
+          <h1 id="v5-titulo" className="v5-display">
+            Tu obra, <span className="v5-luz">a la luz.</span>
+          </h1>
+          <div className="v5-hero-sub">
+            <p className="v5-texto">
+              Sitios donde el proyecto se recorre y cada consulta llega a tu WhatsApp en el mismo minuto.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link href={HABLEMOS} className="v5-boton v5-boton-luz">Hablemos 15 minutos</Link>
+              <a href="#v5-trabajo" className="v5-boton v5-boton-linea">Ver trabajo</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
