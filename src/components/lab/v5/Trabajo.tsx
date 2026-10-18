@@ -40,7 +40,7 @@ export function Trabajo() {
       <div className="v5-trabajo-grilla">
         {OBRAS.map((o) => (
           <article key={o.id} className="v5-obra">
-            <Link href={o.href} className="v5-linterna" onPointerMove={mover} onPointerEnter={(e) => encender(e, "220px")} onPointerLeave={(e) => encender(e, "0px")} aria-label={`${o.nombre}: ${o.accion.toLowerCase()}`}>
+            <Link href={o.href} className="v5-linterna" onPointerMove={mover} onPointerEnter={(e) => encender(e, "220px")} onPointerLeave={(e) => encender(e, "0px")} tabIndex={-1} aria-hidden="true">
               {/* eslint-disable-next-line @next/next/no-img-element -- foto del proyecto, a oscuras */}
               <img src={o.img} alt="" className="v5-linterna-apagada" loading="lazy" />
               {/* eslint-disable-next-line @next/next/no-img-element -- la misma foto, iluminada donde está el cursor */}
@@ -50,7 +50,7 @@ export function Trabajo() {
               <h3 className="v5-display">{o.nombre}</h3>
               <span className="v5-mono">{o.tipo}</span>
             </div>
-            <p className="v5-texto">{o.detalle} <Link href={o.href} className="v5-enlace">{o.accion}</Link></p>
+            <p className="v5-texto">{o.detalle} <Link href={o.href} className="v5-enlace" aria-label={`${o.accion}: ${o.nombre}`}>{o.accion}</Link></p>
           </article>
         ))}
       </div>

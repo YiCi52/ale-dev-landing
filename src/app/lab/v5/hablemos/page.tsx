@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Hablemos · Castillo Studio", robots
 
 export default function HablemosPage() {
   return (
-    <main className="v5-gutter min-h-[100svh] pb-24 pt-32">
+    <div className="v5-gutter min-h-[100svh] pb-24 pt-32">
       <div className="mx-auto grid max-w-[1240px] gap-14 lg:grid-cols-[5fr_7fr] lg:gap-24">
         <div className="lg:sticky lg:top-32 lg:self-start">
           <p className="v5-mono" style={{ color: "var(--calido)" }}>Hablemos</p>
@@ -22,7 +22,7 @@ export default function HablemosPage() {
           <dl className="mt-12 grid gap-5 border-t pt-8" style={{ borderColor: "var(--linea)" }}>
             <div>
               <dt className="v5-mono">WhatsApp</dt>
-              <dd className="mt-1"><a className="v5-enlace" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">{WHATSAPP_DISPLAY}</a></dd>
+              <dd className="mt-1"><a className="v5-enlace" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">{WHATSAPP_DISPLAY}<span className="sr-only"> (se abre en una pestaña nueva)</span></a></dd>
             </div>
             <div>
               <dt className="v5-mono">Respuesta</dt>
@@ -34,6 +34,6 @@ export default function HablemosPage() {
           <ContactForm />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

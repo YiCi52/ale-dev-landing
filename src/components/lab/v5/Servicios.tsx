@@ -23,7 +23,7 @@ export function Servicios() {
       <h2 id="v5-servicios-t" className="v5-display mb-16 text-[clamp(40px,6vw,96px)]">Lo que <span className="v5-luz">enciendo</span></h2>
       <div>
         {SERVICIOS.map((s) => (
-          <div key={s.nombre} className="v5-fila" tabIndex={0}>
+          <div key={s.nombre} className="v5-fila">
             <h3 className="v5-display">{s.nombre}</h3>
             <div className="grid gap-3">
               <p className="v5-texto">{s.texto}</p>
@@ -36,7 +36,7 @@ export function Servicios() {
         {PASOS.map((p) => (
           <li key={p.n} className="v5-paso">
             <span className="v5-mono">{p.n}</span>
-            <h4>{p.titulo}</h4>
+            <h3>{p.titulo}</h3>
             <p className="v5-texto">{p.texto}</p>
           </li>
         ))}

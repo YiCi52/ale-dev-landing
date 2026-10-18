@@ -15,7 +15,7 @@ import { Trabajo } from "@/components/lab/v5/Trabajo";
 */
 export default function V5Page() {
   return (
-    <main>
+    <div>
       <Intro />
       <Hero />
       <Manifiesto />
@@ -25,6 +25,6 @@ export default function V5Page() {
       <Servicios />
       <Preguntas />
       <Cierre />
-    </main>
+    </div>
   );
 }

@@ -42,7 +42,7 @@ export function Hero() {
   const seccion = useRef<HTMLElement>(null);
   const lienzo = useRef<HTMLCanvasElement>(null);
   const poster = useRef<HTMLImageElement>(null);
-  const consulta = useRef<HTMLDivElement>(null);
+  const consulta = useRef<HTMLElement>(null);
   const pista = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -101,13 +101,13 @@ export function Hero() {
         <img ref={poster} src={ruta(1440, 0)} alt="" className="v5-hero-poster" fetchPriority="high" width={1440} height={810} />
         <canvas ref={lienzo} className="v5-hero-lienzo" aria-hidden />
         <div className="v5-hero-velo" />
-        <div ref={consulta} className="v5-consulta" role="img" aria-label="Ejemplo de cómo llega una consulta nueva">
+        <aside ref={consulta} className="v5-consulta" aria-label="Ejemplo de consulta">
           <p className="v5-mono flex items-center gap-2" style={{ color: "var(--calido)" }}>
             <span className="v5-consulta-punto" /> Consulta nueva · ejemplo
           </p>
           <p className="mt-2 text-[17px] font-medium">Casa en Chía · 280 m²</p>
           <p className="mt-1 text-[14px]" style={{ color: "var(--luna-300)" }}>Tiene lote, busca diseño · para el próximo año</p>
-        </div>
+        </aside>
         <p ref={pista} className="v5-hero-pista v5-mono">Desliza: sale la luna</p>
         <div className="v5-hero-texto v5-gutter">
           <p className="v5-mono">Estudio web para arquitectura e interiorismo</p>

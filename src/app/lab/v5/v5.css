@@ -73,7 +73,9 @@ body:has(.v5-raiz) {
 :where(.v5-raiz) summary:focus-visible {
   outline: 2px solid var(--calido);
   outline-offset: 3px;
-  border-radius: 2px;
+}
+html:has(.v5-raiz) {
+  scroll-padding-top: 96px;
 }
 
 /* ---------- botones ---------- */
@@ -190,6 +192,7 @@ body:has(.v5-raiz) {
   pointer-events: auto;
 }
 .v5-marca {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -214,7 +217,10 @@ body:has(.v5-raiz) {
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
 }
 .v5-nav a {
-  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
   border-radius: 999px;
   font-size: 14px;
   color: var(--luna-300);
@@ -312,6 +318,9 @@ body:has(.v5-raiz) {
   color: var(--cuarzo);
   transition: opacity 500ms var(--ease-salida), transform 500ms var(--ease-salida);
 }
+.v5-consulta:not([data-visible]) {
+  visibility: hidden;
+}
 .v5-consulta[data-visible] {
   opacity: 1;
   transform: translate(-50%, 0);
@@ -337,11 +346,16 @@ body:has(.v5-raiz) {
 }
 .v5-palabra {
   color: var(--luna);
-  opacity: 0.16;
   transition: opacity 260ms ease;
 }
-.v5-palabra[data-encendida] {
-  opacity: 1;
+/* sin JS todo queda legible; con JS las palabras arrancan apagadas y se encienden con el scroll */
+@media (scripting: enabled) {
+  .v5-palabra {
+    opacity: 0.16;
+  }
+  .v5-palabra[data-encendida] {
+    opacity: 1;
+  }
 }
 .v5-muestra {
   display: inline-block;
@@ -412,7 +426,6 @@ body:has(.v5-raiz) {
   font-size: 14px;
   line-height: 1.35;
   color: var(--cuarzo);
-  opacity: 0;
   transform: translateY(6px);
   transition: opacity 360ms var(--ease-salida), transform 360ms var(--ease-salida);
 }
@@ -449,7 +462,6 @@ body:has(.v5-raiz) {
     font-size: 14px;
     line-height: 1.35;
     color: var(--cuarzo);
-    opacity: 0;
     transition: opacity 360ms ease;
   }
   .v5-plano-lista li[data-visible] {
@@ -510,6 +522,9 @@ body:has(.v5-raiz) {
   -webkit-mask-image: radial-gradient(circle var(--r) at var(--x) var(--y), #000 55%, transparent 100%);
   mask-image: radial-gradient(circle var(--r) at var(--x) var(--y), #000 55%, transparent 100%);
   transition: --r 500ms var(--ease-salida);
+}
+.v5-obra:focus-within .v5-linterna-encendida {
+  --r: 150%;
 }
 .v5-linterna:hover img {
   transform: scale(1.025);
@@ -596,8 +611,7 @@ body:has(.v5-raiz) {
   transition: background-color 300ms ease, box-shadow 300ms ease;
   flex: none;
 }
-.v5-fila:hover h3,
-.v5-fila:focus-within h3 {
+.v5-fila:hover h3 {
   color: var(--luna);
 }
 .v5-fila:hover h3::before {
@@ -631,7 +645,7 @@ body:has(.v5-raiz) {
   padding-top: 18px;
   border-top: 1px solid var(--linea-fuerte);
 }
-.v5-paso h4 {
+.v5-paso h3 {
   font-size: clamp(20px, 1.7vw, 26px);
   font-weight: 420;
   color: var(--cuarzo);
@@ -712,6 +726,9 @@ body:has(.v5-raiz) {
   }
 }
 .v5-pie a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--luna-300);
   transition: color 200ms ease;
 }
@@ -752,7 +769,7 @@ body:has(.v5-raiz) {
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
-.v5-formulario label {
+.v5-formulario label:not([for="consentimiento"]) {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.16em;
@@ -764,5 +781,48 @@ body:has(.v5-raiz) {
 .v5-formulario textarea {
   background: rgba(232, 237, 245, 0.04);
   color: var(--luna);
-  border-color: rgba(232, 237, 245, 0.18);
+  border-color: rgba(232, 237, 245, 0.55);
+}
+
+@media (scripting: enabled) {
+  .v5-llamada:not([data-visible]),
+  .v5-plano-lista li:not([data-visible]) {
+    opacity: 0;
+  }
+}
+/* pantallas bajas (celular acostado, zoom alto): sin escenas fijas, todo en flujo normal */
+@media (max-height: 640px) {
+  .v5-hero,
+  .v5-plano {
+    height: auto;
+  }
+  .v5-hero-fija,
+  .v5-plano-fija {
+    position: relative;
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+  .v5-hero-texto,
+  .v5-plano-titulo,
+  .v5-plano-lista {
+    position: relative;
+    inset: auto;
+    padding-top: 96px;
+  }
+  .v5-plano-lista li,
+  .v5-llamada {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v5-hero,
+  .v5-plano {
+    height: auto;
+  }
+  .v5-hero-fija,
+  .v5-plano-fija {
+    position: relative;
+    height: 100svh;
+  }
 }
