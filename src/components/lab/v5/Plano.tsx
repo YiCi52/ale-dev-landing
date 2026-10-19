@@ -44,6 +44,12 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
     const llamadas = Array.from(el.querySelectorAll<HTMLElement>(".v5-llamada"));
     const items = Array.from(el.querySelectorAll<HTMLElement>(".v5-plano-lista li"));
     const titulo = el.querySelector<HTMLElement>(".v5-plano-titulo");
+    // el cuadro de partida es el último del hero, en la misma luz que el hero (día en tema claro)
+    const raiz = el.closest<HTMLElement>(".v5-raiz");
+    const ponerRender = () => { if (render) render.src = `/lab/v5/${raiz?.getAttribute("data-tema") === "claro" ? "casa-dia" : "casa-sinluna"}/1440/c-120.webp`; };
+    ponerRender();
+    const vigia = new MutationObserver(ponerRender);
+    if (raiz) vigia.observe(raiz, { attributes: true, attributeFilter: ["data-tema"] });
     const cuadros: (HTMLImageElement | null)[] = Array(CUADROS).fill(null);
     let actual = 0, vivo = true;
 
@@ -126,7 +132,7 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
     };
     const quitar = sinMovimiento() ? (actual = CUADROS - 1, aplicar(1), () => {}) : observarProgreso(el, aplicar);
     return () => {
-      vivo = false; quitar(); window.removeEventListener("resize", ubicar);
+      vivo = false; quitar(); vigia.disconnect(); window.removeEventListener("resize", ubicar);
       fija.removeEventListener("pointermove", alMover); fija.removeEventListener("pointerleave", alSalir);
       for (const img of pedidas) { img.onload = null; img.src = ""; }
     };
@@ -136,7 +142,7 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
     <section ref={seccion} className="v5-plano" aria-labelledby="v5-plano-t">
       <div className="v5-plano-fija">
         {/* eslint-disable-next-line @next/next/no-img-element -- último cuadro del hero (misma cámara) */}
-        <img src="/lab/v5/casa/1440/c-120.webp" alt="" className="v5-plano-capa v5-plano-render" loading="lazy" />
+        <img src="/lab/v5/casa-sinluna/1440/c-120.webp" alt="" className="v5-plano-capa v5-plano-render" loading="lazy" />
         <canvas ref={lienzo} className="v5-plano-capa" style={{ opacity: 0 }} aria-hidden />
         {/* cotas sobre la planta: misma caja 16:9 que la imagen (slice = cover), así quedan pegadas al dibujo */}
         <svg className="v5-plano-cotas" viewBox="0 0 1440 810" preserveAspectRatio="xMidYMid slice" aria-hidden>

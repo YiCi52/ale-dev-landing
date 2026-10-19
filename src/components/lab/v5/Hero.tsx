@@ -6,20 +6,25 @@ import { useEffect, useRef } from "react";
 import { Hora } from "./Hora";
 import { HABLEMOS } from "./marca";
 import { RAIZ, TEXTOS, type Idioma } from "./textos";
-import { type Cursor, encuadre, pintarNoche } from "./noche";
+import { faseLunar } from "./luna-hoy";
+import { type Cursor, type LunaCuadro, encuadre, pintarLuna, pintarNoche } from "./noche";
 import { observarProgreso, sinMovimiento } from "./scroll";
 
 /*
   Hero v5, "Luz prestada": la casa de piedra, nogal y cuarzo de noche (120 cuadros renderizados en Blender,
   scripts/v5/casa_luna.py). El scroll hace salir la luna creciente, la cámara se acerca y al final se encienden las
   luces de adentro; en ese momento aparece la consulta que llega. En celular el encuadre se corre de la luna a la casa.
+  Los cuadros vienen sin luna: la web la pinta con la fase real de hoy. En tema claro la misma película es de día.
 */
 const TOTAL = 120;
 const FIN_PELICULA = 0.86;            // el último 14 % del recorrido se queda en el cuadro final, con la consulta a la vista
 const ENCIENDE = 100 / TOTAL;         // desde este cuadro la casa ya está encendida
 
-function ruta(ancho: number, i: number): string {
-  return `/lab/v5/casa/${ancho}/c-${String(i + 1).padStart(3, "0")}.webp`;
+const LUNAS = "/lab/v5/casa/luna.json";
+const MEDIO_MES = 29.530588853 / 2;
+
+function ruta(ancho: number, i: number, dia = false): string {
+  return `/lab/v5/${dia ? "casa-dia" : "casa-sinluna"}/${ancho}/c-${String(i + 1).padStart(3, "0")}.webp`;
 }
 
 /** Orden de carga: primero uno de cada 8 cuadros (el scroll ya tiene algo que mostrar), luego se rellenan los huecos. */
@@ -50,8 +55,13 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
     if (!el || !canvas) return;
     const ancho = window.matchMedia("(max-width: 820px)").matches ? 960 : 1440;
     const angosta = () => canvas.clientWidth / Math.max(1, canvas.clientHeight) < 1;
-    const cuadros: (HTMLImageElement | null)[] = Array(TOTAL).fill(null);
+    const raiz = el.closest<HTMLElement>(".v5-raiz");
+    const esDia = () => raiz?.getAttribute("data-tema") === "claro";
+    let dia = esDia();
+    let cuadros: (HTMLImageElement | null)[] = Array(TOTAL).fill(null);
     let actual = 0;
+    let lunas: LunaCuadro[] | null = null;
+    const fase = faseLunar(new Date());
 
     const cercano = (i: number): HTMLImageElement | null => {
       for (let d = 0; d < TOTAL; d++) {
@@ -70,26 +80,56 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
       const ctx = dimensionar(canvas);
       if (!ctx) return;
       // el agua empieza en la orilla del espejo, que baja un poco a medida que la cámara se acerca
-      pintarNoche(ctx, img, encuadre(canvas.width, canvas.height, img, foco), 0.735 + 0.05 * avance, t, cursor, 1);
+      const e = encuadre(canvas.width, canvas.height, img, foco);
+      pintarNoche(ctx, img, e, 0.735 + 0.05 * avance, t, cursor, dia ? 0 : 1);
+      const luna = lunas?.[actual];
+      if (luna) pintarLuna(ctx, e, luna, fase.iluminada, fase.edad < MEDIO_MES, dia);
       poster.current?.setAttribute("hidden", "");
     };
 
     let vivo = true;
-    const pedidas: HTMLImageElement[] = [];
-    ordenDeCarga().forEach((i, k) => {
-      const img = new Image();
-      img.decoding = "async";
-      if (k >= TOTAL / 8) img.fetchPriority = "low";   // la primera pasada (1 de cada 8) va normal; el relleno, después
-      img.onload = () => { if (!vivo) return; cuadros[i] = img; if (Math.abs(i - actual) < 9) dibujar(); };
-      img.src = ruta(ancho, i);
-      pedidas.push(img);
+    let pedidas: HTMLImageElement[] = [];
+    const cancelar = () => { for (const img of pedidas) { img.onload = null; img.src = ""; } };
+    const cargar = () => {
+      cancelar();
+      const propios: (HTMLImageElement | null)[] = Array(TOTAL).fill(null);
+      pedidas = ordenDeCarga().map((i, k) => {
+        const img = new Image();
+        img.decoding = "async";
+        if (k >= TOTAL / 8) img.fetchPriority = "low";   // la primera pasada (1 de cada 8) va normal; el relleno, después
+        img.onload = () => {
+          if (!vivo) return;
+          propios[i] = img;
+          // la película anterior sigue en pantalla hasta que la nueva tenga algo que mostrar cerca
+          if (cuadros !== propios && Math.abs(i - actual) < 9) cuadros = propios;
+          if (Math.abs(i - actual) < 9) dibujar();
+        };
+        img.src = ruta(ancho, i, dia);
+        return img;
+      });
+    };
+    if (dia && poster.current) poster.current.src = ruta(1440, 0, true);
+    cargar();
+    // el botón de tema cambia la película (noche ↔ día) sin recargar la página
+    const vigia = new MutationObserver(() => {
+      if (esDia() === dia) return;
+      dia = esDia();
+      cargar();
     });
+    if (raiz) vigia.observe(raiz, { attributes: true, attributeFilter: ["data-tema"] });
+    const pedido = new AbortController();
+    fetch(LUNAS, { signal: pedido.signal })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`luna.json ${r.status}`))))
+      .then((d: LunaCuadro[]) => { lunas = d; dibujar(); })
+      .catch((err: unknown) => { if (!pedido.signal.aborted) console.warn("v5: sin datos de la luna", err); });
     const alRedimensionar = () => dibujar();
     window.addEventListener("resize", alRedimensionar);
     const soltar = () => {
       vivo = false;
+      pedido.abort();
+      vigia.disconnect();
       window.removeEventListener("resize", alRedimensionar);
-      for (const img of pedidas) { img.onload = null; img.src = ""; }
+      cancelar();
     };
 
     if (sinMovimiento()) {

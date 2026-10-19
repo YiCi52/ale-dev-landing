@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 /*
   Tema claro/oscuro (Alejo, 19-oct, como en la página de Mari). Por defecto sigue la hora de Bogotá: de 6 a 18 claro (papel
   de plano, líneas negras), de noche oscuro. Si el visitante lo cambia a mano, se respeta su elección en este navegador.
-  El hero sigue siendo de noche en los dos temas: es una escena, no una superficie.
+  En claro el hero es la misma casa de día, con la luna pálida en el cielo; la carga sigue siendo de noche.
 */
 type Tema = "claro" | "oscuro";
 const CLAVE = "v5-tema";

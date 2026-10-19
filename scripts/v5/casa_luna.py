@@ -275,6 +275,35 @@ for f in range(1, N + 1):
 os.makedirs(SALIDA, exist_ok=True)
 json.dump(datos, open(os.path.join(SALIDA, "datos.json"), "w"))
 
+# ---------- variantes (19-oct): la luna la dibuja la web con la fase real; de día para el tema claro ----------
+SIN_LUNA = os.environ.get("V5_SIN_LUNA") == "1"
+DIA = os.environ.get("V5_DIA") == "1"
+if SIN_LUNA or DIA:
+    luna.hide_render = True          # la posición sigue exportada en datos.json: la web pinta ahí la fase del día
+if DIA:
+    # cielo de día (modelo de cielo físico) y sol alto desde la izquierda; las luces de adentro quedan apenas tibias
+    wn.clear()
+    cielo = wn.new("ShaderNodeTexSky")
+    try:
+        cielo.sky_type = "MULTIPLE_SCATTERING"
+    except TypeError:
+        pass
+    cielo.sun_elevation = math.radians(38); cielo.sun_rotation = math.radians(210)
+    fondo_d = wn.new("ShaderNodeBackground"); fondo_d.inputs["Strength"].default_value = 0.35
+    salida = wn.new("ShaderNodeOutputWorld")
+    wl.new(cielo.outputs["Color"], fondo_d.inputs["Color"]); wl.new(fondo_d.outputs[0], salida.inputs["Surface"])
+    for o in (sol, relleno):
+        if o.data.animation_data: o.data.animation_data_clear()
+        if o.animation_data: o.animation_data_clear()
+    sol.rotation_euler = (math.radians(52), 0, math.radians(-35)); sol.data.energy = 4.0; sol.data.color = (1.0, 0.96, 0.9)
+    sol.data.angle = math.radians(1.5)
+    relleno.data.energy = 0.0
+    for l in LUCES_DENTRO:
+        if l.data.animation_data: l.data.animation_data_clear()
+        l.data.energy = 60
+    M_TIERRA.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.03, 0.035, 0.025, 1)
+    M_CERRO.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.035, 0.045, 0.032, 1)   # cerros verdes de día
+
 # ---------- render ----------
 esc.render.engine = "CYCLES"
 try:
@@ -286,7 +315,7 @@ except Exception as e:
     print("[casa] METAL no disponible:", e)
 esc.cycles.use_denoising = True; esc.cycles.max_bounces = 6
 esc.view_settings.view_transform = "AgX"; esc.view_settings.look = "AgX - Medium High Contrast"
-esc.view_settings.exposure = 0.6
+esc.view_settings.exposure = 0.6 if not DIA else -1.1
 esc.render.image_settings.file_format = "PNG"
 lista = (range(*(lambda a, z: (a, z + 1))(*(int(v) for v in CUADROS.split("-")))) if "-" in CUADROS
          else [int(v) for v in CUADROS.split(",")])

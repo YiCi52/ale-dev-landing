@@ -15,7 +15,9 @@ const ESTRELLAS = Array.from({ length: 34 }, (_, i) => {
   return { x: fx, y: 0.03 + fy * 0.3, r: 0.6 + (i % 3) * 0.35, ritmo: 0.6 + (i % 5) * 0.27, fase: i * 1.7 };
 });
 
-type Encuadre = { x: number; y: number; dw: number; dh: number; escala: number };
+export type Encuadre = { x: number; y: number; dw: number; dh: number; escala: number };
+/** Luna de un cuadro: centro x, y (0–1 de la imagen) y radio (fracción del alto), medidos del render (public/lab/v5/casa/luna.json). */
+export type LunaCuadro = [number, number, number];
 
 /** Cómo cae la imagen en el lienzo (cover, con `foco` horizontal), en px del lienzo. */
 export function encuadre(w: number, h: number, img: HTMLImageElement, foco: number): Encuadre {
@@ -53,4 +55,41 @@ export function pintarNoche(ctx: CanvasRenderingContext2D, img: HTMLImageElement
     ctx.fill();
   }
   ctx.globalAlpha = 1;
+}
+
+/**
+ * La luna de verdad (Alejo, 19-oct: "que esté en sincronía con la fase real"). El render no la trae: se pinta aquí, en el
+ * punto y del tamaño que tenía en Blender, con la parte iluminada de hoy. Creciente: luz a la derecha; menguante, a la
+ * izquierda. De noche brilla y deja ver el resto del disco (luz de la Tierra); de día es un disco pálido sobre el cielo.
+ */
+export function pintarLuna(ctx: CanvasRenderingContext2D, e: Encuadre, luna: LunaCuadro, iluminada: number, creciente: boolean, dia: boolean): void {
+  const cx = e.x + luna[0] * e.dw, cy = e.y + luna[1] * e.dh, r = luna[2] * e.dh;
+  if (r <= 0) return;
+  ctx.save();
+  ctx.translate(cx, cy);
+  if (!dia) {
+    // halo y disco apagado
+    const halo = ctx.createRadialGradient(0, 0, r * 0.9, 0, 0, r * 3.2);
+    halo.addColorStop(0, `rgba(214, 224, 240, ${0.05 + 0.18 * iluminada})`);
+    halo.addColorStop(1, "rgba(214, 224, 240, 0)");
+    ctx.fillStyle = halo;
+    ctx.fillRect(-r * 3.2, -r * 3.2, r * 6.4, r * 6.4);
+    ctx.fillStyle = "rgba(190, 202, 222, 0.07)";
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (iluminada > 0.01) {
+    if (!creciente) ctx.scale(-1, 1);
+    // borde iluminado (media circunferencia derecha) y vuelta por el terminador, una media elipse
+    const rx = r * Math.abs(1 - 2 * iluminada);
+    ctx.beginPath();
+    ctx.arc(0, 0, r, -Math.PI / 2, Math.PI / 2, false);
+    ctx.ellipse(0, 0, Math.max(0.01, rx), r, 0, Math.PI / 2, -Math.PI / 2, iluminada < 0.5);
+    ctx.closePath();
+    ctx.fillStyle = dia ? "rgba(255, 255, 255, 0.82)" : "#f3f1ea";
+    if (!dia) { ctx.shadowColor = "rgba(236, 240, 250, 0.7)"; ctx.shadowBlur = r * 0.5; }
+    ctx.fill();
+  }
+  ctx.restore();
 }

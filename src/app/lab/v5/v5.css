@@ -958,8 +958,7 @@ html:has(.v5-raiz) {
 body:has(.v5-raiz[data-tema="claro"]) {
   background: #f2efe9;
 }
-/* el hero y la carga son escenas de noche en los dos temas */
-.v5-raiz[data-tema="claro"] .v5-hero,
+/* la carga es una escena de noche en los dos temas; el hero, en claro, es la misma casa de día */
 .v5-raiz[data-tema="claro"] .v5-intro {
   --noche-950: #05060a;
   --noche-900: #0b0d13;
@@ -971,6 +970,15 @@ body:has(.v5-raiz[data-tema="claro"]) {
   --linea: rgba(232, 237, 245, 0.12);
   --linea-fuerte: rgba(232, 237, 245, 0.28);
   color: var(--luna);
+}
+.v5-raiz[data-tema="claro"] .v5-hero-velo {
+  background: linear-gradient(180deg, rgba(242, 239, 233, 0.6) 0%, rgba(242, 239, 233, 0) 24%, rgba(242, 239, 233, 0) 46%, rgba(242, 239, 233, 0.74) 68%, rgba(242, 239, 233, 0.94) 100%);
+}
+.v5-raiz[data-tema="claro"] .v5-consulta {
+  background: rgba(250, 248, 243, 0.8);
+  border-color: rgba(163, 86, 28, 0.35);
+  color: var(--luna);
+  box-shadow: 0 12px 32px rgba(21, 23, 28, 0.12);
 }
 .v5-raiz[data-tema="claro"] .v5-plano canvas {
   filter: invert(1);
