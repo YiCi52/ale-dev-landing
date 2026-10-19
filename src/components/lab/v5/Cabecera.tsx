@@ -16,9 +16,9 @@ export function Cabecera() {
         Castillo Studio
       </Link>
       <nav aria-label="Secciones" className="v5-nav">
-        <a href={`${INICIO}#v5-trabajo`}>Trabajo</a>
-        <a href={`${INICIO}#v5-servicios`}>Servicios</a>
-        <a href={`${INICIO}#v5-preguntas`}>Preguntas</a>
+        <Link href={`${INICIO}/trabajo`}>Trabajo</Link>
+        <Link href={`${INICIO}/servicios`}>Servicios</Link>
+        <Link href={`${INICIO}/servicios#v5-preguntas`}>Preguntas</Link>
         <Link href={HABLEMOS} className="v5-nav-hablemos">Hablemos</Link>
       </nav>
     </header>

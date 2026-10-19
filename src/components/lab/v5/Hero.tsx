@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
+import { Hora } from "./Hora";
 import { HABLEMOS } from "./marca";
+import { type Cursor, encuadre, pintarNoche } from "./noche";
 import { observarProgreso, sinMovimiento } from "./scroll";
 
 /*
@@ -26,17 +28,12 @@ function ordenDeCarga(): number[] {
   return orden;
 }
 
-function pintar(canvas: HTMLCanvasElement, img: HTMLImageElement, foco: number): void {
-  // no tiene sentido un lienzo más denso que la imagen: se limita a ~2000 px de ancho
+/** Ajusta la densidad del lienzo (máx. ~2000 px de ancho: más no gana nitidez con cuadros de 1440). */
+function dimensionar(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
   const dpr = Math.min(2, window.devicePixelRatio || 1, 2000 / Math.max(1, canvas.clientWidth));
   const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const escala = Math.max(w / img.naturalWidth, h / img.naturalHeight);
-  const dw = img.naturalWidth * escala, dh = img.naturalHeight * escala;
-  const x = Math.min(0, Math.max(w - dw, w / 2 - dw * foco));   // `foco` = qué parte horizontal queda al centro
-  ctx.drawImage(img, x, (h - dh) / 2, dw, dh);
+  return canvas.getContext("2d");
 }
 
 export function Hero() {
@@ -62,11 +59,16 @@ export function Hero() {
       }
       return null;
     };
-    const dibujar = () => {
+    const cursor: Cursor = { x: 0, y: 0, fuerza: 0 };
+    const dibujar = (t = performance.now() / 1000) => {
       const img = cercano(actual);
       if (!img) return;
-      const foco = angosta() ? 0.34 + 0.18 * (actual / (TOTAL - 1)) : 0.5;
-      pintar(canvas, img, foco);
+      const avance = actual / (TOTAL - 1);
+      const foco = angosta() ? 0.34 + 0.18 * avance : 0.5;
+      const ctx = dimensionar(canvas);
+      if (!ctx) return;
+      // el agua empieza en la orilla del espejo, que baja un poco a medida que la cámara se acerca
+      pintarNoche(ctx, img, encuadre(canvas.width, canvas.height, img, foco), 0.735 + 0.05 * avance, t, cursor, 1);
       poster.current?.setAttribute("hidden", "");
     };
 
@@ -94,6 +96,21 @@ export function Hero() {
       if (pista.current) pista.current.hidden = true;
       return soltar;
     }
+    // la noche se mueve sola mientras el hero está a la vista: agua, estrellas y las ondas del cursor
+    let cuadro = 0, aLaVista = true;
+    const vivir = (ms: number) => { cursor.fuerza *= 0.965; dibujar(ms / 1000); cuadro = aLaVista ? requestAnimationFrame(vivir) : 0; };
+    const io = new IntersectionObserver(([en]) => {
+      aLaVista = en.isIntersecting;
+      if (aLaVista && !cuadro) cuadro = requestAnimationFrame(vivir);
+    });
+    io.observe(el);
+    const alMover = (ev: PointerEvent) => {
+      if (ev.pointerType === "touch") return;
+      const r = canvas.getBoundingClientRect(), dpr = canvas.width / Math.max(1, r.width);
+      cursor.x = (ev.clientX - r.left) * dpr; cursor.y = (ev.clientY - r.top) * dpr;
+      if (cursor.y > canvas.height * 0.7) cursor.fuerza = Math.min(1, cursor.fuerza + 0.12);
+    };
+    el.addEventListener("pointermove", alMover);
     const quitar = observarProgreso(el, (p) => {
       const t = Math.min(1, p / FIN_PELICULA);
       const i = Math.round(t * (TOTAL - 1));
@@ -101,7 +118,7 @@ export function Hero() {
       if (pista.current) pista.current.style.opacity = p > 0.06 ? "0" : "1";
       if (i !== actual) { actual = i; dibujar(); }
     });
-    return () => { quitar(); soltar(); };
+    return () => { quitar(); soltar(); io.disconnect(); cancelAnimationFrame(cuadro); el.removeEventListener("pointermove", alMover); };
   }, []);
 
   return (
@@ -120,7 +137,10 @@ export function Hero() {
         </aside>
         <p ref={pista} className="v5-hero-pista v5-mono">Desliza: sale la luna</p>
         <div className="v5-hero-texto v5-gutter">
-          <p className="v5-mono">Estudio web para arquitectura e interiorismo</p>
+          <div className="flex flex-wrap justify-between gap-x-6 gap-y-2">
+            <p className="v5-mono">Estudio web para arquitectura e interiorismo</p>
+            <Hora />
+          </div>
           <h1 id="v5-titulo" className="v5-display">
             Tu obra, <span className="v5-luz">a la luz.</span>
           </h1>
@@ -130,7 +150,7 @@ export function Hero() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href={HABLEMOS} className="v5-boton v5-boton-luz">Hablemos 15 minutos</Link>
-              <a href="#v5-trabajo" className="v5-boton v5-boton-linea">Ver trabajo</a>
+              <Link href="/lab/v5/trabajo" className="v5-boton v5-boton-linea">Ver trabajo</Link>
             </div>
           </div>
         </div>

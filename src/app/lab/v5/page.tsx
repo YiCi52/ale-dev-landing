@@ -2,9 +2,7 @@ import { Cierre } from "@/components/lab/v5/Cierre";
 import { Hero } from "@/components/lab/v5/Hero";
 import { Intro } from "@/components/lab/v5/Intro";
 import { Manifiesto } from "@/components/lab/v5/Manifiesto";
-import { Plano } from "@/components/lab/v5/Plano";
-import { Preguntas } from "@/components/lab/v5/Preguntas";
-import { Servicios } from "@/components/lab/v5/Servicios";
+import { Puertas } from "@/components/lab/v5/Puertas";
 import { Testimonio } from "@/components/lab/v5/Testimonio";
 import { Trabajo } from "@/components/lab/v5/Trabajo";
 
@@ -19,11 +17,9 @@ export default function V5Page() {
       <Intro />
       <Hero />
       <Manifiesto />
-      <Plano />
+      <Puertas />
       <Trabajo />
       <Testimonio />
-      <Servicios />
-      <Preguntas />
       <Cierre />
     </div>
   );

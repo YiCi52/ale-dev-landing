@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Archivo, Newsreader } from "next/font/google";
 
 import { Cabecera } from "@/components/lab/v5/Cabecera";
+import { Imanes } from "@/components/lab/v5/Imanes";
 
 import "./v5.css";
 
@@ -22,6 +23,7 @@ export default function V5Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className={`v5-raiz ${archivo.variable} ${newsreader.variable}`}>
       <Cabecera />
+      <Imanes />
       {children}
     </div>
   );

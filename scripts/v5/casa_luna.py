@@ -317,6 +317,60 @@ def pasada_lineas():
         bpy.ops.render.render(write_still=True); print(f"[casa] lineas {f}", flush=True)
 
 
+NP = 72   # cuadros de la subida de la cámara: de la fachada a la planta
+
+
+def pasada_planta():
+    """De la fachada a la planta: la cámara sube desde el encuadre final del hero hasta quedar encima, y en el último
+    tramo un plano de corte a 1,2 m (clip_start de la cámara) le quita el techo a la casa: queda la planta, como en un
+    plano de verdad. Solo líneas (Freestyle) sobre transparente, más las anclas de cada recinto por cuadro."""
+    pc = bpy.data.objects.new("cam_planta", bpy.data.cameras.new("cam_planta")); esc.collection.objects.link(pc)
+    pc.data.lens = 32; esc.camera = pc
+    obj = bpy.data.objects.new("obj_planta", None); esc.collection.objects.link(obj)
+    t2 = pc.constraints.new("TRACK_TO"); t2.target = obj; t2.track_axis = "TRACK_NEGATIVE_Z"; t2.up_axis = "UP_Y"
+    camino = ((1, (2.5, -26.5, 1.25), (0.8, 0.0, 4.5)), (28, (1.8, -21.0, 12.0), (0.7, 0.5, 2.5)),
+              (52, (0.9, -6.0, 23.0), (0.6, 0.9, 0.6)), (NP, (0.5, 0.4, 27.0), (0.5, 1.2, 0.0)))
+    for f, cpos, opos in camino:
+        pc.location = cpos; pc.keyframe_insert("location", frame=f); obj.location = opos; obj.keyframe_insert("location", frame=f)
+    # el corte entra desde la mitad de la subida y va rebanando la casa hasta dejarla a 1,2 m
+    for f, c in ((1, 0.1), (34, 0.1), (NP, 27.0 - 1.2)):
+        pc.data.clip_start = c; pc.data.keyframe_insert("clip_start", frame=f)
+    pc.data.clip_end = 400
+
+    hold = bpy.data.materials.new("hold_p"); hold.use_nodes = True; h = hold.node_tree
+    for n in list(h.nodes):
+        if n.type != "OUTPUT_MATERIAL": h.nodes.remove(n)
+    hn = h.nodes.new("ShaderNodeHoldout"); h.links.new(hn.outputs[0], next(n for n in h.nodes if n.type == "OUTPUT_MATERIAL").inputs[0])
+    for o in list(esc.objects):
+        if o.type != "MESH": continue
+        mats = {m.name for m in o.data.materials if m}
+        if o.name in ("tierra", "luna") or "cerro" in mats or "copa" in mats:
+            o.hide_render = True; continue
+        o.data.materials.clear(); o.data.materials.append(hold)
+        for md in o.modifiers: md.show_render = False
+    for l in list(esc.objects):
+        if l.type == "LIGHT": l.hide_render = True
+    esc.render.film_transparent = True; esc.render.image_settings.color_mode = "RGBA"
+    esc.cycles.samples = 1; esc.render.use_freestyle = True; esc.render.line_thickness_mode = "ABSOLUTE"; esc.render.line_thickness = 1.4
+    vl = esc.view_layers[0]; vl.use_freestyle = True
+    fs = vl.freestyle_settings; ls = fs.linesets[0] if fs.linesets else fs.linesets.new("lineas")
+    ls.select_by_visibility = True; ls.select_silhouette = ls.select_border = ls.select_crease = True
+    st = ls.linestyle or bpy.data.linestyles.new("plano"); ls.linestyle = st; st.color = (0.93, 0.92, 0.88); st.thickness = 1.4
+
+    recintos = {"proyectos": (-0.5, 4.75, 0.6), "recorrido": (-8.25, 1.4, 0.6), "formulario": (-3.2, 0.9, 0.6),
+                "aviso": (3.6, 2.9, 0.6), "respaldo": (9.5, -2.0, 0.6)}
+    anclas = {}
+    for f in range(1, NP + 1):
+        esc.frame_set(f)
+        anclas[f] = {k: [round(v.x, 4), round(1 - v.y, 4)] for k, v in
+                     ((k, world_to_camera_view(esc, pc, Vector(p))) for k, p in recintos.items())}
+    json.dump(anclas, open(os.path.join(SALIDA, "planta.json"), "w"))
+    for f in lista:
+        esc.frame_set(f); esc.render.filepath = os.path.join(SALIDA, f"planta-{f:03d}.png")
+        bpy.ops.render.render(write_still=True); print(f"[casa] planta {f}", flush=True)
+
+
 if PASADA == "render": pasada_render()
+elif PASADA == "planta": pasada_planta()
 elif PASADA == "lineas": pasada_lineas()
 print("[casa] TERMINADO")

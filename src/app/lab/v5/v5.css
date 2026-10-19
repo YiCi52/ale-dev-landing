@@ -88,7 +88,7 @@ html:has(.v5-raiz) {
   border-radius: 999px;
   font-size: 15px;
   font-weight: 500;
-  transition: transform 160ms var(--ease-salida), background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  transition: transform 160ms var(--ease-salida), translate 260ms var(--ease-salida), background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 }
 .v5-boton:active {
   transform: scale(0.97);
@@ -231,6 +231,7 @@ html:has(.v5-raiz) {
   background: rgba(232, 237, 245, 0.06);
 }
 .v5-nav a.v5-nav-hablemos {
+  transition: translate 260ms var(--ease-salida), background-color 200ms ease;
   background: var(--luna);
   color: var(--noche-950);
   font-weight: 500;
@@ -379,7 +380,7 @@ html:has(.v5-raiz) {
 /* ---------- por dentro: del render al plano ---------- */
 .v5-plano {
   position: relative;
-  height: 280svh;
+  height: 380svh;
 }
 .v5-plano-fija {
   position: sticky;
@@ -839,4 +840,100 @@ html:has(.v5-raiz) {
     position: relative;
     height: 100svh;
   }
+}
+
+/* ---------- planta: cotas y marcas de las llamadas ---------- */
+.v5-plano-cotas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms var(--ease-salida);
+}
+.v5-plano-cotas[data-visible] {
+  opacity: 1;
+}
+.v5-cota line {
+  stroke: var(--calido);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.v5-cota text,
+.v5-cota-rotulo {
+  fill: var(--calido);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+.v5-cota-rotulo {
+  fill: var(--luna-300);
+  font-size: 11px;
+}
+.v5-llamada::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: var(--calido);
+  box-shadow: 0 0 12px var(--calido);
+}
+.v5-llamada[data-lado="der"]::before {
+  left: -20px;
+}
+.v5-llamada[data-lado="izq"]::before {
+  right: -20px;
+}
+
+/* ---------- páginas: entrada y puertas ---------- */
+.v5-entra {
+  animation: v5-entra 520ms var(--ease-salida) both;
+}
+@keyframes v5-entra {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.v5-puertas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 28px);
+  padding-bottom: clamp(60px, 8vw, 120px);
+}
+@media (max-width: 760px) {
+  .v5-puertas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.v5-puerta {
+  display: grid;
+  gap: 14px;
+  padding: clamp(24px, 3vw, 40px);
+  border: 1px solid var(--linea);
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(232, 237, 245, 0.04), transparent 60%);
+  transition: border-color 300ms ease, background-color 300ms ease, transform 160ms var(--ease-salida);
+}
+.v5-puerta:hover {
+  border-color: rgba(240, 182, 121, 0.45);
+  background-color: rgba(240, 182, 121, 0.04);
+}
+.v5-puerta:active {
+  transform: scale(0.99);
+}
+.v5-puerta-titulo {
+  font-size: clamp(30px, 3.6vw, 56px);
+}
+.v5-puerta-flecha {
+  display: inline-block;
+  color: var(--calido);
+  transition: transform 300ms var(--ease-salida);
+}
+.v5-puerta:hover .v5-puerta-flecha {
+  transform: translateX(8px);
 }

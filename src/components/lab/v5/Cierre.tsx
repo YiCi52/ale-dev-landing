@@ -21,8 +21,8 @@ export function Cierre() {
         </div>
         <div className="grid gap-3">
           <span className="v5-mono">Sitio</span>
-          <a className="v5-pie-grande" href={`${INICIO}#v5-trabajo`}>Trabajo</a>
-          <a className="v5-pie-grande" href={`${INICIO}#v5-servicios`}>Servicios</a>
+          <Link className="v5-pie-grande" href={`${INICIO}/trabajo`}>Trabajo</Link>
+          <Link className="v5-pie-grande" href={`${INICIO}/servicios`}>Servicios</Link>
         </div>
         <div className="grid gap-3">
           <span className="v5-mono">Contacto</span>
