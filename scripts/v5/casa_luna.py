@@ -139,6 +139,10 @@ caja("vol_alto", (24, 8.2, H2 - WZ1), (2.5, VY, Z2 + (WZ1 + H2) / 2), M_PIEDRA)
 caja("vol_izq", (WX0 - VX0, 8.2, WZ1 - WZ0), ((VX0 + WX0) / 2, VY, Z2 + (WZ0 + WZ1) / 2), M_PIEDRA)
 caja("vol_der", (VX1 - WX1, 8.2, WZ1 - WZ0), ((VX1 + WX1) / 2, VY, Z2 + (WZ0 + WZ1) / 2), M_PIEDRA)
 caja("vol_fondo", (WX1 - WX0, 7.4, WZ1 - WZ0), ((WX0 + WX1) / 2, VY + 0.4, Z2 + (WZ0 + WZ1) / 2), M_PIEDRA)
+# apoyos del voladizo (Alejo, 19-oct: "no se ve algún soporte"): un muro de piedra bajo el extremo derecho y dos pilotis
+caja("muro_apoyo", (0.6, 8.2, Z2), (14.1, VY, Z2 / 2), M_PIEDRA)
+for i, (x, y) in enumerate(((10.0, -2.3), (10.0, 4.9))):
+    caja(f"piloti_v{i}", (0.18, 0.18, Z2 - 0.05), (x, y, Z2 / 2), M_ACERO, 0.004)
 caja("sofito_nogal", (15.4, 7.0, 0.05), (-0.5, 1.4, Z2 - 0.02), M_NOGAL, 0)
 # ventana corrida en la fachada del piso 2, con celosía de nogal y luz cálida detrás
 LISTONES = []
