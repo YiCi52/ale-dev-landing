@@ -132,8 +132,8 @@ export function Hero() {
           <p className="v5-mono flex items-center gap-2" style={{ color: "var(--calido)" }}>
             <span className="v5-consulta-punto" /> Consulta nueva · ejemplo
           </p>
-          <p className="mt-2 text-[17px] font-medium">Casa en Chía · 280 m²</p>
-          <p className="mt-1 text-[14px]" style={{ color: "var(--luna-300)" }}>Tiene lote, busca diseño · para el próximo año</p>
+          <p className="mt-2 text-[17px] font-medium">Casa campestre · diseño completo</p>
+          <p className="mt-1 text-[14px]" style={{ color: "var(--luna-300)" }}>Tiene lote, busca diseño</p>
         </aside>
         <p ref={pista} className="v5-hero-pista v5-mono">Desliza: sale la luna</p>
         <div className="v5-hero-texto v5-gutter">

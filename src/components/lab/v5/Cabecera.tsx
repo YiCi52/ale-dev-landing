@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { C_LOGO, HABLEMOS, INICIO } from "./marca";
+import { Tema } from "./Tema";
 
 /*
   Cabecera v5: la C y el nombre juntos son el botón de inicio; a la derecha, una píldora de vidrio con las secciones y
@@ -19,6 +20,7 @@ export function Cabecera() {
         <Link href={`${INICIO}/trabajo`}>Trabajo</Link>
         <Link href={`${INICIO}/servicios`}>Servicios</Link>
         <Link href={`${INICIO}/servicios#v5-preguntas`}>Preguntas</Link>
+        <Tema />
         <Link href={HABLEMOS} className="v5-nav-hablemos">Hablemos</Link>
       </nav>
     </header>

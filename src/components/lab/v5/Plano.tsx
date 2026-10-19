@@ -85,7 +85,12 @@ export function Plano() {
 
     const aplicar = (p: number) => {
       const apaga = Math.min(1, Math.max(0, p / 0.12));
-      if (render) { render.style.filter = `brightness(${1 - 0.86 * apaga}) saturate(${1 - apaga})`; render.style.opacity = String(1 - Math.min(1, Math.max(0, (p - 0.2) / 0.18))); }
+      // en tema claro la foto de noche se desvanece (sobre papel no se oscurece: se va)
+      const claro = el.closest(".v5-raiz")?.getAttribute("data-tema") === "claro";
+      if (render) {
+        render.style.filter = claro ? "" : `brightness(${1 - 0.86 * apaga}) saturate(${1 - apaga})`;
+        render.style.opacity = String(claro ? 1 - apaga : 1 - Math.min(1, Math.max(0, (p - 0.2) / 0.18)));
+      }
       canvas.style.opacity = String(Math.min(1, Math.max(0, (p - 0.04) / 0.1)));
       const i = Math.round(Math.min(1, Math.max(0, (p - 0.12) / (FIN_SUBIDA - 0.12))) * (CUADROS - 1));
       if (i !== actual) { actual = i; dibujar(); }

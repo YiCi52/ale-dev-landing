@@ -4,10 +4,10 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 /*
-  Botones que se acercan al cursor (solo con mouse; con dedo o movimiento reducido no hacen nada). Un único listener en
-  la ventana busca el botón más cercano dentro de 80 px y lo corre hasta un 30 % de la distancia; al salir vuelve.
+  Botones que se acercan al cursor (solo con mouse; con dedo o movimiento reducido no hacen nada). 19-oct (Alejo): más
+  suave, el seguimiento fuerte hacía que "Hablemos" y "Ver trabajo" se pisaran: 12 % de la distancia y tope de 5 px.
 */
-const RADIO = 80, FUERZA = 0.3;
+const RADIO = 36, FUERZA = 0.12, TOPE = 5;   // suave: como mucho 5 px, para que los botones vecinos no se pisen
 
 export function Imanes() {
   const ruta = usePathname();
@@ -22,7 +22,8 @@ export function Imanes() {
         const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
         const dx = ex - cx, dy = ey - cy, d = Math.hypot(dx, dy);
         const dentro = d < RADIO + Math.max(r.width, r.height) / 2;
-        b.style.translate = dentro ? `${(dx * FUERZA).toFixed(1)}px ${(dy * FUERZA).toFixed(1)}px` : "";
+        const mx = Math.max(-TOPE, Math.min(TOPE, dx * FUERZA)), my = Math.max(-TOPE, Math.min(TOPE, dy * FUERZA));
+        b.style.translate = dentro ? `${mx.toFixed(1)}px ${my.toFixed(1)}px` : "";
       }
     };
     const alMover = (e: PointerEvent) => { ex = e.clientX; ey = e.clientY; if (!pendiente) pendiente = requestAnimationFrame(mover); };

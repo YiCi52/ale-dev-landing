@@ -432,7 +432,6 @@ html:has(.v5-raiz) {
   max-width: 230px;
   padding: 10px 12px;
   border-radius: 8px;
-  background: rgba(5, 6, 10, 0.78);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   font-size: 14px;
@@ -936,4 +935,75 @@ html:has(.v5-raiz) {
 }
 .v5-puerta:hover .v5-puerta-flecha {
   transform: translateX(8px);
+}
+
+/* ---------- tema claro: papel de plano, tinta negra ---------- */
+.v5-raiz {
+  --velo: rgba(5, 6, 10, 0.78);
+}
+.v5-raiz[data-tema="claro"] {
+  --noche-950: #f2efe9;
+  --noche-900: #e8e4dc;
+  --noche-800: #dcd7cd;
+  --luna: #15171c;
+  --luna-300: #3e434d;
+  --apagado: #646a75;
+  --cuarzo: #23252b;
+  --calido: #a3561c;
+  --oro: #85652d;
+  --linea: rgba(21, 23, 28, 0.14);
+  --linea-fuerte: rgba(21, 23, 28, 0.32);
+  --velo: rgba(242, 239, 233, 0.88);
+}
+body:has(.v5-raiz[data-tema="claro"]) {
+  background: #f2efe9;
+}
+/* el hero y la carga son escenas de noche en los dos temas */
+.v5-raiz[data-tema="claro"] .v5-hero,
+.v5-raiz[data-tema="claro"] .v5-intro {
+  --noche-950: #05060a;
+  --noche-900: #0b0d13;
+  --luna: #e8edf5;
+  --luna-300: #b4bdcc;
+  --apagado: #858d9c;
+  --cuarzo: #efebe3;
+  --calido: #f0b679;
+  --linea: rgba(232, 237, 245, 0.12);
+  --linea-fuerte: rgba(232, 237, 245, 0.28);
+  color: var(--luna);
+}
+.v5-raiz[data-tema="claro"] .v5-plano canvas {
+  filter: invert(1);
+}
+.v5-llamada {
+  background: var(--velo);
+}
+/* en claro la marca lleva la misma píldora de vidrio que el menú: se lee sobre el papel y sobre la noche del hero */
+.v5-raiz[data-tema="claro"] .v5-marca {
+  padding: 0 16px 0 12px;
+  border-radius: 999px;
+  background: rgba(242, 239, 233, 0.72);
+  border: 1px solid var(--linea);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+.v5-tema {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: var(--luna-300);
+  transition: color 200ms ease, background-color 200ms ease;
+}
+.v5-tema:hover {
+  color: var(--luna);
+  background: rgba(232, 237, 245, 0.06);
+}
+.v5-raiz[data-tema="claro"] .v5-nav {
+  background: rgba(242, 239, 233, 0.72);
+}
+.v5-raiz[data-tema="claro"] .v5-nav a:hover,
+.v5-raiz[data-tema="claro"] .v5-tema:hover {
+  background: rgba(21, 23, 28, 0.06);
 }
