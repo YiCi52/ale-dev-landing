@@ -3,15 +3,15 @@
 import Link from "next/link";
 import type { PointerEvent } from "react";
 
+import { TEXTOS, type Idioma } from "./textos";
+
 /*
   Trabajo: cada foto está a oscuras y el cursor es una linterna que la ilumina (el efecto de cursor solo vive en las
   imágenes, regla de Alejo del 12-oct). En pantallas táctiles se ven encendidas desde el principio.
 */
-type Obra = { id: string; nombre: string; tipo: string; detalle: string; img: string; href: string; accion: string };
-
-const OBRAS: Obra[] = [
-  { id: "mh", nombre: "MH Interior", tipo: "Sitio de cliente · 2026", detalle: "Portafolio de interiorismo con formulario, aviso y resumen semanal.", img: "/lab/v5/proyectos/mh-sala.webp", href: "/trabajo/mh-interior", accion: "Ver el caso" },
-  { id: "villa", nombre: "Villa Savoye", tipo: "Lab · casas icónicas Nº 1", detalle: "La casa de Le Corbusier reconstruida desde sus planos para recorrerla.", img: "/lab/v5/proyectos/villa-salon.webp", href: "/lab/villa-savoye", accion: "Ver el recorrido" },
+const OBRAS = [
+  { id: "mh", nombre: "MH Interior", img: "/lab/v5/proyectos/mh-sala.webp", href: "/trabajo/mh-interior" },
+  { id: "villa", nombre: "Villa Savoye", img: "/lab/v5/proyectos/villa-salon.webp", href: "/lab/villa-savoye" },
 ];
 
 function mover(e: PointerEvent<HTMLAnchorElement>) {
@@ -33,18 +33,21 @@ function apagar(e: PointerEvent<HTMLAnchorElement>) {
   e.currentTarget.querySelector<HTMLElement>(".v5-linterna-encendida")?.style.removeProperty("--r");
 }
 
-export function Trabajo() {
+export function Trabajo({ idioma = "es" }: { idioma?: Idioma }) {
+  const tx = TEXTOS[idioma].trabajo;
   return (
     <section id="v5-trabajo" className="v5-trabajo v5-gutter" aria-labelledby="v5-trabajo-t">
       <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
         <div>
-          <p className="v5-mono mb-5">Trabajo</p>
-          <h2 id="v5-trabajo-t" className="v5-display text-[clamp(40px,6vw,96px)]">Obras <span className="v5-luz">encendidas</span></h2>
+          <p className="v5-mono mb-5">{tx.rotulo}</p>
+          <h2 id="v5-trabajo-t" className="v5-display text-[clamp(40px,6vw,96px)]">{tx.titulo} <span className="v5-luz">{tx.tituloLuz}</span></h2>
         </div>
-        <p className="v5-texto max-w-[34ch]">Pasa el cursor: cada proyecto se ilumina por partes, como una casa de noche.</p>
+        <p className="v5-texto max-w-[34ch]">{tx.pista}</p>
       </div>
       <div className="v5-trabajo-grilla">
-        {OBRAS.map((o) => (
+        {OBRAS.map((o, k) => {
+          const d = tx.obras[k];
+          return (
           <article key={o.id} className="v5-obra">
             <Link href={o.href} className="v5-linterna" onPointerMove={mover} onPointerEnter={encender} onPointerLeave={apagar} tabIndex={-1} aria-hidden="true">
               {/* eslint-disable-next-line @next/next/no-img-element -- foto del proyecto, a oscuras */}
@@ -54,11 +57,12 @@ export function Trabajo() {
             </Link>
             <div className="v5-obra-datos">
               <h3 className="v5-display">{o.nombre}</h3>
-              <span className="v5-mono">{o.tipo}</span>
+              <span className="v5-mono">{d.tipo}</span>
             </div>
-            <p className="v5-texto">{o.detalle} <Link href={o.href} className="v5-enlace" aria-label={`${o.accion}: ${o.nombre}`}>{o.accion}</Link></p>
+            <p className="v5-texto">{d.detalle} <Link href={o.href} className="v5-enlace" aria-label={`${d.accion}: ${o.nombre}`}>{d.accion}</Link></p>
           </article>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

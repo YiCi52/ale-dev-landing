@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 
 import { Hora } from "./Hora";
 import { HABLEMOS } from "./marca";
+import { RAIZ, TEXTOS, type Idioma } from "./textos";
 import { type Cursor, encuadre, pintarNoche } from "./noche";
 import { observarProgreso, sinMovimiento } from "./scroll";
 
@@ -36,7 +37,8 @@ function dimensionar(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null
   return canvas.getContext("2d");
 }
 
-export function Hero() {
+export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
+  const t = TEXTOS[idioma].hero;
   const seccion = useRef<HTMLElement>(null);
   const lienzo = useRef<HTMLCanvasElement>(null);
   const poster = useRef<HTMLImageElement>(null);
@@ -128,29 +130,27 @@ export function Hero() {
         <img ref={poster} src={ruta(1440, 0)} alt="" className="v5-hero-poster" fetchPriority="high" width={1440} height={810} />
         <canvas ref={lienzo} className="v5-hero-lienzo" aria-hidden />
         <div className="v5-hero-velo" />
-        <aside ref={consulta} className="v5-consulta" aria-label="Ejemplo de consulta">
+        <aside ref={consulta} className="v5-consulta" aria-label={t.consultaAria}>
           <p className="v5-mono flex items-center gap-2" style={{ color: "var(--calido)" }}>
-            <span className="v5-consulta-punto" /> Consulta nueva · ejemplo
+            <span className="v5-consulta-punto" /> {t.consulta}
           </p>
-          <p className="mt-2 text-[17px] font-medium">Casa campestre · diseño completo</p>
-          <p className="mt-1 text-[14px]" style={{ color: "var(--luna-300)" }}>Tiene lote, busca diseño</p>
+          <p className="mt-2 text-[17px] font-medium">{t.consultaTitulo}</p>
+          <p className="mt-1 text-[14px]" style={{ color: "var(--luna-300)" }}>{t.consultaDetalle}</p>
         </aside>
-        <p ref={pista} className="v5-hero-pista v5-mono">Desliza: sale la luna</p>
+        <p ref={pista} className="v5-hero-pista v5-mono">{t.pista}</p>
         <div className="v5-hero-texto v5-gutter">
           <div className="flex flex-wrap justify-between gap-x-6 gap-y-2">
-            <p className="v5-mono">Estudio web para arquitectura e interiorismo</p>
-            <Hora />
+            <p className="v5-mono">{t.rotulo}</p>
+            <Hora idioma={idioma} />
           </div>
           <h1 id="v5-titulo" className="v5-display">
-            Tu obra, <span className="v5-luz">a la luz.</span>
+            {t.titulo} <span className="v5-luz">{t.tituloLuz}</span>
           </h1>
           <div className="v5-hero-sub">
-            <p className="v5-texto">
-              Sitios donde el proyecto se recorre y cada consulta llega a tu WhatsApp en el mismo minuto.
-            </p>
+            <p className="v5-texto">{t.sub}</p>
             <div className="flex flex-wrap gap-3">
-              <Link href={HABLEMOS} className="v5-boton v5-boton-luz">Hablemos 15 minutos</Link>
-              <Link href="/lab/v5/trabajo" className="v5-boton v5-boton-linea">Ver trabajo</Link>
+              <Link href={idioma === "es" ? HABLEMOS : `${RAIZ.en}/hablemos`} className="v5-boton v5-boton-luz">{t.cta}</Link>
+              <Link href={`${RAIZ[idioma]}/trabajo`} className="v5-boton v5-boton-linea">{t.ver}</Link>
             </div>
           </div>
         </div>

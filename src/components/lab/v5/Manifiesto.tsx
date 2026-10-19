@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { observarProgreso, sinMovimiento } from "./scroll";
+import { TEXTOS, type Idioma } from "./textos";
 
 /*
   "Luz prestada": la idea de la página en un párrafo. Las palabras se encienden con el scroll, como la fachada cuando
@@ -10,14 +11,12 @@ import { observarProgreso, sinMovimiento } from "./scroll";
 */
 type Pieza = { t: string } | { muestra: "cuarzo" | "nogal" | "piedra" };
 
-const TEXTO: Pieza[] = [
-  { t: "La luna no tiene luz propia." }, { muestra: "cuarzo" },
-  { t: "Toma la del sol y la devuelve, para que de noche se vea lo que hay." }, { muestra: "nogal" },
-  { t: "Eso hacemos con tu obra: la mostramos como es y, cuando alguien la ve y quiere la suya," }, { muestra: "piedra" },
-  { t: "te avisa." },
-];
+function piezas(idioma: Idioma): Pieza[] {
+  const [a, b, c, d] = TEXTOS[idioma].manifiesto.partes;
+  return [{ t: a }, { muestra: "cuarzo" }, { t: b }, { muestra: "nogal" }, { t: c }, { muestra: "piedra" }, { t: d }];
+}
 
-export function Manifiesto() {
+export function Manifiesto({ idioma = "es" }: { idioma?: Idioma }) {
   const seccion = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -33,9 +32,9 @@ export function Manifiesto() {
 
   return (
     <section ref={seccion} className="v5-manifiesto v5-gutter" aria-labelledby="v5-manifiesto-t">
-      <p id="v5-manifiesto-t" className="v5-mono mb-10">Luz prestada</p>
+      <p id="v5-manifiesto-t" className="v5-mono mb-10">{TEXTOS[idioma].manifiesto.rotulo}</p>
       <p className="v5-display">
-        {TEXTO.map((pieza, i) =>
+        {piezas(idioma).map((pieza, i) =>
           "muestra" in pieza ? (
             <span key={i} className="v5-muestra" aria-hidden style={{ backgroundImage: `url(/lab/v5/materiales/${pieza.muestra}.webp)` }} />
           ) : (

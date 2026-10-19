@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { observarProgreso, sinMovimiento } from "./scroll";
+import { TEXTOS, type Idioma } from "./textos";
 
 /*
   "Por dentro" (Alejo, 19-oct: "que de frente pase a un plano desde arriba"). El último cuadro del hero se apaga, queda
@@ -14,11 +15,11 @@ const CUADROS = 72;
 const FIN_SUBIDA = 0.68;
 // anclas de cada recinto en el cuadro final (0–1 de la imagen 16:9), exportadas por Blender en planta.json
 const LLAMADAS = [
-  { id: "proyectos", x: 0.4665, y: 0.2875, titulo: "Proyectos", texto: "Fotos, planos y ficha técnica de cada obra.", lado: 1 },
-  { id: "recorrido", x: 0.2056, y: 0.487, titulo: "Recorridos", texto: "La obra a pantalla completa, para caminarla antes de llamarte.", lado: -1 },
-  { id: "formulario", x: 0.3754, y: 0.5169, titulo: "Formulario", texto: "Pregunta lo que tú preguntarías: tipo de proyecto, metros, presupuesto, fecha.", lado: 1 },
-  { id: "aviso", x: 0.6041, y: 0.3975, titulo: "Aviso", texto: "Cada consulta llega a tu WhatsApp en el mismo minuto.", lado: 1 },
-  { id: "respaldo", x: 0.804, y: 0.691, titulo: "Respaldo", texto: "Copia semanal y datos tratados según la Ley 1581.", lado: 1 },
+  { id: "proyectos", x: 0.4665, y: 0.2875, lado: 1 },
+  { id: "recorrido", x: 0.2056, y: 0.487, lado: -1 },
+  { id: "formulario", x: 0.3754, y: 0.5169, lado: 1 },
+  { id: "aviso", x: 0.6041, y: 0.3975, lado: 1 },
+  { id: "respaldo", x: 0.804, y: 0.691, lado: 1 },
 ] as const;
 
 const ruta = (i: number) => `/lab/v5/planta/p-${String(i + 1).padStart(3, "0")}.webp`;
@@ -29,7 +30,8 @@ function enContenedor(x: number, y: number, w: number, h: number): [number, numb
   return [(w - dw) / 2 + x * dw, (h - dh) / 2 + y * dh];
 }
 
-export function Plano() {
+export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
+  const tp = TEXTOS[idioma].plano;
   const seccion = useRef<HTMLElement>(null);
   const lienzo = useRef<HTMLCanvasElement>(null);
 
@@ -83,6 +85,23 @@ export function Plano() {
     ubicar();
     window.addEventListener("resize", ubicar);
 
+    // con la planta a la vista, el recinto más cercano al cursor se enciende y los demás se apagan
+    let enPlanta = false;
+    const alMover = (ev: PointerEvent) => {
+      if (!enPlanta || ev.pointerType === "touch") return;
+      const r = fija.getBoundingClientRect();
+      let cerca = -1, mejor = 140;
+      LLAMADAS.forEach((ll, k) => {
+        const [ax, ay] = enContenedor(ll.x, ll.y, r.width, r.height);
+        const d = Math.hypot(ev.clientX - r.left - ax, ev.clientY - r.top - ay);
+        if (d < mejor) { mejor = d; cerca = k; }
+      });
+      llamadas.forEach((c, k) => { c.toggleAttribute("data-activo", k === cerca); c.toggleAttribute("data-atenuado", cerca >= 0 && k !== cerca); });
+    };
+    const alSalir = () => llamadas.forEach((c) => { c.removeAttribute("data-activo"); c.removeAttribute("data-atenuado"); });
+    fija.addEventListener("pointermove", alMover);
+    fija.addEventListener("pointerleave", alSalir);
+
     const aplicar = (p: number) => {
       const apaga = Math.min(1, Math.max(0, p / 0.12));
       // en tema claro la foto de noche se desvanece (sobre papel no se oscurece: se va)
@@ -94,6 +113,8 @@ export function Plano() {
       canvas.style.opacity = String(Math.min(1, Math.max(0, (p - 0.04) / 0.1)));
       const i = Math.round(Math.min(1, Math.max(0, (p - 0.12) / (FIN_SUBIDA - 0.12))) * (CUADROS - 1));
       if (i !== actual) { actual = i; dibujar(); }
+      enPlanta = p > FIN_SUBIDA + 0.25;
+      if (!enPlanta) alSalir();
       cotas?.toggleAttribute("data-visible", p > FIN_SUBIDA + 0.02);
       // cuando la planta ocupa la pantalla, el título se aparta para no tapar el dibujo
       if (titulo) titulo.style.opacity = String(1 - 0.9 * Math.min(1, Math.max(0, (p - (FIN_SUBIDA - 0.08)) / 0.08)));
@@ -106,6 +127,7 @@ export function Plano() {
     const quitar = sinMovimiento() ? (actual = CUADROS - 1, aplicar(1), () => {}) : observarProgreso(el, aplicar);
     return () => {
       vivo = false; quitar(); window.removeEventListener("resize", ubicar);
+      fija.removeEventListener("pointermove", alMover); fija.removeEventListener("pointerleave", alSalir);
       for (const img of pedidas) { img.onload = null; img.src = ""; }
     };
   }, []);
@@ -128,23 +150,23 @@ export function Plano() {
             <line x1="1252" y1="176" x2="1272" y2="176" /><line x1="1252" y1="634" x2="1272" y2="634" />
             <text x="1282" y="410">9,50 m</text>
           </g>
-          <text className="v5-cota-rotulo" x="165" y="150">PLANTA · NIVEL +0,55 · CORTE A 1,20 m</text>
+          <text className="v5-cota-rotulo" x="165" y="150">{tp.corte}</text>
         </svg>
         <div className="v5-plano-titulo v5-gutter">
-          <p className="v5-mono">Por dentro</p>
-          <h2 id="v5-plano-t" className="v5-display">Lo que no se ve también <span className="v5-luz">se diseña.</span></h2>
+          <p className="v5-mono">{tp.rotulo}</p>
+          <h2 id="v5-plano-t" className="v5-display">{tp.titulo} <span className="v5-luz">{tp.tituloLuz}</span></h2>
         </div>
-        {LLAMADAS.map((ll) => (
+        {LLAMADAS.map((ll, k) => (
           <div key={ll.id} className="v5-llamada">
-            <span className="v5-mono">{ll.titulo}</span>
-            {ll.texto}
+            <span className="v5-mono">{tp.llamadas[k][0]}</span>
+            {tp.llamadas[k][1]}
           </div>
         ))}
         <ol className="v5-plano-lista v5-gutter">
-          {LLAMADAS.map((ll) => (
+          {LLAMADAS.map((ll, k) => (
             <li key={ll.id}>
               <span className="v5-mono" style={{ color: "var(--calido)" }}>—</span>
-              <span><strong className="font-medium">{ll.titulo}.</strong> {ll.texto}</span>
+              <span><strong className="font-medium">{tp.llamadas[k][0]}.</strong> {tp.llamadas[k][1]}</span>
             </li>
           ))}
         </ol>

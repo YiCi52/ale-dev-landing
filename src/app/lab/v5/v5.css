@@ -1007,3 +1007,29 @@ body:has(.v5-raiz[data-tema="claro"]) {
 .v5-raiz[data-tema="claro"] .v5-tema:hover {
   background: rgba(21, 23, 28, 0.06);
 }
+
+.v5-llamada[data-visible] {
+  transition: opacity 260ms ease, transform 360ms var(--ease-salida), box-shadow 260ms ease;
+}
+.v5-llamada[data-visible][data-atenuado] {
+  opacity: 0.35;
+}
+.v5-llamada[data-activo] {
+  box-shadow: 0 0 0 1px var(--calido), 0 0 30px rgba(240, 182, 121, 0.25);
+}
+.v5-llamada[data-activo]::before {
+  transform: scale(1.6);
+}
+.v5-llamada::before {
+  transition: transform 260ms var(--ease-salida);
+}
+.v5-nav a.v5-idioma {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+@media (max-width: 760px) {
+  .v5-nav a.v5-idioma {
+    display: inline-flex;
+  }
+}
