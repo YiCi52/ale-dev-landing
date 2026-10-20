@@ -278,20 +278,37 @@ json.dump(datos, open(os.path.join(SALIDA, "datos.json"), "w"))
 # ---------- variantes (19-oct): la luna la dibuja la web con la fase real; de día para el tema claro ----------
 SIN_LUNA = os.environ.get("V5_SIN_LUNA") == "1"
 DIA = os.environ.get("V5_DIA") == "1"
-if SIN_LUNA or DIA:
+if DIA:
     luna.hide_render = True          # la posición sigue exportada en datos.json: la web pinta ahí la fase del día
+elif SIN_LUNA:
+    # la luna no sale en cámara ni en el reflejo, pero SIGUE alumbrando la casa (sin su luz, el primer cuadro queda negro)
+    luna.visible_camera = False; luna.visible_glossy = False; luna.visible_transmission = False
 if DIA:
     # cielo de día (modelo de cielo físico) y sol alto desde la izquierda; las luces de adentro quedan apenas tibias
     wn.clear()
-    cielo = wn.new("ShaderNodeTexSky")
-    try:
-        cielo.sky_type = "MULTIPLE_SCATTERING"
-    except TypeError:
-        pass
-    cielo.sun_elevation = math.radians(38); cielo.sun_rotation = math.radians(210)
-    fondo_d = wn.new("ShaderNodeBackground"); fondo_d.inputs["Strength"].default_value = 0.35
     salida = wn.new("ShaderNodeOutputWorld")
-    wl.new(cielo.outputs["Color"], fondo_d.inputs["Color"]); wl.new(fondo_d.outputs[0], salida.inputs["Surface"])
+    HDRI = os.environ.get("V5_HDRI", "")
+    if HDRI and os.path.exists(HDRI):
+        # 20-oct (Alejo: "busca fotos reales y nubes"): cielo fotografiado con nubes (Poly Haven, CC0) en vez del degradado
+        coord = wn.new("ShaderNodeTexCoord"); mapa = wn.new("ShaderNodeMapping")
+        mapa.inputs["Rotation"].default_value[2] = math.radians(float(os.environ.get("V5_HDRI_ROT", "0")))
+        foto = wn.new("ShaderNodeTexEnvironment"); foto.image = bpy.data.images.load(HDRI)
+        wl.new(coord.outputs["Generated"], mapa.inputs["Vector"]); wl.new(mapa.outputs["Vector"], foto.inputs["Vector"])
+        fondo_d = wn.new("ShaderNodeBackground"); fondo_d.inputs["Strength"].default_value = float(os.environ.get("V5_HDRI_FUERZA", "1.0"))
+        wl.new(foto.outputs["Color"], fondo_d.inputs["Color"])
+        for o in bpy.data.objects:            # los cerros dibujados sobran: el paisaje lo trae la foto
+            if o.type == "MESH" and any(ms.material == M_CERRO for ms in o.material_slots):
+                o.hide_render = True
+    else:
+        cielo = wn.new("ShaderNodeTexSky")
+        try:
+            cielo.sky_type = "MULTIPLE_SCATTERING"
+        except TypeError:
+            pass
+        cielo.sun_elevation = math.radians(38); cielo.sun_rotation = math.radians(210)
+        fondo_d = wn.new("ShaderNodeBackground"); fondo_d.inputs["Strength"].default_value = 0.35
+        wl.new(cielo.outputs["Color"], fondo_d.inputs["Color"])
+    wl.new(fondo_d.outputs[0], salida.inputs["Surface"])
     for o in (sol, relleno):
         if o.data.animation_data: o.data.animation_data_clear()
         if o.animation_data: o.animation_data_clear()
@@ -315,7 +332,7 @@ except Exception as e:
     print("[casa] METAL no disponible:", e)
 esc.cycles.use_denoising = True; esc.cycles.max_bounces = 6
 esc.view_settings.view_transform = "AgX"; esc.view_settings.look = "AgX - Medium High Contrast"
-esc.view_settings.exposure = 0.6 if not DIA else -1.1
+esc.view_settings.exposure = 0.6 if not DIA else float(os.environ.get("V5_EXPO_DIA", "-1.1"))
 esc.render.image_settings.file_format = "PNG"
 lista = (range(*(lambda a, z: (a, z + 1))(*(int(v) for v in CUADROS.split("-")))) if "-" in CUADROS
          else [int(v) for v in CUADROS.split(",")])

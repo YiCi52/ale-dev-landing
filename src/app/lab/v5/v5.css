@@ -972,7 +972,7 @@ body:has(.v5-raiz[data-tema="claro"]) {
   color: var(--luna);
 }
 .v5-raiz[data-tema="claro"] .v5-hero-velo {
-  background: linear-gradient(180deg, rgba(242, 239, 233, 0.6) 0%, rgba(242, 239, 233, 0) 24%, rgba(242, 239, 233, 0) 46%, rgba(242, 239, 233, 0.74) 68%, rgba(242, 239, 233, 0.94) 100%);
+  background: linear-gradient(180deg, rgba(242, 239, 233, 0.3) 0%, rgba(242, 239, 233, 0) 20%, rgba(242, 239, 233, 0) 72%, rgba(242, 239, 233, 0.18) 100%);
 }
 .v5-raiz[data-tema="claro"] .v5-consulta {
   background: rgba(250, 248, 243, 0.8);
