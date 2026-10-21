@@ -972,7 +972,7 @@ body:has(.v5-raiz[data-tema="claro"]) {
   color: var(--luna);
 }
 .v5-raiz[data-tema="claro"] .v5-hero-velo {
-  background: linear-gradient(180deg, rgba(242, 239, 233, 0.3) 0%, rgba(242, 239, 233, 0) 20%, rgba(242, 239, 233, 0) 72%, rgba(242, 239, 233, 0.18) 100%);
+  background: radial-gradient(ellipse 60% 34% at 18% 92%, rgba(242, 239, 233, 0.72), rgba(242, 239, 233, 0) 100%), linear-gradient(180deg, rgba(242, 239, 233, 0.3) 0%, rgba(242, 239, 233, 0) 20%, rgba(242, 239, 233, 0) 72%, rgba(242, 239, 233, 0.18) 100%);
 }
 .v5-raiz[data-tema="claro"] .v5-consulta {
   background: rgba(250, 248, 243, 0.8);
@@ -1040,4 +1040,20 @@ body:has(.v5-raiz[data-tema="claro"]) {
   .v5-nav a.v5-idioma {
     display: inline-flex;
   }
+}
+
+/* 20-oct (Alejo): el rótulo y la hora del hero no se leían (de día sobre el vidrio, de noche sobre el agua) */
+.v5-hero-texto .v5-mono,
+.v5-hero-sub .v5-texto {
+  color: var(--luna);
+  text-shadow: 0 1px 12px rgba(5, 6, 10, 0.9), 0 0 2px rgba(5, 6, 10, 0.7);
+}
+.v5-raiz[data-tema="claro"] .v5-hero-texto .v5-mono,
+.v5-raiz[data-tema="claro"] .v5-hero-sub .v5-texto {
+  text-shadow: 0 0 14px rgba(242, 239, 233, 0.95), 0 0 3px rgba(242, 239, 233, 0.95);
+}
+.v5-raiz[data-tema="claro"] .v5-hero .v5-boton-linea {
+  background: rgba(242, 239, 233, 0.6);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
