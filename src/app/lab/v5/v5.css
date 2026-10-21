@@ -530,6 +530,22 @@ html:has(.v5-raiz) {
   background: var(--calido);
   box-shadow: 0 0 18px var(--calido);
 }
+/* 21-oct: al pasar, una luz cálida cruza la palabra una vez, de izquierda a derecha (luz prestada) */
+.v5-fila h3 > span {
+  background: linear-gradient(100deg, currentColor 0 42%, var(--calido) 50%, currentColor 58% 100%);
+  background-size: 260% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.v5-fila:hover h3 > span {
+  animation: v5-luz-pasa 900ms var(--ease-mueve) both;
+}
+@keyframes v5-luz-pasa {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
 @media (hover: none) {
   .v5-fila h3 {
     color: var(--luna);
