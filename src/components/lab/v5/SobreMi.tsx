@@ -1,11 +1,12 @@
-import { C_LOGO } from "./marca";
+import Image from "next/image";
+
 import "./sobre.css";
 import { TEXTOS, type Idioma } from "./textos";
 
 /*
   Sobre mí (Alejo, 20-oct: "falta el about"). Solo hechos ya dichos en la página y en su perfil: quién está detrás, a quién
-  le hace sitios, qué estudia y cómo trabaja (texto de la v4, con el aviso a WhatsApp de la v5). El retrato espera su foto:
-  mientras tanto el marco lleva la C del logo, sin texto de "próximamente".
+  le hace sitios, qué estudia y cómo trabaja (texto de la v4, con el aviso a WhatsApp de la v5). El retrato es la misma
+  foto de la página original (luz cálida de ventana: encaja con "luz prestada").
 */
 export function SobreMi({ idioma = "es" }: { idioma?: Idioma }) {
   const t = TEXTOS[idioma].sobre;
@@ -27,11 +28,9 @@ export function SobreMi({ idioma = "es" }: { idioma?: Idioma }) {
             ))}
           </dl>
         </div>
-        <div className="v5-retrato" role="img" aria-label={t.retratoAria}>
-          <svg viewBox="-110 -110 220 220" aria-hidden>
-            <path d={C_LOGO} fill="currentColor" />
-          </svg>
-        </div>
+        <figure className="v5-retrato">
+          <Image src="/sobre-mi/alejandro.jpg" alt={t.retratoAria} fill sizes="(max-width: 860px) 360px, 34vw" className="v5-retrato-foto" />
+        </figure>
       </div>
       <p className="v5-mono mt-28 mb-2">{t.formaRotulo}</p>
       <ol className="v5-pasos" aria-label={t.formaRotulo}>

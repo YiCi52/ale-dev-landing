@@ -31,27 +31,24 @@
   color: var(--cuarzo);
   letter-spacing: -0.01em;
 }
-/* el retrato espera la foto de Alejo: piedra oscura, la C del logo y una luz tibia que la toca al pasar */
+/* el retrato: la foto de la página original, en el mismo marco de piedra oscura */
 .v5-retrato {
   position: relative;
-  display: grid;
-  place-items: center;
   aspect-ratio: 4 / 5;
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid var(--linea);
-  background:
-    radial-gradient(120% 80% at 70% 0%, rgba(240, 182, 121, 0.08), transparent 60%),
-    var(--noche-900);
-  color: var(--linea-fuerte);
+  background: var(--noche-900);
 }
-.v5-retrato svg {
-  width: 34%;
-  transition: color 500ms var(--ease-salida), filter 500ms var(--ease-salida);
+.v5-retrato-foto {
+  object-fit: cover;
+  object-position: 50% 26%;
+  filter: saturate(0.92);
+  transition: filter 600ms var(--ease-salida), transform 900ms var(--ease-salida);
 }
-.v5-retrato:hover svg {
-  color: var(--calido);
-  filter: drop-shadow(0 0 22px rgba(240, 182, 121, 0.45));
+.v5-retrato:hover .v5-retrato-foto {
+  filter: saturate(1.05);
+  transform: scale(1.02);
 }
 @media (max-width: 860px) {
   .v5-sobre-cabeza {
