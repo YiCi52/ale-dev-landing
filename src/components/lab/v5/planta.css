@@ -1,9 +1,9 @@
-/* ---------- por dentro: la planta en tinta (20-oct) ---------- */
+/* ---------- por dentro: subida de cámara + planta en tinta (21-oct) ---------- */
 .v5-plano {
   --papel-bg: #0a0c12;
   --cuadricula: rgba(232, 237, 245, 0.045);
   position: relative;
-  height: 340svh;
+  height: 400svh;
 }
 .v5-raiz[data-tema="claro"] .v5-plano {
   --papel-bg: #f3f0ea;
@@ -22,47 +22,55 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(calc(1 - 0.55 * var(--apaga, 0))) saturate(calc(1 - 0.6 * var(--apaga, 0)));
+  opacity: calc(1 - var(--lineas, 0));
+  filter: brightness(calc(1 - 0.55 * var(--apaga, 0)));
 }
-/* el papel se abre desde el centro, como la luna de la v4 */
+/* el papel llega cuando la tinta ya tapa el dibujo de Blender (sin círculo que se abre: Alejo, 21-oct) */
 .v5-papel {
   position: absolute;
   inset: 0;
   background-color: var(--papel-bg);
   background-image: linear-gradient(var(--cuadricula) 1px, transparent 1px), linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
   background-size: 40px 40px;
-  clip-path: circle(calc(var(--papel, 0) * 80%) at 50% 56%);
+  opacity: var(--papel, 0);
 }
-.v5-planta {
+/* lienzo (cámara) y tinta comparten la misma caja: los dos se pintan en cover, por eso calzan */
+.v5-planta-escena {
   position: absolute;
   inset: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
-  grid-template-rows: auto minmax(0, 1fr);
-  column-gap: clamp(24px, 4vw, 64px);
-  padding-top: calc(92px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  transform-origin: 50% 50%;
+  transform: translate(calc(var(--asienta, 0) * -14%), calc(var(--asienta, 0) * 13%)) scale(calc(1 - 0.32 * var(--asienta, 0)));
+}
+.v5-planta-lienzo,
+.v5p-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.v5-planta-lienzo {
+  opacity: calc(var(--lineas, 0) * (1 - var(--papel, 0)));
+}
+.v5-raiz[data-tema="claro"] .v5-planta-lienzo {
+  filter: invert(1);
+}
+.v5p-svg {
+  overflow: visible;
 }
 .v5-planta-titulo {
-  grid-column: 1 / -1;
+  position: absolute;
+  top: calc(92px + env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
   display: grid;
   gap: 10px;
+  pointer-events: none;
+  /* se aparta mientras la tinta ocupa toda la pantalla y vuelve cuando el plano se corre */
+  opacity: clamp(0, 1 - var(--trazo, 0) * 1.6 + var(--asienta, 0) * 1.6, 1);
 }
 .v5-planta-titulo h2 {
   font-size: clamp(28px, 3.4vw, 54px);
   max-width: 22ch;
-}
-.v5-planta-dibujo {
-  min-height: 0;
-  display: grid;
-  place-items: center;
-  opacity: var(--papel, 0);
-}
-.v5p-svg {
-  width: 100%;
-  height: 100%;
-  max-height: calc(100svh - 210px);
-  overflow: visible;
 }
 
 /* trazos: cada uno se dibuja en su turno (--i) mientras avanza --trazo */
@@ -78,7 +86,6 @@
 .v5p-medio { stroke-width: 0.065; }
 .v5p-grueso { stroke-width: 0.1; }
 .v5p-vidrio { stroke-width: 0.02; }
-.v5p-eje { stroke-width: 0.03; opacity: 0.55; }
 
 .v5p-rellenos { opacity: var(--relleno, 0); }
 .v5p-patron { fill: none; stroke: var(--luna); stroke-width: 0.025; opacity: 0.32; }
@@ -108,8 +115,6 @@
 .v5p-cota text { fill: var(--calido); font-size: 0.38px; }
 .v5p-textos .v5p-nivel { font-size: 0.28px; opacity: 0.7; }
 .v5p-textos .v5p-rotulo { font-size: 0.3px; letter-spacing: 0.06px; opacity: 0.85; }
-.v5p-eje-marca circle { fill: var(--papel-bg); stroke: var(--luna); stroke-width: 0.035; }
-.v5p-eje-marca text { font-size: 0.4px; }
 .v5p-norte circle { fill: none; stroke: var(--luna); stroke-width: 0.035; }
 .v5p-norte path { fill: var(--luna); }
 .v5p-escala path { fill: none; stroke: var(--luna); stroke-width: 0.035; }
@@ -144,9 +149,11 @@
 
 /* la lista dice qué es cada número */
 .v5-planta-lista {
-  grid-column: 2;
-  grid-row: 2;
-  align-self: center;
+  position: absolute;
+  top: 50%;
+  right: max(16px, 4vw);
+  width: min(300px, 26vw);
+  transform: translateY(-40%);
   display: grid;
   gap: 6px;
   list-style: none;
@@ -181,27 +188,32 @@
 }
 
 @media (max-width: 860px) {
-  .v5-planta {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
-    align-content: start;
-    row-gap: 10px;
-    padding-top: calc(84px + env(safe-area-inset-top, 0px));
+  .v5-planta-escena {
+    inset: auto 0 auto 0;
+    top: calc(150px + env(safe-area-inset-top, 0px));
+    aspect-ratio: 16 / 9;
+    transform: none;
   }
-  .v5-planta-titulo h2 { font-size: clamp(24px, 7vw, 34px); }
-  .v5p-svg { max-height: 42svh; }
-  .v5-planta-lista { grid-column: 1; grid-row: 3; gap: 0; }
+  .v5-planta-titulo { top: calc(80px + env(safe-area-inset-top, 0px)); opacity: 1; }
+  .v5-planta-titulo h2 { font-size: clamp(22px, 6.4vw, 32px); }
+  .v5-planta-lista {
+    top: calc(162px + 56.25vw + env(safe-area-inset-top, 0px));
+    left: 16px;
+    right: 16px;
+    width: auto;
+    transform: none;
+    gap: 0;
+  }
   .v5-planta-lista li { font-size: 13px; padding: 5px 4px; grid-template-columns: 22px 1fr; gap: 8px; }
   .v5-planta-numero { width: 22px; height: 22px; font-size: 11px; }
 }
-/* sin JS o sin movimiento: la planta completa, sin escena fija en pantallas bajas */
+/* sin JS: la planta completa, ya corrida y con su lista */
 @media (scripting: none) {
-  .v5-plano-fija { --apaga: 1; --papel: 1; --trazo: 1; --relleno: 1; --llamadas: 1; }
+  .v5-plano-fija { --apaga: 1; --lineas: 1; --trazo: 1; --papel: 1; --relleno: 1; --asienta: 1; --llamadas: 1; }
 }
 @media (max-height: 640px) {
   .v5-plano { height: auto; }
-  .v5-plano-fija { position: relative; height: auto; min-height: 100svh; overflow: visible; }
-  .v5-planta { position: relative; }
+  .v5-plano-fija { position: relative; min-height: 100svh; overflow: visible; }
 }
 @media (prefers-reduced-motion: reduce) {
   .v5-plano { height: auto; }

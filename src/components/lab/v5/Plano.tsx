@@ -8,21 +8,25 @@ import { TEXTOS, type Idioma } from "./textos";
 import "./planta.css";
 
 /*
-  "Por dentro" (Alejo, 19-oct: "que de frente pase a un plano desde arriba"; 20-oct: "el plano de la v4 sí estaba
-  hermoso"). El último cuadro del hero se apaga, desde el centro se abre el papel (cuarzo en claro, noche en oscuro) y la
-  planta de la misma casa se dibuja en tinta con el scroll: bordes, cajas, muros, muebles, cotas. Al final aparecen los
-  cinco recintos numerados; cada número es una parte del sistema y la lista dice cuál.
+  "Por dentro" (Alejo, 19-oct: "que de frente pase a un plano desde arriba"; 21-oct: "¿no puedes volver a la vista desde
+  arriba?"). El último cuadro del hero se apaga en su dibujo de líneas y la cámara sube hasta quedar encima (72 cuadros,
+  scripts/v5/casa_luna.py pasada "planta"). Arriba, la planta en tinta (PlantaSvg) se dibuja EXACTAMENTE sobre ese último
+  cuadro (mismo encuadre en metros), el render se va y queda el papel. Al final el dibujo se corre a la izquierda y la
+  lista de los cinco recintos entra a la derecha.
 */
+const CUADROS = 72;
 const tramo = (p: number, a: number, b: number) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+const ruta = (i: number) => `/lab/v5/planta/p-${String(i + 1).padStart(3, "0")}.webp`;
 
 export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
   const tp = TEXTOS[idioma].plano;
   const seccion = useRef<HTMLElement>(null);
+  const lienzo = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const el = seccion.current;
+    const el = seccion.current, canvas = lienzo.current;
     const fija = el?.querySelector<HTMLElement>(".v5-plano-fija");
-    if (!el || !fija) return;
+    if (!el || !canvas || !fija) return;
     const render = el.querySelector<HTMLImageElement>(".v5-plano-render");
     const raiz = el.closest<HTMLElement>(".v5-raiz");
     const ponerRender = () => {
@@ -32,35 +36,63 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
     const vigia = new MutationObserver(ponerRender);
     if (raiz) vigia.observe(raiz, { attributes: true, attributeFilter: ["data-tema"] });
 
-    // el recinto y su renglón de la lista se encienden juntos, se toque cuál se toque
+    // ---- la subida de cámara: 72 cuadros pintados en cover sobre el lienzo ----
+    const cuadros: (HTMLImageElement | null)[] = Array(CUADROS).fill(null);
+    let actual = 0, vivo = true;
+    const dibujar = () => {
+      let img: HTMLImageElement | null = null;
+      for (let d = 0; d < CUADROS && !img; d++) img = cuadros[actual - d] ?? cuadros[actual + d] ?? null;
+      if (!img) return;
+      const dpr = Math.min(2, window.devicePixelRatio || 1, 2000 / Math.max(1, canvas.clientWidth));
+      const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      const escala = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, (w - img.naturalWidth * escala) / 2, (h - img.naturalHeight * escala) / 2, img.naturalWidth * escala, img.naturalHeight * escala);
+    };
+    const pedidas = Array.from({ length: CUADROS }, (_, i) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.onload = () => { if (!vivo) return; cuadros[i] = img; if (Math.abs(i - actual) < 6) dibujar(); };
+      img.src = ruta(i);
+      return img;
+    });
+    window.addEventListener("resize", dibujar);
+
+    // ---- el recinto y su renglón de la lista se encienden juntos ----
     const marcar = (id: string | null) => {
       el.querySelectorAll<Element>("[data-llamada]").forEach((n) => {
         n.toggleAttribute("data-activo", n.getAttribute("data-llamada") === id);
         n.toggleAttribute("data-atenuado", id !== null && n.getAttribute("data-llamada") !== id);
       });
     };
-    const alEntrar = (ev: Event) => {
-      const id = (ev.target as Element | null)?.closest?.("[data-llamada]")?.getAttribute("data-llamada");
-      marcar(id ?? null);
-    };
+    const alEntrar = (ev: Event) => marcar((ev.target as Element | null)?.closest?.("[data-llamada]")?.getAttribute("data-llamada") ?? null);
     const alSalir = () => marcar(null);
     fija.addEventListener("pointerover", alEntrar);
     fija.addEventListener("focusin", alEntrar);
     fija.addEventListener("pointerleave", alSalir);
     fija.addEventListener("focusout", alSalir);
 
+    // ---- guion del scroll ----
     const aplicar = (p: number) => {
-      fija.style.setProperty("--apaga", String(tramo(p, 0, 0.12)));
-      fija.style.setProperty("--papel", String(tramo(p, 0.06, 0.24)));
-      fija.style.setProperty("--trazo", String(tramo(p, 0.16, 0.66)));
-      fija.style.setProperty("--relleno", String(tramo(p, 0.5, 0.7)));
-      fija.style.setProperty("--llamadas", String(tramo(p, 0.62, 0.86)));
+      fija.style.setProperty("--apaga", String(tramo(p, 0, 0.1)));        // el render del hero se apaga…
+      fija.style.setProperty("--lineas", String(tramo(p, 0.04, 0.12)));   // …y queda su dibujo de líneas
+      const i = Math.round(tramo(p, 0.12, 0.5) * (CUADROS - 1));          // la cámara sube
+      if (i !== actual) { actual = i; dibujar(); }
+      fija.style.setProperty("--trazo", String(tramo(p, 0.48, 0.72)));   // la tinta se dibuja encima
+      fija.style.setProperty("--papel", String(tramo(p, 0.56, 0.7)));     // el dibujo de Blender se va, queda el papel
+      fija.style.setProperty("--relleno", String(tramo(p, 0.66, 0.78)));
+      fija.style.setProperty("--asienta", String(tramo(p, 0.76, 0.86))); // el plano se corre a la izquierda
+      fija.style.setProperty("--llamadas", String(tramo(p, 0.82, 0.95)));
     };
-    const quitar = sinMovimiento() ? (aplicar(1), () => {}) : observarProgreso(el, aplicar);
+    const quitar = sinMovimiento() ? (actual = CUADROS - 1, aplicar(1), () => {}) : observarProgreso(el, aplicar);
     return () => {
-      quitar(); vigia.disconnect();
+      vivo = false; quitar(); vigia.disconnect(); window.removeEventListener("resize", dibujar);
       fija.removeEventListener("pointerover", alEntrar); fija.removeEventListener("focusin", alEntrar);
       fija.removeEventListener("pointerleave", alSalir); fija.removeEventListener("focusout", alSalir);
+      for (const img of pedidas) { img.onload = null; img.src = ""; }
     };
   }, []);
 
@@ -70,23 +102,22 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
         {/* eslint-disable-next-line @next/next/no-img-element -- último cuadro del hero (misma cámara) */}
         <img src="/lab/v5/casa-sinluna/1440/c-120.webp" alt="" className="v5-plano-render" loading="lazy" />
         <div className="v5-papel" aria-hidden />
-        <div className="v5-planta v5-gutter">
-          <header className="v5-planta-titulo">
-            <p className="v5-mono">{tp.rotulo}</p>
-            <h2 id="v5-plano-t" className="v5-display">{tp.titulo} <span className="v5-luz">{tp.tituloLuz}</span></h2>
-          </header>
-          <div className="v5-planta-dibujo">
-            <PlantaSvg corte={tp.corte} nombres={tp.llamadas.map((l) => l[0])} />
-          </div>
-          <ol className="v5-planta-lista">
-            {tp.llamadas.map(([nombre, texto], k) => (
-              <li key={nombre} data-llamada={MARCAS[k].id} tabIndex={0} style={{ "--i": k / tp.llamadas.length } as CSSProperties}>
-                <span className="v5-planta-numero" aria-hidden>{k + 1}</span>
-                <span><strong className="font-medium">{nombre}.</strong> {texto}</span>
-              </li>
-            ))}
-          </ol>
+        <div className="v5-planta-escena">
+          <canvas ref={lienzo} className="v5-planta-lienzo" aria-hidden />
+          <PlantaSvg corte={tp.corte} nombres={tp.llamadas.map((l) => l[0])} />
         </div>
+        <header className="v5-planta-titulo v5-gutter">
+          <p className="v5-mono">{tp.rotulo}</p>
+          <h2 id="v5-plano-t" className="v5-display">{tp.titulo} <span className="v5-luz">{tp.tituloLuz}</span></h2>
+        </header>
+        <ol className="v5-planta-lista">
+          {tp.llamadas.map(([nombre, texto], k) => (
+            <li key={nombre} data-llamada={MARCAS[k].id} tabIndex={0} style={{ "--i": k / tp.llamadas.length } as CSSProperties}>
+              <span className="v5-planta-numero" aria-hidden>{k + 1}</span>
+              <span><strong className="font-medium">{nombre}.</strong> {texto}</span>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

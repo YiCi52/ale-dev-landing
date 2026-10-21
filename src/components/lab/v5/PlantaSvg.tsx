@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
   La planta en tinta (Alejo, 20-oct: "el plano de la luna de la v4 sí estaba hermoso"). Se dibuja en metros con las cajas
   reales del modelo de Blender (scripts/v5/casa_luna.py, pasada "geometria"): plinto 22,00 × 9,50, caja de vidrio
   15,50 × 7,20 y el volumen de piedra de arriba, 24,00 m, en proyección. Corte a 1,20 m sobre el piso (+0,55).
+  La sección A–A' se quitó (21-oct): el corte no se muestra, así que su marca solo confundía.
   Cada trazo se dibuja solo con el scroll: el contenedor pone --trazo (0–1) y --relleno (0–1), y cada línea tiene
   su turno en --i, así el scroll no re-renderiza React.
 */
@@ -52,7 +53,9 @@ function CotaV({ i, y0, y1, x, texto }: { i: number; y0: number; y1: number; x: 
 
 export function PlantaSvg({ corte, nombres }: { corte: string; nombres: readonly string[] }) {
   return (
-    <svg className="v5p-svg" viewBox="-12.6 -10.6 29 18.2" role="img" aria-label={corte}>
+    // viewBox = el último cuadro de la subida de cámara (1440×810) en metros: 48,5 px/m, ajustado con las 5 anclas de
+    // planta.json (error < 0,06 %). Con "slice" la planta queda encima del cuadro, igual que el lienzo en modo cover.
+    <svg className="v5p-svg" viewBox="-14.341 -9.552 29.67 16.727" preserveAspectRatio="xMidYMid slice" role="img" aria-label={corte}>
       <defs>
         <pattern id="v5p-agua" width="1.6" height="0.55" patternUnits="userSpaceOnUse">
           <path d="M0.1 0.28h0.55M0.95 0.08h0.4" className="v5p-patron" />
@@ -70,7 +73,7 @@ export function PlantaSvg({ corte, nombres }: { corte: string; nombres: readonly
 
       {/* rellenos: aparecen cuando el dibujo ya está */}
       <g className="v5p-rellenos">
-        <rect {...caja(-12.6, -7.6, 16.4, -4.5)} fill="url(#v5p-agua)" />
+        <rect {...caja(-14.4, -7.3, 15.4, -4.5)} fill="url(#v5p-agua)" />
         <rect {...caja(-11.5, -4.2, 14.5, 8.5)} fill="url(#v5p-piso)" />
         <rect {...caja(-11, -3.55, 11, 5.95)} className="v5p-plinto" />
         <rect {...caja(-8.25, -2.2, 7.25, 5)} className="v5p-interior" />
@@ -84,7 +87,7 @@ export function PlantaSvg({ corte, nombres }: { corte: string; nombres: readonly
       {/* el dibujo, en el orden en que lo trazaría alguien a mano: bordes, cajas, muros, muebles, detalles */}
       <g className="v5p-tinta">
         <Trazo i={0} className="v5p-fino" d={marco(-11.5, -4.5, 14.5, 8.5)} />
-        <Trazo i={0.04} d={`${linea(-12.6, -4.5, 16.4, -4.5)}${linea(-12.6, -4.2, 16.4, -4.2)}`} />
+        <Trazo i={0.04} d={`${linea(-14.4, -4.5, 15.4, -4.5)}${linea(-14.4, -4.2, 15.4, -4.2)}`} />
         <Trazo i={0.08} className="v5p-medio" d={marco(-11, -3.55, 11, 5.95)} />
         <Trazo i={0.14} d={marco(-8.25, -2.2, 7.25, 5)} />
         <Trazo i={0.2} className="v5p-grueso" d={marco(-8.25, 4.775, 7.25, 5.025)} />
@@ -98,7 +101,6 @@ export function PlantaSvg({ corte, nombres }: { corte: string; nombres: readonly
         {/* pilotes de acero */}
         <Trazo i={0.5} className="v5p-medio" d={[[-8, -2], [-3, -2], [2, -2], [7, -2]].map(([x, y]) => marco(x - 0.09, y - 0.09, x + 0.09, y + 0.09)).join("") + marco(9.91, -2.39, 10.09, -2.21) + marco(9.91, 4.81, 10.09, 4.99)} />
         {/* corte A–A' */}
-        <Trazo i={0.54} className="v5p-eje" d={linea(-6.4, -5.5, -6.4, 9.7)} />
       </g>
 
       {/* volumen de arriba en proyección (punteado): aparece, no se traza */}
@@ -113,17 +115,13 @@ export function PlantaSvg({ corte, nombres }: { corte: string; nombres: readonly
         <text x={-11.2} y={4.0} className="v5p-nivel">±0,00</text>
         <text x={7.6} y={3.3} className="v5p-nivel">VOLADIZO 24,00 · PISO 2</text>
         <text x={-12.2} y={5.4} className="v5p-nivel">ESPEJO DE AGUA</text>
-        <g className="v5p-eje-marca">
-          <circle cx={-6.4} cy={5.95} r={0.42} /><text x={-6.4} y={6.1} textAnchor="middle">A</text>
-          <circle cx={-6.4} cy={-10.12} r={0.42} /><text x={-6.4} y={-9.97} textAnchor="middle">A&apos;</text>
-        </g>
-        <g className="v5p-norte" transform="translate(15.2 -9.4)">
+        <g className="v5p-norte" transform="translate(13.4 -8.75)">
           <circle r={0.6} /><path d="M0 -0.45L0.22 0.3L0 0.16L-0.22 0.3Z" /><text y={-0.8} textAnchor="middle">N</text>
         </g>
-        <g className="v5p-escala" transform="translate(9.2 6.9)">
+        <g className="v5p-escala" transform="translate(9.2 6.1)">
           <path d="M0 0H5M0 -0.12V0.12M1 -0.08V0.08M2 -0.08V0.08M5 -0.12V0.12" /><text x={0} y={0.62}>0</text><text x={5} y={0.62} textAnchor="end">5 m</text>
         </g>
-        <text x={-12.3} y={7.25} className="v5p-rotulo">{corte}</text>
+        <text x={-12.3} y={6.75} className="v5p-rotulo">{corte}</text>
       </g>
 
       <g className="v5p-marcas">
