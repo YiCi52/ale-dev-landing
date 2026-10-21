@@ -724,13 +724,14 @@ html:has(.v5-raiz) {
 }
 
 /* ---------- páginas: entrada y puertas ---------- */
+/* solo opacidad: un transform aquí vuelve este contenedor el marco de todo lo position: fixed de adentro
+   (la carga salía pegada a la página, a media altura del scroll, en vez de a la pantalla) */
 .v5-entra {
   animation: v5-entra 520ms var(--ease-salida) both;
 }
 @keyframes v5-entra {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
 }
 .v5-puertas {

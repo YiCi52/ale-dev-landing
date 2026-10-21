@@ -1,3 +1,4 @@
+import { Revuelto } from "./Revuelto";
 import { TEXTOS, type Idioma } from "./textos";
 
 /*
@@ -14,7 +15,7 @@ export function Servicios({ idioma = "es" }: { idioma?: Idioma }) {
       <div>
         {t.lista.map(([nombre, texto, dato]) => (
           <div key={nombre} className="v5-fila">
-            <h3 className="v5-display">{nombre}</h3>
+            <h3 className="v5-display" aria-label={nombre}><Revuelto texto={nombre} disparador=".v5-fila" /></h3>
             <div className="grid gap-3">
               <p className="v5-texto">{texto}</p>
               <p className="v5-mono" style={{ color: "var(--oro)" }}>{dato}</p>
