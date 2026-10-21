@@ -93,3 +93,49 @@ export function pintarLuna(ctx: CanvasRenderingContext2D, e: Encuadre, luna: Lun
   }
   ctx.restore();
 }
+
+/* ---------- lluvia (Alejo, 20-oct: "con temporizador, aleatorio al entrar a la página") ---------- */
+const GOTAS = Array.from({ length: 160 }, (_, i) => {
+  const a = Math.sin(i * 91.17) * 43758.5453, b = Math.sin(i * 47.31) * 24634.6345;
+  return { x: a - Math.floor(a), y: b - Math.floor(b), v: 0.9 + (i % 7) * 0.08, largo: 0.6 + (i % 5) * 0.2 };
+});
+const ONDAS = 26;
+
+/** Gotas que caen y círculos que abren en el agua; `intensidad` 0–1 (sube y baja suave desde el hero). */
+export function pintarLluvia(ctx: CanvasRenderingContext2D, e: Encuadre, horizonte: number, t: number, intensidad: number, dia: boolean): void {
+  if (intensidad <= 0.01) return;
+  const w = ctx.canvas.width, h = ctx.canvas.height, k = w / 1440;
+  // el cielo se cierra un poco
+  ctx.fillStyle = dia ? `rgba(70, 80, 92, ${0.22 * intensidad})` : `rgba(4, 6, 12, ${0.28 * intensidad})`;
+  ctx.fillRect(0, 0, w, h);
+  // gotas: trazos finos, inclinados, que bajan en bucle
+  ctx.strokeStyle = dia ? `rgba(235, 240, 246, ${0.38 * intensidad})` : `rgba(190, 205, 228, ${0.32 * intensidad})`;
+  ctx.lineWidth = Math.max(1, 1.1 * k);
+  ctx.beginPath();
+  const n = Math.round(GOTAS.length * intensidad);
+  for (let i = 0; i < n; i++) {
+    const g = GOTAS[i];
+    const y = ((g.y + t * g.v * 1.3) % 1) * (h + 60 * k) - 30 * k;
+    const x = ((g.x + t * 0.05) % 1) * w;
+    const l = 26 * g.largo * k;
+    ctx.moveTo(x, y); ctx.lineTo(x - l * 0.12, y + l);
+  }
+  ctx.stroke();
+  // círculos en el agua: cada onda nace en un punto distinto en cada ciclo y se abre aplastada por la perspectiva
+  const y0 = e.y + e.dh * horizonte;
+  if (y0 >= h) return;
+  ctx.strokeStyle = dia ? "rgba(245, 248, 252, 1)" : "rgba(200, 214, 236, 1)";
+  for (let i = 0; i < ONDAS * intensidad; i++) {
+    const ciclo = t * 0.9 + i * 0.137;
+    const fase = ciclo % 1, vuelta = Math.floor(ciclo);
+    const a = Math.sin((i + 1) * 12.9898 + vuelta * 78.233) * 43758.5453, b = Math.sin((i + 1) * 39.346 + vuelta * 11.135) * 24634.6345;
+    const hondo = b - Math.floor(b);
+    const cx = (a - Math.floor(a)) * w, cy = y0 + 6 * k + hondo * (h - y0);
+    const rx = (6 + 22 * fase) * k * (0.6 + hondo);
+    ctx.globalAlpha = (1 - fase) * 0.4 * intensidad;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, rx * 0.22, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}

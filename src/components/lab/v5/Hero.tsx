@@ -7,7 +7,7 @@ import { Hora } from "./Hora";
 import { HABLEMOS } from "./marca";
 import { RAIZ, TEXTOS, type Idioma } from "./textos";
 import { faseLunar } from "./luna-hoy";
-import { type Cursor, type LunaCuadro, encuadre, pintarLuna, pintarNoche } from "./noche";
+import { type Cursor, type LunaCuadro, encuadre, pintarLluvia, pintarLuna, pintarNoche } from "./noche";
 import { observarProgreso, sinMovimiento } from "./scroll";
 
 /*
@@ -22,6 +22,11 @@ const ENCIENDE = 100 / TOTAL;         // desde este cuadro la casa ya está ence
 
 const LUNAS = "/lab/v5/casa/luna.json";
 const MEDIO_MES = 29.530588853 / 2;
+// lluvia: empieza al azar unos segundos después de entrar, dura un rato y vuelve cada tanto
+const azar = (min: number, max: number) => min + Math.random() * (max - min);
+const LLUVIA_PRIMERA: [number, number] = [5000, 16000];
+const LLUVIA_DURA: [number, number] = [16000, 28000];
+const LLUVIA_PAUSA: [number, number] = [45000, 100000];
 
 function ruta(ancho: number, i: number, dia = false): string {
   return `/lab/v5/${dia ? "casa-dia" : "casa-sinluna"}/${ancho}/c-${String(i + 1).padStart(3, "0")}.webp`;
@@ -62,6 +67,7 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
     let actual = 0;
     let lunas: LunaCuadro[] | null = null;
     const fase = faseLunar(new Date());
+    const lluvia = { valor: 0, meta: 0 };
 
     const cercano = (i: number): HTMLImageElement | null => {
       for (let d = 0; d < TOTAL; d++) {
@@ -84,6 +90,7 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
       pintarNoche(ctx, img, e, 0.735 + 0.05 * avance, t, cursor, dia ? 0 : 1);
       const luna = lunas?.[actual];
       if (luna) pintarLuna(ctx, e, luna, fase.iluminada, fase.edad < MEDIO_MES, dia);
+      pintarLluvia(ctx, e, 0.735 + 0.05 * avance, t, lluvia.valor, dia);
       poster.current?.setAttribute("hidden", "");
     };
 
@@ -140,7 +147,16 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
     }
     // la noche se mueve sola mientras el hero está a la vista: agua, estrellas y las ondas del cursor
     let cuadro = 0, aLaVista = true;
-    const vivir = (ms: number) => { cursor.fuerza *= 0.965; dibujar(ms / 1000); cuadro = aLaVista ? requestAnimationFrame(vivir) : 0; };
+    const vivir = (ms: number) => {
+      cursor.fuerza *= 0.965;
+      lluvia.valor += (lluvia.meta - lluvia.valor) * 0.025;
+      dibujar(ms / 1000);
+      cuadro = aLaVista ? requestAnimationFrame(vivir) : 0;
+    };
+    let reloj = 0;
+    const llover = () => { lluvia.meta = 1; reloj = window.setTimeout(escampar, azar(...LLUVIA_DURA)); };
+    const escampar = () => { lluvia.meta = 0; reloj = window.setTimeout(llover, azar(...LLUVIA_PAUSA)); };
+    reloj = window.setTimeout(llover, azar(...LLUVIA_PRIMERA));
     const io = new IntersectionObserver(([en]) => {
       aLaVista = en.isIntersecting;
       if (aLaVista && !cuadro) cuadro = requestAnimationFrame(vivir);
@@ -160,7 +176,7 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
       if (pista.current) pista.current.style.opacity = p > 0.06 ? "0" : "1";
       if (i !== actual) { actual = i; dibujar(); }
     });
-    return () => { quitar(); soltar(); io.disconnect(); cancelAnimationFrame(cuadro); el.removeEventListener("pointermove", alMover); };
+    return () => { quitar(); soltar(); io.disconnect(); cancelAnimationFrame(cuadro); clearTimeout(reloj); el.removeEventListener("pointermove", alMover); };
   }, []);
 
   return (
