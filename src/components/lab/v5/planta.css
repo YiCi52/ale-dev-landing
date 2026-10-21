@@ -121,10 +121,16 @@
 }
 .v5p-marca circle {
   fill: var(--calido);
-  stroke: var(--calido);
-  stroke-width: 0;
-  stroke-opacity: 0.3;
-  transition: stroke-width 240ms var(--ease-salida);
+}
+/* halo del recinto activo: crece con transform y opacidad, no con el grosor del trazo */
+.v5p-marca .v5p-halo {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 240ms var(--ease-salida), transform 240ms var(--ease-salida);
+}
+.v5p-marca[data-activo] .v5p-halo {
+  opacity: 0.3;
+  transform: scale(1.5);
 }
 .v5p-marca text {
   fill: var(--noche-950);
@@ -132,7 +138,6 @@
   font-size: 0.5px;
   font-weight: 600;
 }
-.v5p-marca[data-activo] circle { stroke-width: 0.5; }
 .v5p-marca[data-atenuado] { filter: opacity(0.4); }
 
 /* la lista dice qué es cada número */

@@ -129,6 +129,7 @@ export function PlantaSvg({ corte, nombres }: { corte: string; nombres: readonly
       <g className="v5p-marcas">
         {MARCAS.map((m, k) => (
           <g key={m.id} className="v5p-marca" data-llamada={m.id} style={turno(k / MARCAS.length)} transform={`translate(${m.x} ${-m.y})`}>
+            <circle r={0.48} className="v5p-halo" />
             <circle r={0.48} />
             <text y={0.17} textAnchor="middle">{k + 1}</text>
             <title>{nombres[k]}</title>
