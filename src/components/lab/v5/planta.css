@@ -125,6 +125,8 @@
 /* halo del recinto activo: crece con transform y opacidad, no con el grosor del trazo */
 .v5p-marca .v5p-halo {
   opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
   transform: scale(0.8);
   transition: opacity 240ms var(--ease-salida), transform 240ms var(--ease-salida);
 }
