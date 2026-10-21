@@ -1,0 +1,202 @@
+/* ---------- por dentro: la planta en tinta (20-oct) ---------- */
+.v5-plano {
+  --papel-bg: #0a0c12;
+  --cuadricula: rgba(232, 237, 245, 0.045);
+  position: relative;
+  height: 340svh;
+}
+.v5-raiz[data-tema="claro"] .v5-plano {
+  --papel-bg: #f3f0ea;
+  --cuadricula: rgba(21, 23, 28, 0.05);
+}
+.v5-plano-fija {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--noche-950);
+}
+.v5-plano-render {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(calc(1 - 0.55 * var(--apaga, 0))) saturate(calc(1 - 0.6 * var(--apaga, 0)));
+}
+/* el papel se abre desde el centro, como la luna de la v4 */
+.v5-papel {
+  position: absolute;
+  inset: 0;
+  background-color: var(--papel-bg);
+  background-image: linear-gradient(var(--cuadricula) 1px, transparent 1px), linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+  background-size: 40px 40px;
+  clip-path: circle(calc(var(--papel, 0) * 80%) at 50% 56%);
+}
+.v5-planta {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  grid-template-rows: auto minmax(0, 1fr);
+  column-gap: clamp(24px, 4vw, 64px);
+  padding-top: calc(92px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+}
+.v5-planta-titulo {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+}
+.v5-planta-titulo h2 {
+  font-size: clamp(28px, 3.4vw, 54px);
+  max-width: 22ch;
+}
+.v5-planta-dibujo {
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  opacity: var(--papel, 0);
+}
+.v5p-svg {
+  width: 100%;
+  height: 100%;
+  max-height: calc(100svh - 210px);
+  overflow: visible;
+}
+
+/* trazos: cada uno se dibuja en su turno (--i) mientras avanza --trazo */
+.v5p-trazo {
+  fill: none;
+  stroke: var(--luna);
+  stroke-width: 0.045;
+  stroke-linecap: square;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - clamp(0, (var(--trazo, 0) - var(--i)) * 5, 1));
+}
+.v5p-fino { stroke-width: 0.025; opacity: 0.6; }
+.v5p-medio { stroke-width: 0.065; }
+.v5p-grueso { stroke-width: 0.1; }
+.v5p-vidrio { stroke-width: 0.02; }
+.v5p-eje { stroke-width: 0.03; opacity: 0.55; }
+
+.v5p-rellenos { opacity: var(--relleno, 0); }
+.v5p-patron { fill: none; stroke: var(--luna); stroke-width: 0.025; opacity: 0.32; }
+.v5p-patron-suave { opacity: 0.14; }
+.v5p-patron-nogal { stroke: var(--nogal); stroke-width: 0.05; opacity: 0.9; }
+.v5p-plinto { fill: var(--luna); opacity: 0.035; }
+.v5p-interior { fill: none; }
+.v5p-poche-nogal { fill: var(--nogal); }
+.v5p-cuarzo { fill: var(--luna); opacity: 0.07; }
+.v5p-proyeccion {
+  fill: none;
+  stroke: var(--luna);
+  stroke-width: 0.05;
+  stroke-dasharray: 0.45 0.25;
+  opacity: calc(var(--relleno, 0) * 0.7);
+}
+
+/* textos del plano: cotas, niveles, ejes, norte, escala y rótulo */
+.v5p-textos { opacity: var(--relleno, 0); }
+.v5p-textos text {
+  fill: var(--luna);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.32px;
+  letter-spacing: 0.04px;
+}
+.v5p-cota .v5p-trazo { stroke: var(--calido); stroke-width: 0.03; }
+.v5p-cota text { fill: var(--calido); font-size: 0.38px; }
+.v5p-textos .v5p-nivel { font-size: 0.28px; opacity: 0.7; }
+.v5p-textos .v5p-rotulo { font-size: 0.3px; letter-spacing: 0.06px; opacity: 0.85; }
+.v5p-eje-marca circle { fill: var(--papel-bg); stroke: var(--luna); stroke-width: 0.035; }
+.v5p-eje-marca text { font-size: 0.4px; }
+.v5p-norte circle { fill: none; stroke: var(--luna); stroke-width: 0.035; }
+.v5p-norte path { fill: var(--luna); }
+.v5p-escala path { fill: none; stroke: var(--luna); stroke-width: 0.035; }
+
+/* recintos numerados: aparecen en orden con --llamadas */
+.v5p-marca {
+  opacity: clamp(0, (var(--llamadas, 0) - var(--i)) * 5, 1);
+  cursor: default;
+}
+.v5p-marca circle {
+  fill: var(--calido);
+  stroke: var(--calido);
+  stroke-width: 0;
+  stroke-opacity: 0.3;
+  transition: stroke-width 240ms var(--ease-salida);
+}
+.v5p-marca text {
+  fill: var(--noche-950);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.5px;
+  font-weight: 600;
+}
+.v5p-marca[data-activo] circle { stroke-width: 0.5; }
+.v5p-marca[data-atenuado] { filter: opacity(0.4); }
+
+/* la lista dice qué es cada número */
+.v5-planta-lista {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
+  display: grid;
+  gap: 6px;
+  list-style: none;
+}
+.v5-planta-lista li {
+  --ve: clamp(0, (var(--llamadas, 0) - var(--i)) * 5, 1);
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--luna-300);
+  opacity: var(--ve);
+  transform: translateY(calc((1 - var(--ve)) * 8px));
+  transition: color 200ms ease, background-color 200ms ease, filter 200ms ease;
+}
+.v5-planta-lista li strong { color: var(--luna); }
+.v5-planta-lista li[data-activo] { color: var(--luna); background: var(--linea); }
+.v5-planta-lista li[data-atenuado] { filter: opacity(0.45); }
+.v5-planta-lista li:focus-visible { outline: 2px solid var(--calido); outline-offset: 2px; }
+.v5-planta-numero {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--calido);
+  color: var(--noche-950);
+  font: 600 12px var(--font-geist-mono), ui-monospace, monospace;
+}
+
+@media (max-width: 860px) {
+  .v5-planta {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-content: start;
+    row-gap: 10px;
+    padding-top: calc(84px + env(safe-area-inset-top, 0px));
+  }
+  .v5-planta-titulo h2 { font-size: clamp(24px, 7vw, 34px); }
+  .v5p-svg { max-height: 42svh; }
+  .v5-planta-lista { grid-column: 1; grid-row: 3; gap: 0; }
+  .v5-planta-lista li { font-size: 13px; padding: 5px 4px; grid-template-columns: 22px 1fr; gap: 8px; }
+  .v5-planta-numero { width: 22px; height: 22px; font-size: 11px; }
+}
+/* sin JS o sin movimiento: la planta completa, sin escena fija en pantallas bajas */
+@media (scripting: none) {
+  .v5-plano-fija { --apaga: 1; --papel: 1; --trazo: 1; --relleno: 1; --llamadas: 1; }
+}
+@media (max-height: 640px) {
+  .v5-plano { height: auto; }
+  .v5-plano-fija { position: relative; height: auto; min-height: 100svh; overflow: visible; }
+  .v5-planta { position: relative; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v5-plano { height: auto; }
+  .v5-plano-fija { position: relative; height: 100svh; }
+}

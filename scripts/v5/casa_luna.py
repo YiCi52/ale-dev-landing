@@ -420,7 +420,22 @@ def pasada_planta():
         bpy.ops.render.render(write_still=True); print(f"[casa] planta {f}", flush=True)
 
 
+def pasada_geometria():
+    """20-oct: la planta de la web se dibuja en SVG desde la geometría real (cajas alineadas a los ejes)."""
+    piezas = []
+    for o in esc.objects:
+        if o.type != "MESH" or o.hide_render and o.name not in ("tierra",):
+            continue
+        esq = [o.matrix_world @ Vector(c) for c in o.bound_box]
+        mn = [round(min(v[i] for v in esq), 3) for i in range(3)]; mx = [round(max(v[i] for v in esq), 3) for i in range(3)]
+        piezas.append({"nombre": o.name, "material": o.material_slots[0].material.name if o.material_slots and o.material_slots[0].material else "",
+                       "min": mn, "max": mx})
+    json.dump({"z1": Z1, "z2": Z2, "piezas": piezas}, open(os.path.join(SALIDA, "geometria.json"), "w"), indent=1)
+    print(f"[casa] geometria {len(piezas)} piezas", flush=True)
+
+
 if PASADA == "render": pasada_render()
+elif PASADA == "geometria": pasada_geometria()
 elif PASADA == "planta": pasada_planta()
 elif PASADA == "lineas": pasada_lineas()
 print("[casa] TERMINADO")

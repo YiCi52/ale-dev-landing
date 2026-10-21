@@ -1,140 +1,66 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { type CSSProperties, useEffect, useRef } from "react";
 
+import { MARCAS, PlantaSvg } from "./PlantaSvg";
 import { observarProgreso, sinMovimiento } from "./scroll";
 import { TEXTOS, type Idioma } from "./textos";
+import "./planta.css";
 
 /*
-  "Por dentro" (Alejo, 19-oct: "que de frente pase a un plano desde arriba"). El último cuadro del hero se apaga, queda
-  su dibujo de líneas y la cámara sube hasta quedar encima; en la subida, un plano de corte a 1,2 m le quita el techo a
-  la casa y queda la PLANTA, como en un plano de verdad (72 cuadros, scripts/v5/casa_luna.py pasada "planta"). Sobre la
-  planta se dibujan las cotas y se encienden las llamadas: cada recinto señala una parte del sistema.
+  "Por dentro" (Alejo, 19-oct: "que de frente pase a un plano desde arriba"; 20-oct: "el plano de la v4 sí estaba
+  hermoso"). El último cuadro del hero se apaga, desde el centro se abre el papel (cuarzo en claro, noche en oscuro) y la
+  planta de la misma casa se dibuja en tinta con el scroll: bordes, cajas, muros, muebles, cotas. Al final aparecen los
+  cinco recintos numerados; cada número es una parte del sistema y la lista dice cuál.
 */
-const CUADROS = 72;
-const FIN_SUBIDA = 0.68;
-// anclas de cada recinto en el cuadro final (0–1 de la imagen 16:9), exportadas por Blender en planta.json
-const LLAMADAS = [
-  { id: "proyectos", x: 0.4665, y: 0.2875, lado: 1 },
-  { id: "recorrido", x: 0.2056, y: 0.487, lado: -1 },
-  { id: "formulario", x: 0.3754, y: 0.5169, lado: 1 },
-  { id: "aviso", x: 0.6041, y: 0.3975, lado: 1 },
-  { id: "respaldo", x: 0.804, y: 0.691, lado: 1 },
-] as const;
-
-const ruta = (i: number) => `/lab/v5/planta/p-${String(i + 1).padStart(3, "0")}.webp`;
-
-/** Posición en px del contenedor de un punto 0–1 de una imagen 16:9 recortada como cover y centrada. */
-function enContenedor(x: number, y: number, w: number, h: number): [number, number] {
-  const escala = Math.max(w / 16, h / 9), dw = 16 * escala, dh = 9 * escala;
-  return [(w - dw) / 2 + x * dw, (h - dh) / 2 + y * dh];
-}
+const tramo = (p: number, a: number, b: number) => Math.min(1, Math.max(0, (p - a) / (b - a)));
 
 export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
   const tp = TEXTOS[idioma].plano;
   const seccion = useRef<HTMLElement>(null);
-  const lienzo = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const el = seccion.current, canvas = lienzo.current;
+    const el = seccion.current;
     const fija = el?.querySelector<HTMLElement>(".v5-plano-fija");
-    if (!el || !canvas || !fija) return;
+    if (!el || !fija) return;
     const render = el.querySelector<HTMLImageElement>(".v5-plano-render");
-    const cotas = el.querySelector<SVGSVGElement>(".v5-plano-cotas");
-    const llamadas = Array.from(el.querySelectorAll<HTMLElement>(".v5-llamada"));
-    const items = Array.from(el.querySelectorAll<HTMLElement>(".v5-plano-lista li"));
-    const titulo = el.querySelector<HTMLElement>(".v5-plano-titulo");
-    // el cuadro de partida es el último del hero, en la misma luz que el hero (día en tema claro)
     const raiz = el.closest<HTMLElement>(".v5-raiz");
-    const ponerRender = () => { if (render) render.src = `/lab/v5/${raiz?.getAttribute("data-tema") === "claro" ? "casa-dia" : "casa-sinluna"}/1440/c-120.webp`; };
+    const ponerRender = () => {
+      if (render) render.src = `/lab/v5/${raiz?.getAttribute("data-tema") === "claro" ? "casa-dia" : "casa-sinluna"}/1440/c-120.webp`;
+    };
     ponerRender();
     const vigia = new MutationObserver(ponerRender);
     if (raiz) vigia.observe(raiz, { attributes: true, attributeFilter: ["data-tema"] });
-    const cuadros: (HTMLImageElement | null)[] = Array(CUADROS).fill(null);
-    let actual = 0, vivo = true;
 
-    const dibujar = () => {
-      let img: HTMLImageElement | null = null;
-      for (let d = 0; d < CUADROS && !img; d++) img = cuadros[actual - d] ?? cuadros[actual + d] ?? null;
-      if (!img) return;
-      const dpr = Math.min(2, window.devicePixelRatio || 1, 2000 / Math.max(1, canvas.clientWidth));
-      const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
-      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      const escala = Math.max(w / img.naturalWidth, h / img.naturalHeight);
-      ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(img, (w - img.naturalWidth * escala) / 2, (h - img.naturalHeight * escala) / 2, img.naturalWidth * escala, img.naturalHeight * escala);
-    };
-    const pedidas = Array.from({ length: CUADROS }, (_, i) => {
-      const img = new Image();
-      img.decoding = "async";
-      img.onload = () => { if (!vivo) return; cuadros[i] = img; if (Math.abs(i - actual) < 6) dibujar(); };
-      img.src = ruta(i);
-      return img;
-    });
-
-    const ubicar = () => {
-      const w = fija.clientWidth, h = fija.clientHeight;
-      LLAMADAS.forEach((ll, i) => {
-        const c = llamadas[i];
-        if (!c) return;
-        const [ax, ay] = enContenedor(ll.x, ll.y, w, h);
-        // la etiqueta va del lado indicado, salvo que no quepa
-        const ancho = c.offsetWidth + 24;
-        const derecha = ll.lado > 0 ? ax + ancho < w - 16 : ax - ancho < 16;
-        c.style.left = `${ax}px`; c.style.top = `${ay}px`;
-        c.style.transform = `translate(${derecha ? "16px" : "calc(-100% - 16px)"}, -50%)`;
-        c.dataset.lado = derecha ? "der" : "izq";
+    // el recinto y su renglón de la lista se encienden juntos, se toque cuál se toque
+    const marcar = (id: string | null) => {
+      el.querySelectorAll<Element>("[data-llamada]").forEach((n) => {
+        n.toggleAttribute("data-activo", n.getAttribute("data-llamada") === id);
+        n.toggleAttribute("data-atenuado", id !== null && n.getAttribute("data-llamada") !== id);
       });
     };
-    ubicar();
-    window.addEventListener("resize", ubicar);
-
-    // con la planta a la vista, el recinto más cercano al cursor se enciende y los demás se apagan
-    let enPlanta = false;
-    const alMover = (ev: PointerEvent) => {
-      if (!enPlanta || ev.pointerType === "touch") return;
-      const r = fija.getBoundingClientRect();
-      let cerca = -1, mejor = 140;
-      LLAMADAS.forEach((ll, k) => {
-        const [ax, ay] = enContenedor(ll.x, ll.y, r.width, r.height);
-        const d = Math.hypot(ev.clientX - r.left - ax, ev.clientY - r.top - ay);
-        if (d < mejor) { mejor = d; cerca = k; }
-      });
-      llamadas.forEach((c, k) => { c.toggleAttribute("data-activo", k === cerca); c.toggleAttribute("data-atenuado", cerca >= 0 && k !== cerca); });
+    const alEntrar = (ev: Event) => {
+      const id = (ev.target as Element | null)?.closest?.("[data-llamada]")?.getAttribute("data-llamada");
+      marcar(id ?? null);
     };
-    const alSalir = () => llamadas.forEach((c) => { c.removeAttribute("data-activo"); c.removeAttribute("data-atenuado"); });
-    fija.addEventListener("pointermove", alMover);
+    const alSalir = () => marcar(null);
+    fija.addEventListener("pointerover", alEntrar);
+    fija.addEventListener("focusin", alEntrar);
     fija.addEventListener("pointerleave", alSalir);
+    fija.addEventListener("focusout", alSalir);
 
     const aplicar = (p: number) => {
-      const apaga = Math.min(1, Math.max(0, p / 0.12));
-      // en tema claro la foto de noche se desvanece (sobre papel no se oscurece: se va)
-      const claro = el.closest(".v5-raiz")?.getAttribute("data-tema") === "claro";
-      if (render) {
-        render.style.filter = claro ? "" : `brightness(${1 - 0.86 * apaga}) saturate(${1 - apaga})`;
-        render.style.opacity = String(claro ? 1 - apaga : 1 - Math.min(1, Math.max(0, (p - 0.2) / 0.18)));
-      }
-      canvas.style.opacity = String(Math.min(1, Math.max(0, (p - 0.04) / 0.1)));
-      const i = Math.round(Math.min(1, Math.max(0, (p - 0.12) / (FIN_SUBIDA - 0.12))) * (CUADROS - 1));
-      if (i !== actual) { actual = i; dibujar(); }
-      enPlanta = p > FIN_SUBIDA + 0.25;
-      if (!enPlanta) alSalir();
-      cotas?.toggleAttribute("data-visible", p > FIN_SUBIDA + 0.02);
-      // cuando la planta ocupa la pantalla, el título se aparta para no tapar el dibujo
-      if (titulo) titulo.style.opacity = String(1 - 0.9 * Math.min(1, Math.max(0, (p - (FIN_SUBIDA - 0.08)) / 0.08)));
-      LLAMADAS.forEach((_, k) => {
-        const on = p > FIN_SUBIDA + 0.05 + k * 0.045;
-        llamadas[k]?.toggleAttribute("data-visible", on);
-        items[k]?.toggleAttribute("data-visible", on);
-      });
+      fija.style.setProperty("--apaga", String(tramo(p, 0, 0.12)));
+      fija.style.setProperty("--papel", String(tramo(p, 0.06, 0.24)));
+      fija.style.setProperty("--trazo", String(tramo(p, 0.16, 0.66)));
+      fija.style.setProperty("--relleno", String(tramo(p, 0.5, 0.7)));
+      fija.style.setProperty("--llamadas", String(tramo(p, 0.62, 0.86)));
     };
-    const quitar = sinMovimiento() ? (actual = CUADROS - 1, aplicar(1), () => {}) : observarProgreso(el, aplicar);
+    const quitar = sinMovimiento() ? (aplicar(1), () => {}) : observarProgreso(el, aplicar);
     return () => {
-      vivo = false; quitar(); vigia.disconnect(); window.removeEventListener("resize", ubicar);
-      fija.removeEventListener("pointermove", alMover); fija.removeEventListener("pointerleave", alSalir);
-      for (const img of pedidas) { img.onload = null; img.src = ""; }
+      quitar(); vigia.disconnect();
+      fija.removeEventListener("pointerover", alEntrar); fija.removeEventListener("focusin", alEntrar);
+      fija.removeEventListener("pointerleave", alSalir); fija.removeEventListener("focusout", alSalir);
     };
   }, []);
 
@@ -142,40 +68,25 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
     <section ref={seccion} className="v5-plano" aria-labelledby="v5-plano-t">
       <div className="v5-plano-fija">
         {/* eslint-disable-next-line @next/next/no-img-element -- último cuadro del hero (misma cámara) */}
-        <img src="/lab/v5/casa-sinluna/1440/c-120.webp" alt="" className="v5-plano-capa v5-plano-render" loading="lazy" />
-        <canvas ref={lienzo} className="v5-plano-capa" style={{ opacity: 0 }} aria-hidden />
-        {/* cotas sobre la planta: misma caja 16:9 que la imagen (slice = cover), así quedan pegadas al dibujo */}
-        <svg className="v5-plano-cotas" viewBox="0 0 1440 810" preserveAspectRatio="xMidYMid slice" aria-hidden>
-          <g className="v5-cota">
-            <line x1="165" y1="668" x2="1228" y2="668" />
-            <line x1="165" y1="658" x2="165" y2="678" /><line x1="1228" y1="658" x2="1228" y2="678" />
-            <text x="696" y="696" textAnchor="middle">22,00 m</text>
-          </g>
-          <g className="v5-cota">
-            <line x1="1262" y1="176" x2="1262" y2="634" />
-            <line x1="1252" y1="176" x2="1272" y2="176" /><line x1="1252" y1="634" x2="1272" y2="634" />
-            <text x="1282" y="410">9,50 m</text>
-          </g>
-          <text className="v5-cota-rotulo" x="165" y="150">{tp.corte}</text>
-        </svg>
-        <div className="v5-plano-titulo v5-gutter">
-          <p className="v5-mono">{tp.rotulo}</p>
-          <h2 id="v5-plano-t" className="v5-display">{tp.titulo} <span className="v5-luz">{tp.tituloLuz}</span></h2>
-        </div>
-        {LLAMADAS.map((ll, k) => (
-          <div key={ll.id} className="v5-llamada">
-            <span className="v5-mono">{tp.llamadas[k][0]}</span>
-            {tp.llamadas[k][1]}
+        <img src="/lab/v5/casa-sinluna/1440/c-120.webp" alt="" className="v5-plano-render" loading="lazy" />
+        <div className="v5-papel" aria-hidden />
+        <div className="v5-planta v5-gutter">
+          <header className="v5-planta-titulo">
+            <p className="v5-mono">{tp.rotulo}</p>
+            <h2 id="v5-plano-t" className="v5-display">{tp.titulo} <span className="v5-luz">{tp.tituloLuz}</span></h2>
+          </header>
+          <div className="v5-planta-dibujo">
+            <PlantaSvg corte={tp.corte} nombres={tp.llamadas.map((l) => l[0])} />
           </div>
-        ))}
-        <ol className="v5-plano-lista v5-gutter">
-          {LLAMADAS.map((ll, k) => (
-            <li key={ll.id}>
-              <span className="v5-mono" style={{ color: "var(--calido)" }}>—</span>
-              <span><strong className="font-medium">{tp.llamadas[k][0]}.</strong> {tp.llamadas[k][1]}</span>
-            </li>
-          ))}
-        </ol>
+          <ol className="v5-planta-lista">
+            {tp.llamadas.map(([nombre, texto], k) => (
+              <li key={nombre} data-llamada={MARCAS[k].id} tabIndex={0} style={{ "--i": k / tp.llamadas.length } as CSSProperties}>
+                <span className="v5-planta-numero" aria-hidden>{k + 1}</span>
+                <span><strong className="font-medium">{nombre}.</strong> {texto}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   );

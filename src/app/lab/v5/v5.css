@@ -377,108 +377,6 @@ html:has(.v5-raiz) {
   translate: 0 -0.06em;
 }
 
-/* ---------- por dentro: del render al plano ---------- */
-.v5-plano {
-  position: relative;
-  height: 380svh;
-}
-.v5-plano-fija {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  overflow: hidden;
-  background: var(--noche-950);
-}
-.v5-plano-capa {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.v5-plano-render {
-  transition: filter 120ms linear;
-}
-.v5-plano-titulo {
-  position: absolute;
-  top: calc(96px + env(safe-area-inset-top, 0px));
-  left: 0;
-  right: 0;
-  display: grid;
-  gap: 14px;
-}
-.v5-plano-titulo h2 {
-  font-size: clamp(34px, 4.6vw, 72px);
-  max-width: 15ch;
-}
-.v5-plano-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-.v5-plano-svg line {
-  stroke: var(--calido);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-.v5-plano-svg circle {
-  fill: var(--calido);
-}
-.v5-llamada {
-  position: absolute;
-  max-width: 230px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  font-size: 14px;
-  line-height: 1.35;
-  color: var(--cuarzo);
-  transform: translateY(6px);
-  transition: opacity 360ms var(--ease-salida), transform 360ms var(--ease-salida);
-}
-.v5-llamada[data-visible] {
-  opacity: 1;
-  transform: none;
-}
-.v5-llamada .v5-mono {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--calido);
-}
-.v5-plano-lista {
-  display: none;
-}
-@media (max-width: 860px) {
-  .v5-llamada,
-  .v5-plano-svg {
-    display: none;
-  }
-  .v5-plano-lista {
-    display: grid;
-    gap: 10px;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
-    counter-reset: llamada;
-  }
-  .v5-plano-lista li {
-    display: grid;
-    grid-template-columns: 22px 1fr;
-    gap: 10px;
-    font-size: 14px;
-    line-height: 1.35;
-    color: var(--cuarzo);
-    transition: opacity 360ms ease;
-  }
-  .v5-plano-lista li[data-visible] {
-    opacity: 1;
-  }
-}
 
 /* ---------- trabajo: la linterna ---------- */
 .v5-trabajo {
@@ -798,94 +696,31 @@ html:has(.v5-raiz) {
   border-color: rgba(232, 237, 245, 0.55);
 }
 
-@media (scripting: enabled) {
-  .v5-llamada:not([data-visible]),
-  .v5-plano-lista li:not([data-visible]) {
-    opacity: 0;
-  }
-}
 /* pantallas bajas (celular acostado, zoom alto): sin escenas fijas, todo en flujo normal */
 @media (max-height: 640px) {
-  .v5-hero,
-  .v5-plano {
+  .v5-hero {
     height: auto;
   }
-  .v5-hero-fija,
-  .v5-plano-fija {
+  .v5-hero-fija {
     position: relative;
     height: auto;
     min-height: 100svh;
     overflow: visible;
   }
-  .v5-hero-texto,
-  .v5-plano-titulo,
-  .v5-plano-lista {
+  .v5-hero-texto {
     position: relative;
     inset: auto;
     padding-top: 96px;
   }
-  .v5-plano-lista li,
-  .v5-llamada {
-    opacity: 1;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .v5-hero,
-  .v5-plano {
+  .v5-hero {
     height: auto;
   }
-  .v5-hero-fija,
-  .v5-plano-fija {
+  .v5-hero-fija {
     position: relative;
     height: 100svh;
   }
-}
-
-/* ---------- planta: cotas y marcas de las llamadas ---------- */
-.v5-plano-cotas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 600ms var(--ease-salida);
-}
-.v5-plano-cotas[data-visible] {
-  opacity: 1;
-}
-.v5-cota line {
-  stroke: var(--calido);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-.v5-cota text,
-.v5-cota-rotulo {
-  fill: var(--calido);
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 13px;
-  letter-spacing: 0.12em;
-}
-.v5-cota-rotulo {
-  fill: var(--luna-300);
-  font-size: 11px;
-}
-.v5-llamada::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: -3.5px;
-  border-radius: 50%;
-  background: var(--calido);
-  box-shadow: 0 0 12px var(--calido);
-}
-.v5-llamada[data-lado="der"]::before {
-  left: -20px;
-}
-.v5-llamada[data-lado="izq"]::before {
-  right: -20px;
 }
 
 /* ---------- páginas: entrada y puertas ---------- */
@@ -980,12 +815,6 @@ body:has(.v5-raiz[data-tema="claro"]) {
   color: var(--luna);
   box-shadow: 0 12px 32px rgba(21, 23, 28, 0.12);
 }
-.v5-raiz[data-tema="claro"] .v5-plano canvas {
-  filter: invert(1);
-}
-.v5-llamada {
-  background: var(--velo);
-}
 /* en claro la marca lleva la misma píldora de vidrio que el menú: se lee sobre el papel y sobre la noche del hero */
 .v5-raiz[data-tema="claro"] .v5-marca {
   padding: 0 16px 0 12px;
@@ -1016,21 +845,6 @@ body:has(.v5-raiz[data-tema="claro"]) {
   background: rgba(21, 23, 28, 0.06);
 }
 
-.v5-llamada[data-visible] {
-  transition: opacity 260ms ease, transform 360ms var(--ease-salida), box-shadow 260ms ease;
-}
-.v5-llamada[data-visible][data-atenuado] {
-  opacity: 0.35;
-}
-.v5-llamada[data-activo] {
-  box-shadow: 0 0 0 1px var(--calido), 0 0 30px rgba(240, 182, 121, 0.25);
-}
-.v5-llamada[data-activo]::before {
-  transform: scale(1.6);
-}
-.v5-llamada::before {
-  transition: transform 260ms var(--ease-salida);
-}
 .v5-nav a.v5-idioma {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-size: 12px;
