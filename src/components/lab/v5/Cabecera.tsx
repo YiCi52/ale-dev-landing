@@ -28,6 +28,7 @@ export function Cabecera() {
       <nav aria-label="Secciones" className="v5-nav">
         <Link href={`${raiz}/trabajo`}>{t.trabajo}</Link>
         <Link href={`${raiz}/servicios`}>{t.servicios}</Link>
+        <Link href={`${raiz}/sobre-mi`}>{t.sobre}</Link>
         <Tema />
         <Link href={rutaEnOtro(ruta)} className="v5-idioma" aria-label={t.otroNombre} hrefLang={idioma === "es" ? "en" : "es"}>{t.otro}</Link>
         <Link href={hablemos} className="v5-nav-hablemos">{t.hablemos}</Link>

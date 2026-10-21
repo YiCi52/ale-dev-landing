@@ -8,7 +8,7 @@ export const RAIZ: Record<Idioma, string> = { es: "/lab/v5", en: "/lab/v5/en" };
 
 export const TEXTOS = {
   es: {
-    nav: { trabajo: "Trabajo", servicios: "Servicios", preguntas: "Preguntas", hablemos: "Hablemos", inicio: "Castillo Studio, inicio", otro: "EN", otroNombre: "English version" },
+    nav: { trabajo: "Trabajo", servicios: "Servicios", sobre: "Sobre mí", preguntas: "Preguntas", hablemos: "Hablemos", inicio: "Castillo Studio, inicio", otro: "EN", otroNombre: "English version" },
     hero: {
       rotulo: "Estudio web para arquitectura e interiorismo",
       titulo: "Tu obra,", tituloLuz: "a la luz.",
@@ -72,6 +72,18 @@ export const TEXTOS = {
         ["¿Y los datos de mis clientes?", "El formulario pide consentimiento, los datos se guardan protegidos y se tratan según la Ley 1581 de Colombia."],
       ],
     },
+    sobre: {
+      rotulo: "Sobre mí", titulo: "Castillo Studio es una persona:", tituloLuz: "Alejandro Díaz del Castillo.",
+      texto: "Diseño y construyo sitios para estudios de arquitectura e interiorismo: páginas donde la obra se recorre y donde cada consulta llega a tu WhatsApp en el mismo minuto. Estudio Ingeniería de Software y trabajo con un solo proyecto a la vez, para que el tuyo tenga toda mi atención.",
+      datosAria: "Datos", retratoAria: "Retrato de Alejandro Díaz del Castillo",
+      datos: [["Base", "Bogotá, Colombia"], ["Formación", "Ingeniería de Software, en curso"], ["Ritmo", "Un proyecto a la vez"], ["Idiomas", "Español e inglés"]],
+      formaRotulo: "Cómo trabajo",
+      forma: [
+        ["Primero tu obra", "El sitio parte de tus proyectos: su luz, sus materiales y cómo quieres que se recorran."],
+        ["Después, lo que no se ve", "Formulario que filtra, base de datos propia, aviso a tu WhatsApp, respaldo semanal y seguridad desde el primer día."],
+        ["Una persona, de principio a fin", "Hablas conmigo en cada etapa: la propuesta, el diseño, la entrega y lo que venga después."],
+      ],
+    },
     cierre: {
       rotulo: "Hablemos", titulo: "¿Encendemos", tituloLuz: "la tuya?", whatsapp: "Escríbeme por WhatsApp", formulario: "Prefiero el formulario",
       lema: "Estudio web para arquitectura e interiorismo", sitio: "Sitio", contacto: "Contacto", datos: "Datos", privacidad: "Política de privacidad",
@@ -79,7 +91,7 @@ export const TEXTOS = {
     },
   },
   en: {
-    nav: { trabajo: "Work", servicios: "Services", preguntas: "FAQ", hablemos: "Let’s talk", inicio: "Castillo Studio, home", otro: "ES", otroNombre: "Versión en español" },
+    nav: { trabajo: "Work", servicios: "Services", sobre: "About", preguntas: "FAQ", hablemos: "Let’s talk", inicio: "Castillo Studio, home", otro: "ES", otroNombre: "Versión en español" },
     hero: {
       rotulo: "Web studio for architecture and interior design",
       titulo: "Your work,", tituloLuz: "in the light.",
@@ -141,6 +153,18 @@ export const TEXTOS = {
         ["Do I need to know anything technical?", "No. I handle everything; you review and approve in one meeting."],
         ["What happens after launch?", "You get 30 days of support. After that you can stay on a monthly plan for updates, backups and an inquiry summary."],
         ["What about my clients’ data?", "The form asks for consent, data is stored securely and handled under Colombian data-protection law."],
+      ],
+    },
+    sobre: {
+      rotulo: "About", titulo: "Castillo Studio is one person:", tituloLuz: "Alejandro Díaz del Castillo.",
+      texto: "I design and build websites for architecture and interior design studios: sites where every project can be walked through, and every inquiry reaches your WhatsApp the same minute. I’m studying Software Engineering and I take on one project at a time, so yours gets my full attention.",
+      datosAria: "Facts", retratoAria: "Portrait of Alejandro Díaz del Castillo",
+      datos: [["Based in", "Bogotá, Colombia"], ["Education", "Software Engineering, in progress"], ["Pace", "One project at a time"], ["Languages", "Spanish and English"]],
+      formaRotulo: "How I work",
+      forma: [
+        ["Your work first", "The site starts from your projects: their light, their materials and how you want them to be walked through."],
+        ["Then, what you don’t see", "A form that qualifies, your own database, instant WhatsApp alerts, weekly backups and security from day one."],
+        ["One person, start to finish", "You talk to me at every stage: the proposal, the design, the launch and whatever comes after."],
       ],
     },
     cierre: {

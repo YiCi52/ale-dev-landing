@@ -1,0 +1,72 @@
+/* ---------- sobre mí (21-oct) ---------- */
+.v5-sobre {
+  padding-block: clamp(80px, 9vw, 140px) clamp(100px, 12vw, 180px);
+}
+.v5-sobre-cabeza {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+  gap: clamp(40px, 6vw, 110px);
+  align-items: end;
+}
+.v5-sobre-datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 40px;
+  margin-top: clamp(40px, 5vw, 64px);
+  max-width: 620px;
+}
+.v5-sobre-datos > div {
+  display: grid;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--linea);
+}
+.v5-sobre-datos dd {
+  color: var(--cuarzo);
+  font-size: 17px;
+}
+.v5-paso h2 {
+  font-size: clamp(20px, 1.7vw, 26px);
+  font-weight: 420;
+  color: var(--cuarzo);
+  letter-spacing: -0.01em;
+}
+/* el retrato espera la foto de Alejo: piedra oscura, la C del logo y una luz tibia que la toca al pasar */
+.v5-retrato {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--linea);
+  background:
+    radial-gradient(120% 80% at 70% 0%, rgba(240, 182, 121, 0.08), transparent 60%),
+    var(--noche-900);
+  color: var(--linea-fuerte);
+}
+.v5-retrato svg {
+  width: 34%;
+  transition: color 500ms var(--ease-salida), filter 500ms var(--ease-salida);
+}
+.v5-retrato:hover svg {
+  color: var(--calido);
+  filter: drop-shadow(0 0 22px rgba(240, 182, 121, 0.45));
+}
+@media (max-width: 860px) {
+  .v5-sobre-cabeza {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+  .v5-retrato {
+    max-width: 360px;
+  }
+}
+@media (max-width: 480px) {
+  .v5-sobre-datos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.v5-sobre .v5-pasos {
+  margin-top: 22px;
+}
