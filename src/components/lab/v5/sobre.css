@@ -46,9 +46,17 @@
   filter: saturate(0.92);
   transition: filter 600ms var(--ease-salida), transform 900ms var(--ease-salida);
 }
+.v5-retrato {
+  cursor: crosshair;
+}
 .v5-retrato:hover .v5-retrato-foto {
-  filter: saturate(1.05);
-  transform: scale(1.02);
+  filter: saturate(1.05);   /* sin escala: el calco tiene que calzar con la foto */
+}
+.v5-retrato .v5-foto-calco {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 @media (max-width: 860px) {
   .v5-sobre-cabeza {

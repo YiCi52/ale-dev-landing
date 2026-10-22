@@ -26,6 +26,11 @@
   font-variation-settings: "wdth" 100;
 }
 
+/* sin carga (cambio de idioma, volver de otra página) nada espera a que termine */
+.v5-raiz:not(:has(.v5-intro)) {
+  --v5-intro: 0ms;
+}
+
 /* la v5 trae su propia cabecera y pie: se ocultan las piezas globales */
 body:has(.v5-raiz) > header,
 body:has(.v5-raiz) > footer,
@@ -419,47 +424,91 @@ html:has(.v5-raiz) {
 .v5-marco[data-obra="1"].v5-marco--grande { grid-column: 5 / 13; grid-row: 2; }
 .v5-marco[data-obra="1"].v5-marco--chico { grid-column: 1 / 4; grid-row: 2; margin-top: clamp(40px, 6vw, 110px); }
 
-/* el marco es una losa de piedra: tira técnica arriba, foto, datos abajo */
+/* el marco: la foto limpia con marcas de registro de plano alrededor (esencia de fiddle: ejes, diagonales, vértices) */
 .v5-marco {
+  --reg: clamp(18px, 2.4vw, 34px);
   position: relative;
   display: grid;
-  gap: 10px;
+  gap: 14px;
   min-width: 0;
-  padding: 10px;
-  border: 1px solid var(--linea);
-  border-radius: 12px;
-  background: linear-gradient(var(--noche-900), var(--noche-900)) padding-box;
-  transition: border-color 240ms ease;
 }
-.v5-marco::before {
-  content: "";
+.v5-marco-foto {
+  position: relative;
+  padding: var(--reg);
+}
+.v5-registro {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  background: url("/lab/v5/materiales/piedra.webp") center / 520px;
-  opacity: 0.12;
   pointer-events: none;
 }
-.v5-marco:hover,
-.v5-marco:focus-within {
-  border-color: var(--linea-fuerte);
+.v5-reg-eje,
+.v5-reg-diag,
+.v5-reg-punto {
+  position: absolute;
+  background: var(--linea-fuerte);
+  transition: background-color 260ms ease;
 }
-.v5-marco-tira {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 2px 4px 0;
+.v5-reg-eje {
+  left: 50%;
+  width: 1px;
+  height: calc(var(--reg) - 8px);
+}
+.v5-reg-n { top: 0; }
+.v5-reg-s { bottom: 0; }
+.v5-reg-diag {
+  width: calc(var(--reg) * 0.9);
+  height: 1px;
+  transform-origin: 0 50%;
+}
+.v5-reg-no { left: var(--reg); top: var(--reg); transform: rotate(-135deg) translateX(6px); }
+.v5-reg-ne { left: calc(100% - var(--reg)); top: var(--reg); transform: rotate(-45deg) translateX(6px); }
+.v5-reg-so { left: var(--reg); top: calc(100% - var(--reg)); transform: rotate(135deg) translateX(6px); }
+.v5-reg-se { left: calc(100% - var(--reg)); top: calc(100% - var(--reg)); transform: rotate(45deg) translateX(6px); }
+.v5-reg-punto {
+  width: 5px;
+  height: 5px;
+  background: var(--luna-300);
+}
+.v5-reg-pno { left: 0; top: 0; }
+.v5-reg-pne { right: 0; top: 0; }
+.v5-reg-pso { left: 0; bottom: 0; }
+.v5-reg-pse { right: 0; bottom: 0; }
+.v5-marco:hover .v5-reg-eje,
+.v5-marco:hover .v5-reg-diag,
+.v5-marco:hover .v5-reg-punto,
+.v5-marco:focus-within .v5-reg-eje,
+.v5-marco:focus-within .v5-reg-diag,
+.v5-marco:focus-within .v5-reg-punto {
+  background: var(--calido);
+}
+.v5-foto-flecha {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #f2efe9;
+  color: #0b0d13;
+  font-size: 17px;
+  line-height: 1;
+  transition: transform 220ms var(--ease-salida);
+}
+.v5-marco:hover .v5-foto-flecha {
+  transform: translate(2px, -2px);
+}
+.v5-marco-pie {
+  padding-inline: var(--reg);
   font-size: 10px;
-}
-.v5-marco-tira span:last-child {
-  color: var(--luna-300);
 }
 .v5-foto {
   position: relative;
   display: block;
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--linea);
   aspect-ratio: 3 / 2;
   background: var(--noche-800);
   cursor: crosshair;
@@ -498,7 +547,7 @@ html:has(.v5-raiz) {
   position: relative;
   display: grid;
   gap: 10px;
-  padding: 8px 4px 6px;
+  padding-inline: var(--reg);
 }
 @media (max-width: 760px) {
   .v5-trabajo-cabeza {
@@ -516,6 +565,7 @@ html:has(.v5-raiz) {
   .v5-marco[data-obra="1"].v5-marco--grande { grid-column: 1 / -1; grid-row: 3; margin-top: 40px; }
   .v5-marco[data-obra="1"].v5-marco--chico { grid-column: 1 / 10; grid-row: 4; margin-top: 0; }
   .v5-marco--chico .v5-foto { aspect-ratio: 3 / 2; }
+  .v5-marco { --reg: 14px; }
 }
 .v5-solo-tactil { display: none; }
 @media (hover: none) {
@@ -526,14 +576,14 @@ html:has(.v5-raiz) {
 .v5-galeria[data-listo] .v5-marco {
   opacity: 0;
   transform: translateY(36px);
-  transition: opacity 700ms var(--ease-salida), transform 900ms var(--ease-salida), border-color 240ms ease;
+  transition: opacity 700ms var(--ease-salida), transform 900ms var(--ease-salida);
 }
 .v5-galeria[data-listo] .v5-marco .v5-foto img {
   clip-path: inset(100% 0 0 0);
   transition: clip-path 1100ms var(--ease-mueve) 120ms;
 }
 .v5-galeria[data-listo] .v5-marco--chico {
-  transition-delay: 160ms, 160ms, 0ms;   /* la satélite llega después; el borde del hover, sin espera */
+  transition-delay: 160ms;   /* la satélite llega después */
 }
 .v5-galeria[data-listo] .v5-marco--chico .v5-foto img {
   transition-delay: 280ms;
@@ -987,4 +1037,25 @@ body:has(.v5-raiz[data-tema="claro"]) {
   background: rgba(242, 239, 233, 0.6);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+}
+
+/* ---------- portal al abrir una obra (portal.ts): vive en <body>, fuera de .v5-raiz ---------- */
+.v5-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  background: #05060a;
+  overflow: hidden;
+}
+.v5-portal img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.v5-portal-calco {
+  opacity: 0;
+  mix-blend-mode: screen;
 }

@@ -1,5 +1,4 @@
-import Image from "next/image";
-
+import { Retrato } from "./Retrato";
 import "./sobre.css";
 import { TEXTOS, type Idioma } from "./textos";
 
@@ -28,9 +27,7 @@ export function SobreMi({ idioma = "es" }: { idioma?: Idioma }) {
             ))}
           </dl>
         </div>
-        <figure className="v5-retrato">
-          <Image src="/sobre-mi/alejandro.jpg" alt={t.retratoAria} fill sizes="(max-width: 860px) 360px, 34vw" className="v5-retrato-foto" />
-        </figure>
+        <Retrato alt={t.retratoAria} />
       </div>
       <p className="v5-mono mt-28 mb-2">{t.formaRotulo}</p>
       <ol className="v5-pasos" aria-label={t.formaRotulo}>

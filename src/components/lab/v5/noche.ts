@@ -58,22 +58,78 @@ export function pintarNoche(ctx: CanvasRenderingContext2D, img: HTMLImageElement
 }
 
 /**
- * La luna de verdad (Alejo, 19-oct: "que esté en sincronía con la fase real"). El render no la trae: se pinta aquí, en el
- * punto y del tamaño que tenía en Blender, con la parte iluminada de hoy. Creciente: luz a la derecha; menguante, a la
- * izquierda. De noche brilla y deja ver el resto del disco (luz de la Tierra); de día es un disco pálido sobre el cielo.
+ * La luna de verdad (Alejo, 19-oct: "que esté en sincronía con la fase real"; 21-oct: "¿puedes hacer la luna realista?").
+ * El render no la trae: se pinta aquí, en el punto y del tamaño que tenía en Blender. Con la foto (la misma de la carga)
+ * se recorta la parte iluminada de hoy con el terminador difuminado como en el cielo real; de noche el resto del disco se
+ * ve apenas (luz de la Tierra); de día es pálida, sin halo. Sin foto cargada queda el disco dibujado de antes.
+ * El recorte de la fase se cachea: solo se rehace si cambian el tamaño, la fase o el tema.
  */
-export function pintarLuna(ctx: CanvasRenderingContext2D, e: Encuadre, luna: LunaCuadro, iluminada: number, creciente: boolean, dia: boolean): void {
+let sprite: { lienzo: HTMLCanvasElement; clave: string } | null = null;
+
+function caminoFase(ctx: CanvasRenderingContext2D, r: number, iluminada: number): void {
+  // borde iluminado (media circunferencia derecha) y vuelta por el terminador, una media elipse
+  const rx = r * Math.abs(1 - 2 * iluminada);
+  ctx.beginPath();
+  ctx.arc(0, 0, r, -Math.PI / 2, Math.PI / 2, false);
+  ctx.ellipse(0, 0, Math.max(0.01, rx), r, 0, Math.PI / 2, -Math.PI / 2, iluminada < 0.5);
+  ctx.closePath();
+}
+
+function faseConFoto(foto: HTMLImageElement, r: number, iluminada: number, creciente: boolean, dia: boolean): HTMLCanvasElement {
+  const clave = `${Math.round(r * 2)}|${iluminada.toFixed(3)}|${creciente}|${dia}`;
+  if (sprite?.clave === clave) return sprite.lienzo;
+  const lado = Math.ceil(r * 2) + 4, c = lado / 2;
+  const lienzo = document.createElement("canvas");
+  lienzo.width = lienzo.height = lado;
+  const g = lienzo.getContext("2d");
+  if (!g) return lienzo;
+  // máscara de la fase, difuminada: el terminador real no es un corte
+  g.save();
+  g.translate(c, c);
+  if (!creciente) g.scale(-1, 1);
+  g.filter = `blur(${Math.max(0.6, r * 0.06)}px)`;
+  g.fillStyle = "#fff";
+  caminoFase(g, r, iluminada);
+  g.fill();
+  g.restore();
+  g.filter = "none";
+  // la foto solo donde hay luz
+  g.globalCompositeOperation = "source-in";
+  g.drawImage(foto, c - r, c - r, r * 2, r * 2);
+  g.globalCompositeOperation = "source-over";
+  // de noche, el resto del disco apenas (luz de la Tierra), por detrás
+  if (!dia) {
+    g.globalCompositeOperation = "destination-over";
+    g.globalAlpha = 0.09;
+    g.drawImage(foto, c - r, c - r, r * 2, r * 2);
+    g.globalAlpha = 1;
+    g.globalCompositeOperation = "source-over";
+  }
+  sprite = { lienzo, clave };
+  return lienzo;
+}
+
+export function pintarLuna(ctx: CanvasRenderingContext2D, e: Encuadre, luna: LunaCuadro, iluminada: number, creciente: boolean, dia: boolean, foto?: HTMLImageElement | null): void {
   const cx = e.x + luna[0] * e.dw, cy = e.y + luna[1] * e.dh, r = luna[2] * e.dh;
   if (r <= 0) return;
   ctx.save();
   ctx.translate(cx, cy);
   if (!dia) {
-    // halo y disco apagado
     const halo = ctx.createRadialGradient(0, 0, r * 0.9, 0, 0, r * 3.2);
     halo.addColorStop(0, `rgba(214, 224, 240, ${0.05 + 0.18 * iluminada})`);
     halo.addColorStop(1, "rgba(214, 224, 240, 0)");
     ctx.fillStyle = halo;
     ctx.fillRect(-r * 3.2, -r * 3.2, r * 6.4, r * 6.4);
+  }
+  if (foto?.complete && foto.naturalWidth > 0) {
+    const s = faseConFoto(foto, r, iluminada, creciente, dia);
+    ctx.globalAlpha = dia ? 0.72 : 1;
+    if (!dia) { ctx.shadowColor = "rgba(236, 240, 250, 0.55)"; ctx.shadowBlur = r * 0.35; }
+    ctx.drawImage(s, -s.width / 2, -s.height / 2);
+    ctx.restore();
+    return;
+  }
+  if (!dia) {
     ctx.fillStyle = "rgba(190, 202, 222, 0.07)";
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
@@ -81,12 +137,7 @@ export function pintarLuna(ctx: CanvasRenderingContext2D, e: Encuadre, luna: Lun
   }
   if (iluminada > 0.01) {
     if (!creciente) ctx.scale(-1, 1);
-    // borde iluminado (media circunferencia derecha) y vuelta por el terminador, una media elipse
-    const rx = r * Math.abs(1 - 2 * iluminada);
-    ctx.beginPath();
-    ctx.arc(0, 0, r, -Math.PI / 2, Math.PI / 2, false);
-    ctx.ellipse(0, 0, Math.max(0.01, rx), r, 0, Math.PI / 2, -Math.PI / 2, iluminada < 0.5);
-    ctx.closePath();
+    caminoFase(ctx, r, iluminada);
     ctx.fillStyle = dia ? "rgba(255, 255, 255, 0.82)" : "#f3f1ea";
     if (!dia) { ctx.shadowColor = "rgba(236, 240, 250, 0.7)"; ctx.shadowBlur = r * 0.5; }
     ctx.fill();
@@ -105,14 +156,16 @@ const ONDAS = 26;
 export function pintarLluvia(ctx: CanvasRenderingContext2D, e: Encuadre, horizonte: number, t: number, intensidad: number, dia: boolean): void {
   if (intensidad <= 0.01) return;
   const w = ctx.canvas.width, h = ctx.canvas.height, k = w / 1440;
-  // el cielo se cierra un poco
-  ctx.fillStyle = dia ? `rgba(70, 80, 92, ${0.22 * intensidad})` : `rgba(4, 6, 12, ${0.28 * intensidad})`;
-  ctx.fillRect(0, 0, w, h);
+  // de noche el cielo se cierra un poco; de día no hay velo (Alejo, 21-oct: "la lluvia de día tapa la casa")
+  if (!dia) {
+    ctx.fillStyle = `rgba(4, 6, 12, ${0.28 * intensidad})`;
+    ctx.fillRect(0, 0, w, h);
+  }
   // gotas: trazos finos, inclinados, que bajan en bucle
-  ctx.strokeStyle = dia ? `rgba(235, 240, 246, ${0.38 * intensidad})` : `rgba(190, 205, 228, ${0.32 * intensidad})`;
-  ctx.lineWidth = Math.max(1, 1.1 * k);
+  ctx.strokeStyle = dia ? `rgba(240, 244, 250, ${0.17 * intensidad})` : `rgba(190, 205, 228, ${0.32 * intensidad})`;
+  ctx.lineWidth = Math.max(1, (dia ? 0.8 : 1.1) * k);
   ctx.beginPath();
-  const n = Math.round(GOTAS.length * intensidad);
+  const n = Math.round(GOTAS.length * intensidad * (dia ? 0.6 : 1));
   for (let i = 0; i < n; i++) {
     const g = GOTAS[i];
     const y = ((g.y + t * g.v * 1.3) % 1) * (h + 60 * k) - 30 * k;
@@ -132,7 +185,7 @@ export function pintarLluvia(ctx: CanvasRenderingContext2D, e: Encuadre, horizon
     const hondo = b - Math.floor(b);
     const cx = (a - Math.floor(a)) * w, cy = y0 + 6 * k + hondo * (h - y0);
     const rx = (6 + 22 * fase) * k * (0.6 + hondo);
-    ctx.globalAlpha = (1 - fase) * 0.4 * intensidad;
+    ctx.globalAlpha = (1 - fase) * (dia ? 0.25 : 0.4) * intensidad;
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, rx * 0.22, 0, 0, Math.PI * 2);
     ctx.stroke();

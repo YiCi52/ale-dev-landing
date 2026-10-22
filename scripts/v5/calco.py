@@ -1,5 +1,6 @@
 """Calco en tinta de una foto (galería v5): bordes como líneas claras sobre la foto apagada en azul noche, con la cuadrícula de "Por dentro".
 Uso: python3 scripts/v5/calco.py public/lab/v5/proyectos/foto.webp ...  → foto-calco.webp"""
+import os
 import sys
 import numpy as np
 from PIL import Image, ImageFilter
@@ -27,5 +28,6 @@ def calco(origen, destino):
     Image.fromarray(out.astype(np.uint8)).save(destino, "WEBP", quality=78, method=6)
 
 for ruta in sys.argv[1:]:
-    calco(ruta, ruta.replace(".webp", "-calco.webp"))
+    base, _ = os.path.splitext(ruta)
+    calco(ruta, base + "-calco.webp")   # nunca pisa la foto original, sea .webp o .jpg
     print("ok", ruta)

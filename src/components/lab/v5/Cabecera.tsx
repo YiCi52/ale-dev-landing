@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { idiomaDe, rutaEnOtro } from "./idioma";
+import { pedirIntro } from "./Intro";
 import { C_LOGO, HABLEMOS } from "./marca";
 import { Tema } from "./Tema";
 import { RAIZ, TEXTOS } from "./textos";
@@ -19,7 +20,7 @@ export function Cabecera() {
   const hablemos = idioma === "es" ? HABLEMOS : `${raiz}/hablemos`;
   return (
     <header className="v5-cabecera v5-gutter">
-      <Link href={raiz} className="v5-marca" aria-label={t.inicio}>
+      <Link href={raiz} className="v5-marca" aria-label={t.inicio} onClick={pedirIntro}>
         <svg viewBox="-110 -110 220 220" aria-hidden>
           <path d={C_LOGO} fill="currentColor" />
         </svg>

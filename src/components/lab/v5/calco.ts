@@ -8,10 +8,12 @@
 const CELDA = 28;            // px CSS de un cuadro del calco
 const VIDA = [1050, 1450];   // ms que dura cada cuadro (cada uno distinto, así no se apagan en bloque)
 const SOSTIENE = 0.55;       // fracción de la vida en que el cuadro está entero antes de empezar a irse
+const RADIO = 2.6;           // en cuadros: el área que descubre el cursor (21-oct, Alejo: "que se aprecie más")
 
 type Celda = { x: number; y: number; lado: number; nace: number; vida: number };
 
-export function montarCalco(marco: HTMLElement, lienzo: HTMLCanvasElement, rutaCalco: string): () => void {
+/** `foco`: el mismo object-position de la foto (0–1), para que el calco calce si la foto no está centrada. */
+export function montarCalco(marco: HTMLElement, lienzo: HTMLCanvasElement, rutaCalco: string, foco = { x: 0.5, y: 0.5 }): () => void {
   const celdas = new Map<string, Celda>();
   let calco: HTMLImageElement | null = null;
   let cuadro = 0;
@@ -32,8 +34,14 @@ export function montarCalco(marco: HTMLElement, lienzo: HTMLCanvasElement, rutaC
       const vida = VIDA[0] + Math.random() * (VIDA[1] - VIDA[0]);
       celdas.set(clave, { x: gx * CELDA, y: gy * CELDA, lado: lado * CELDA, nace: ahora, vida: previa ? Math.max(vida, previa.vida) : vida });
     };
-    poner(cx, cy, 1);
-    if (Math.random() < 0.35) poner(cx + (Math.random() < 0.5 ? -1 : 1), cy + (Math.random() < 0.5 ? -1 : 1), 1);
+    // un círculo de cuadros alrededor del cursor: el centro siempre, el borde se deshace al azar (no queda un disco liso)
+    const r = Math.ceil(RADIO);
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        const d = Math.hypot(dx, dy) / RADIO;
+        if (d <= 1 && Math.random() < 1.15 - d * d) poner(cx + dx, cy + dy, 1);
+      }
+    }
     if (Math.random() < 0.08) poner(cx - (cx % 2), cy - (cy % 2), 2);   // de vez en cuando un bloque doble
   };
 
@@ -53,8 +61,8 @@ export function montarCalco(marco: HTMLElement, lienzo: HTMLCanvasElement, rutaC
     const listo = calco?.complete && calco.naturalWidth > 0;
     // el calco se pinta en "cover", igual que la foto, para que cada línea calce sobre lo que dibuja
     const s = listo ? Math.max(w / calco!.naturalWidth, h / calco!.naturalHeight) : 1;
-    const ox = listo ? (w - calco!.naturalWidth * s) / 2 : 0;
-    const oy = listo ? (h - calco!.naturalHeight * s) / 2 : 0;
+    const ox = listo ? (w - calco!.naturalWidth * s) * foco.x : 0;
+    const oy = listo ? (h - calco!.naturalHeight * s) * foco.y : 0;
     for (const [clave, c] of celdas) {
       const t = (ahora - c.nace) / c.vida;
       if (t >= 1) { celdas.delete(clave); continue; }
