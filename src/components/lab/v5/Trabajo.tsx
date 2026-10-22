@@ -1,67 +1,96 @@
 "use client";
 
 import Link from "next/link";
-import type { PointerEvent } from "react";
+import { useEffect, useRef } from "react";
 
+import { montarCalco } from "./calco";
+import { sinMovimiento } from "./scroll";
 import { TEXTOS, type Idioma } from "./textos";
 
 /*
-  Trabajo: cada foto está a oscuras y el cursor es una linterna que la ilumina (el efecto de cursor solo vive en las
-  imágenes, regla de Alejo del 12-oct). En pantallas táctiles se ven encendidas desde el principio.
+  Trabajo (21-oct): galería asimétrica con la esencia de fiddle.digital/work (una pieza dominante y satélites chicos,
+  marcos con rótulo técnico arriba y datos abajo, contador de obras), ajustada a Castillo: cada marco es de piedra y el
+  cursor deja el calco en tinta de la foto (calco.ts). Cada obra muestra dos fotos: la grande lleva los datos, la chica
+  solo su rótulo. En táctil o con movimiento reducido las fotos se ven tal cual.
 */
+type Pieza = { img: string; grande: boolean };
 const OBRAS = [
-  { id: "mh", nombre: "MH Interior", img: "/lab/v5/proyectos/mh-sala.webp", href: "/trabajo/mh-interior" },
-  { id: "villa", nombre: "Villa Savoye", img: "/lab/v5/proyectos/villa-salon.webp", href: "/lab/villa-savoye" },
+  { id: "mh", nombre: "MH Interior", href: "/trabajo/mh-interior",
+    piezas: [{ img: "/lab/v5/proyectos/mh-sala.webp", grande: true }, { img: "/lab/v5/proyectos/mh-cocina.webp", grande: false }] },
+  { id: "villa", nombre: "Villa Savoye", href: "/lab/villa-savoye",
+    piezas: [{ img: "/lab/v5/proyectos/villa-salon.webp", grande: true }, { img: "/lab/v5/proyectos/villa-llegada.webp", grande: false }] },
 ];
 
-function mover(e: PointerEvent<HTMLAnchorElement>) {
-  if (e.pointerType === "touch") return;
-  const r = e.currentTarget.getBoundingClientRect();
-  const luz = e.currentTarget.querySelector<HTMLElement>(".v5-linterna-encendida");
-  if (!luz) return;
-  luz.style.setProperty("--x", `${e.clientX - r.left}px`);
-  luz.style.setProperty("--y", `${e.clientY - r.top}px`);
+function Foto({ pieza, href, rotulo }: { pieza: Pieza; href: string; rotulo: string }) {
+  const marco = useRef<HTMLAnchorElement>(null);
+  const lienzo = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    if (!marco.current || !lienzo.current || sinMovimiento() || !window.matchMedia("(hover: hover)").matches) return;
+    return montarCalco(marco.current, lienzo.current, pieza.img.replace(".webp", "-calco.webp"));
+  }, [pieza.img]);
+  return (
+    <Link ref={marco} href={href} className="v5-foto" tabIndex={-1} aria-hidden="true">
+      {/* eslint-disable-next-line @next/next/no-img-element -- foto del proyecto; el calco se pinta encima en el lienzo */}
+      <img src={pieza.img} alt="" loading="lazy" decoding="async" />
+      <canvas ref={lienzo} className="v5-foto-calco" />
+      <span className="v5-foto-rotulo v5-mono">{rotulo}</span>
+    </Link>
+  );
 }
 
-function encender(e: PointerEvent<HTMLAnchorElement>) {
-  if (e.pointerType === "touch") return;
-  mover(e);   // la luz nace donde entra el cursor, no en el centro
-  e.currentTarget.querySelector<HTMLElement>(".v5-linterna-encendida")?.style.setProperty("--r", "220px");
-}
-
-function apagar(e: PointerEvent<HTMLAnchorElement>) {
-  e.currentTarget.querySelector<HTMLElement>(".v5-linterna-encendida")?.style.removeProperty("--r");
+/* cada marco entra una sola vez al aparecer (no va ligado al scroll: así no se ve el corte al frenar) */
+function useEntrada() {
+  const galeria = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = galeria.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entradas) => {
+      for (const e of entradas) if (e.isIntersecting) { e.target.setAttribute("data-visto", ""); io.unobserve(e.target); }
+    }, { rootMargin: "0px 0px -12% 0px" });
+    el.querySelectorAll(".v5-marco").forEach((m) => io.observe(m));
+    el.setAttribute("data-listo", "");
+    return () => io.disconnect();
+  }, []);
+  return galeria;
 }
 
 export function Trabajo({ idioma = "es" }: { idioma?: Idioma }) {
   const tx = TEXTOS[idioma].trabajo;
+  const galeria = useEntrada();
   return (
     <section id="v5-trabajo" className="v5-trabajo v5-gutter" aria-labelledby="v5-trabajo-t">
-      <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
+      <div className="v5-trabajo-cabeza">
         <div>
           <p className="v5-mono mb-5">{tx.rotulo}</p>
           <h2 id="v5-trabajo-t" className="v5-display text-[clamp(40px,6vw,96px)]">{tx.titulo} <span className="v5-luz">{tx.tituloLuz}</span></h2>
         </div>
-        <p className="v5-texto max-w-[34ch]">{tx.pista}</p>
+        <p className="v5-texto max-w-[34ch]"><span className="v5-solo-cursor">{tx.pista}</span><span className="v5-solo-tactil">{tx.pistaTactil}</span></p>
+        <p className="v5-trabajo-cuenta" aria-label={`${OBRAS.length} ${tx.cuenta}`}>
+          <span className="v5-display" aria-hidden>{String(OBRAS.length).padStart(2, "0")}</span>
+          <span className="v5-mono" aria-hidden>{tx.cuenta}</span>
+        </p>
       </div>
-      <div className="v5-trabajo-grilla">
+      <div ref={galeria} className="v5-galeria">
         {OBRAS.map((o, k) => {
           const d = tx.obras[k];
-          return (
-          <article key={o.id} className="v5-obra">
-            <Link href={o.href} className="v5-linterna" onPointerMove={mover} onPointerEnter={encender} onPointerLeave={apagar} tabIndex={-1} aria-hidden="true">
-              {/* eslint-disable-next-line @next/next/no-img-element -- foto del proyecto, a oscuras */}
-              <img src={o.img} alt="" className="v5-linterna-apagada" loading="lazy" />
-              {/* eslint-disable-next-line @next/next/no-img-element -- la misma foto, iluminada donde está el cursor */}
-              <img src={o.img} alt="" className="v5-linterna-encendida" loading="lazy" aria-hidden />
-            </Link>
-            <div className="v5-obra-datos">
-              <h3 className="v5-display">{o.nombre}</h3>
-              <span className="v5-mono">{d.tipo}</span>
-            </div>
-            <p className="v5-texto">{d.detalle} <Link href={o.href} className="v5-enlace" aria-label={`${d.accion}: ${o.nombre}`}>{d.accion}</Link></p>
-          </article>
-          );
+          return o.piezas.map((p, i) => (
+            <article key={`${o.id}-${i}`} className={`v5-marco ${p.grande ? "v5-marco--grande" : "v5-marco--chico"}`} data-obra={k}>
+              <header className="v5-marco-tira v5-mono">
+                <span>{String(k + 1).padStart(2, "0")} · {o.nombre}</span>
+                <span>{d.piezas[i]}</span>
+              </header>
+              <Foto pieza={p} href={o.href} rotulo={`${String(k + 1).padStart(2, "0")}.${i + 1}`} />
+              {p.grande && (
+                <footer className="v5-marco-datos">
+                  <div className="v5-obra-datos">
+                    <h3 className="v5-display">{o.nombre}</h3>
+                    <span className="v5-mono">{d.tipo}</span>
+                  </div>
+                  <p className="v5-texto">{d.detalle} <Link href={o.href} className="v5-enlace" aria-label={`${d.accion}: ${o.nombre}`}>{d.accion}</Link></p>
+                </footer>
+              )}
+            </article>
+          ));
         })}
       </div>
     </section>

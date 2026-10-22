@@ -378,80 +378,173 @@ html:has(.v5-raiz) {
 }
 
 
-/* ---------- trabajo: la linterna ---------- */
+/* ---------- trabajo: galería asimétrica con el calco (21-oct) ---------- */
 .v5-trabajo {
   padding-block: clamp(110px, 14vw, 200px);
 }
-.v5-trabajo-grilla {
+.v5-trabajo-cabeza {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: clamp(20px, 3vw, 44px);
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 24px clamp(24px, 4vw, 72px);
+  margin-bottom: clamp(48px, 6vw, 88px);
+}
+.v5-trabajo-cuenta {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+.v5-trabajo-cuenta .v5-display {
+  font-size: clamp(56px, 7vw, 120px);
+  line-height: 0.8;
+  color: var(--luna);
+}
+.v5-galeria {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(16px, 2vw, 32px);
+  row-gap: clamp(56px, 8vw, 140px);
   align-items: start;
 }
-.v5-trabajo-grilla > :nth-child(2) {
-  margin-top: clamp(60px, 12vw, 180px);
-}
-@media (max-width: 760px) {
-  .v5-trabajo-grilla {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .v5-trabajo-grilla > :nth-child(2) {
-    margin-top: 0;
-  }
-}
-.v5-obra {
+/* una pieza dominante y una satélite por obra; la segunda obra se cruza al otro lado */
+.v5-marco[data-obra="0"].v5-marco--grande { grid-column: 1 / 9; grid-row: 1; }
+.v5-marco[data-obra="0"].v5-marco--chico { grid-column: 10 / 13; grid-row: 1; margin-top: clamp(120px, 17vw, 300px); }
+.v5-marco[data-obra="1"].v5-marco--grande { grid-column: 5 / 13; grid-row: 2; }
+.v5-marco[data-obra="1"].v5-marco--chico { grid-column: 1 / 4; grid-row: 2; margin-top: clamp(40px, 6vw, 110px); }
+
+/* el marco es una losa de piedra: tira técnica arriba, foto, datos abajo */
+.v5-marco {
+  position: relative;
   display: grid;
-  gap: 16px;
+  gap: 10px;
   min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  background: linear-gradient(var(--noche-900), var(--noche-900)) padding-box;
+  transition: border-color 240ms ease;
 }
-.v5-linterna {
+.v5-marco::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: url("/lab/v5/materiales/piedra.webp") center / 520px;
+  opacity: 0.12;
+  pointer-events: none;
+}
+.v5-marco:hover,
+.v5-marco:focus-within {
+  border-color: var(--linea-fuerte);
+}
+.v5-marco-tira {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 4px 0;
+  font-size: 10px;
+}
+.v5-marco-tira span:last-child {
+  color: var(--luna-300);
+}
+.v5-foto {
   position: relative;
   display: block;
   overflow: hidden;
   border-radius: 6px;
-  aspect-ratio: 4 / 5;
-  background: var(--noche-900);
+  aspect-ratio: 3 / 2;
+  background: var(--noche-800);
   cursor: crosshair;
 }
-.v5-linterna img {
+.v5-marco--chico .v5-foto {
+  aspect-ratio: 4 / 5;
+}
+.v5-foto img,
+.v5-foto-calco {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+}
+.v5-foto img {
   object-fit: cover;
-  transition: transform 900ms var(--ease-salida);
 }
-.v5-linterna-apagada {
-  filter: brightness(0.32) saturate(0.4) contrast(1.05);
+.v5-foto-calco {
+  pointer-events: none;
 }
-.v5-linterna-encendida {
-  --x: 50%;
-  --y: 50%;
-  --r: 0px;
-  -webkit-mask-image: radial-gradient(circle var(--r) at var(--x) var(--y), #000 55%, transparent 100%);
-  mask-image: radial-gradient(circle var(--r) at var(--x) var(--y), #000 55%, transparent 100%);
-  transition: --r 500ms var(--ease-salida);
+.v5-raiz[data-tema="claro"] .v5-foto-calco {
+  filter: invert(1);   /* papel claro con tinta oscura, igual que la planta en claro */
 }
-.v5-obra:focus-within .v5-linterna-encendida {
-  --r: 1400px;
+.v5-foto-rotulo {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: #e8edf5;
+  background: rgba(5, 6, 10, 0.55);
+  backdrop-filter: blur(6px);
 }
-.v5-linterna .v5-linterna-encendida {
-  transition: transform 900ms var(--ease-salida), --r 500ms var(--ease-salida);
+.v5-marco-datos {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 8px 4px 6px;
 }
-.v5-linterna:hover img {
-  transform: scale(1.025);
-}
-@property --r {
-  syntax: "<length>";
-  inherits: false;
-  initial-value: 0px;
-}
-@media (hover: none) {
-  .v5-linterna-apagada {
-    filter: none;
+@media (max-width: 760px) {
+  .v5-trabajo-cabeza {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
-  .v5-linterna-encendida {
-    display: none;
+  .v5-trabajo-cabeza > .v5-texto {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .v5-galeria {
+    row-gap: 28px;
+  }
+  .v5-marco[data-obra="0"].v5-marco--grande { grid-column: 1 / -1; grid-row: 1; }
+  .v5-marco[data-obra="0"].v5-marco--chico { grid-column: 5 / -1; grid-row: 2; margin-top: 0; }
+  .v5-marco[data-obra="1"].v5-marco--grande { grid-column: 1 / -1; grid-row: 3; margin-top: 40px; }
+  .v5-marco[data-obra="1"].v5-marco--chico { grid-column: 1 / 10; grid-row: 4; margin-top: 0; }
+  .v5-marco--chico .v5-foto { aspect-ratio: 3 / 2; }
+}
+.v5-solo-tactil { display: none; }
+@media (hover: none) {
+  .v5-solo-cursor { display: none; }
+  .v5-solo-tactil { display: inline; }
+}
+/* entrada: solo si el JS ya preparó la galería (sin JS se ve todo de una) */
+.v5-galeria[data-listo] .v5-marco {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 700ms var(--ease-salida), transform 900ms var(--ease-salida), border-color 240ms ease;
+}
+.v5-galeria[data-listo] .v5-marco .v5-foto img {
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 1100ms var(--ease-mueve) 120ms;
+}
+.v5-galeria[data-listo] .v5-marco--chico {
+  transition-delay: 160ms, 160ms, 0ms;   /* la satélite llega después; el borde del hover, sin espera */
+}
+.v5-galeria[data-listo] .v5-marco--chico .v5-foto img {
+  transition-delay: 280ms;
+}
+.v5-galeria[data-listo] .v5-marco[data-visto] {
+  opacity: 1;
+  transform: none;
+}
+.v5-galeria[data-listo] .v5-marco[data-visto] .v5-foto img {
+  clip-path: inset(0 0 0 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .v5-galeria[data-listo] .v5-marco,
+  .v5-galeria[data-listo] .v5-marco .v5-foto img {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+    transition: none;
   }
 }
 .v5-obra-datos {
