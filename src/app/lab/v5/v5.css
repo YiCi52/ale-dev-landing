@@ -358,6 +358,49 @@ html:has(.v5-raiz) {
   position: relative;
   padding-block: clamp(120px, 18vw, 240px);
 }
+/* con JS: la sección se queda fija mientras la frase se arma en espiral y el resto se enciende (Manifiesto + espiral.ts) */
+.v5-manifiesto[data-vivo] {
+  height: 340svh;
+  padding-block: 0;
+}
+.v5-manifiesto[data-vivo] .v5-manifiesto-fija {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+.v5-manifiesto[data-vivo] p.v5-display {
+  font-size: clamp(30px, 4.3vw, 70px);
+}
+.v5-letras-palabra {
+  display: inline-block;
+  white-space: nowrap;
+  margin-right: 0.26em;
+}
+.v5-letra {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+/* el rótulo y el resto del párrafo esperan a que la frase esté armada */
+.v5-manifiesto[data-vivo] .v5-manifiesto-fija > .v5-mono,
+.v5-manifiesto[data-vivo] .v5-muestra {
+  opacity: 0;
+  transition: opacity 500ms var(--ease-salida);
+}
+.v5-manifiesto[data-vivo] .v5-manifiesto-fija[data-armada] > .v5-mono,
+.v5-manifiesto[data-vivo] .v5-manifiesto-fija[data-armada] .v5-muestra {
+  opacity: 1;
+}
+.v5-manifiesto[data-vivo] .v5-manifiesto-fija:not([data-armada]) .v5-palabra {
+  opacity: 0;
+}
+@media (max-height: 560px) {
+  .v5-manifiesto[data-vivo] { height: auto; padding-block: 120px; }
+  .v5-manifiesto[data-vivo] .v5-manifiesto-fija { position: relative; height: auto; }
+}
 .v5-manifiesto p.v5-display {
   font-size: clamp(32px, 5.2vw, 84px);
   line-height: 1.08;
