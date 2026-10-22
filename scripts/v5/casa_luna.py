@@ -38,22 +38,29 @@ def con_imagen(nombre, archivo, escala, rugosidad, capa, oscurecer=1.0):
     mul = nodos.new("ShaderNodeMixRGB"); mul.blend_type = "MULTIPLY"; mul.inputs["Fac"].default_value = 1.0
     mul.inputs["Color2"].default_value = (oscurecer,) * 3 + (1,)
     ln.new(t.outputs["Color"], mul.inputs["Color1"]); ln.new(mul.outputs[0], b.inputs["Base Color"])
-    bmp = nodos.new("ShaderNodeBump"); bmp.inputs["Strength"].default_value = 0.06; bmp.inputs["Distance"].default_value = 0.002
+    bmp = nodos.new("ShaderNodeBump"); bmp.inputs["Strength"].default_value = 0.11; bmp.inputs["Distance"].default_value = 0.003
     ln.new(t.outputs["Color"], bmp.inputs["Height"]); ln.new(bmp.outputs[0], b.inputs["Normal"])
-    b.inputs["Roughness"].default_value = rugosidad; b.inputs["Coat Weight"].default_value = capa; b.inputs["Coat Roughness"].default_value = 0.05
+    # 21-oct (materiales más reales): el pulido no es parejo; la veta y la superficie reflejan distinto
+    rug = nodos.new("ShaderNodeMapRange"); rug.inputs["To Min"].default_value = rugosidad * 0.55; rug.inputs["To Max"].default_value = rugosidad * 1.8
+    ln.new(t.outputs["Color"], rug.inputs["Value"]); ln.new(rug.outputs["Result"], b.inputs["Roughness"])
+    b.inputs["Coat Weight"].default_value = capa; b.inputs["Coat Roughness"].default_value = 0.04
     return m
 
 
 def nogal():
+    # 21-oct: nogal real (foto 2k, veta vertical) en vez de ondas procedurales; acabado al aceite con brillo que sigue la veta
     m, nodos, ln, b = material("nogal")
-    tc = nodos.new("ShaderNodeTexCoord"); mp = nodos.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (1.4, 1.4, 14)
-    w = nodos.new("ShaderNodeTexWave"); w.wave_type = "BANDS"; w.bands_direction = "Z"
-    w.inputs["Distortion"].default_value = 4.0; w.inputs["Detail"].default_value = 6; w.inputs["Detail Scale"].default_value = 1.5
-    r = nodos.new("ShaderNodeValToRGB")
-    r.color_ramp.elements[0].color = (0.03, 0.014, 0.007, 1); r.color_ramp.elements[1].color = (0.16, 0.08, 0.038, 1)
-    ln.new(tc.outputs["Object"], mp.inputs["Vector"]); ln.new(mp.outputs[0], w.inputs["Vector"])
-    ln.new(w.outputs["Fac"], r.inputs["Fac"]); ln.new(r.outputs["Color"], b.inputs["Base Color"])
-    b.inputs["Roughness"].default_value = 0.38; b.inputs["Coat Weight"].default_value = 0.35
+    t = nodos.new("ShaderNodeTexImage"); t.image = bpy.data.images.load(os.path.join(MAT, "nogal-real-2k.jpg")); t.interpolation = "Cubic"
+    t.projection = "BOX"; t.projection_blend = 0.15
+    tc = nodos.new("ShaderNodeTexCoord"); mp = nodos.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (0.55, 0.55, 0.55)
+    ln.new(tc.outputs["Object"], mp.inputs["Vector"]); ln.new(mp.outputs[0], t.inputs["Vector"])
+    hsv = nodos.new("ShaderNodeHueSaturation"); hsv.inputs["Value"].default_value = 0.85; hsv.inputs["Saturation"].default_value = 1.05
+    ln.new(t.outputs["Color"], hsv.inputs["Color"]); ln.new(hsv.outputs[0], b.inputs["Base Color"])
+    rug = nodos.new("ShaderNodeMapRange"); rug.inputs["To Min"].default_value = 0.52; rug.inputs["To Max"].default_value = 0.3
+    ln.new(t.outputs["Color"], rug.inputs["Value"]); ln.new(rug.outputs["Result"], b.inputs["Roughness"])
+    bmp = nodos.new("ShaderNodeBump"); bmp.inputs["Strength"].default_value = 0.18; bmp.inputs["Distance"].default_value = 0.002
+    ln.new(t.outputs["Color"], bmp.inputs["Height"]); ln.new(bmp.outputs[0], b.inputs["Normal"])
+    b.inputs["Coat Weight"].default_value = 0.22; b.inputs["Coat Roughness"].default_value = 0.18
     return m
 
 
@@ -103,6 +110,7 @@ def caja(nombre, tam, loc, m, bisel=0.012):
 M_PIEDRA = con_imagen("piedra", "piedra-2x.png", 0.35, 0.18, 0.7)
 M_PISO = con_imagen("piso", "piedra-2x.png", 0.12, 0.08, 0.9, 0.8)
 M_CUARZO = con_imagen("cuarzo", "cuarzo-2x.png", 0.45, 0.12, 0.5)
+next(n for n in M_CUARZO.node_tree.nodes if n.type == "BSDF_PRINCIPLED").inputs["Subsurface Weight"].default_value = 0.06
 M_NOGAL = nogal()
 M_ACERO = plano_color("acero", (0.02, 0.02, 0.022), 0.35, 1.0)
 M_TIERRA = plano_color("tierra", (0.0012, 0.0014, 0.0013), 1.0)
@@ -159,6 +167,43 @@ for x in (-5.5, -0.5, 4.5):
     bpy.ops.object.light_add(type="AREA", location=(x, 1.6, Z2 - 0.15)); l = bpy.context.object
     l.data.shape = "RECTANGLE"; l.data.size = 4.2; l.data.size_y = 5.0; l.data.color = (1.0, 0.7, 0.44); l.data.energy = 0
     LUCES_DENTRO.append(l)
+
+# ---------- muebles (21-oct, Alejo: "materiales más reales"; lo que faltaba era que la casa estuviera habitada) ----------
+# Modelos de Poly Haven (CC0, gltf 1k) en ~/CastilloStudio/assets/polyhaven/muebles. Escala real; giro en grados sobre Z.
+MUEBLES_DIR = os.path.expanduser("~/CastilloStudio/assets/polyhaven/muebles")
+PISO = Z1 + 0.06
+TECHO = Z2 - 0.02
+GIRO_FRENTE = float(os.environ.get("V5_GIRO_MUEBLES", "180"))   # los modelos miran a +Y; la cámara está en -Y
+
+
+def mueble(nombre, x, y, z=PISO, giro=0.0, escala=1.0):
+    antes = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=os.path.join(MUEBLES_DIR, nombre, f"{nombre}_1k.gltf"))
+    nuevos = [o for o in bpy.data.objects if o not in antes]
+    eje = bpy.data.objects.new(f"m_{nombre}", None); esc.collection.objects.link(eje)
+    for o in nuevos:
+        if o.parent is None: o.parent = eje
+    eje.location = (x, y, z); eje.rotation_euler = (0, 0, math.radians(giro)); eje.scale = (escala,) * 3
+    return eje
+
+
+if os.path.isdir(MUEBLES_DIR):
+    # sala al centro (la isla no la tapa): dos butacas de cuero negro enfrentadas a la mesa; sin sofá (Poly Haven solo
+    # tiene sofás clásicos tallados, no van con piedra y nogal)
+    mueble("modern_coffee_table_01", 0.5, 2.4, giro=90)
+    mueble("modern_arm_chair_01", -0.75, 2.75, giro=GIRO_FRENTE + 70)
+    mueble("modern_arm_chair_01", 1.75, 2.75, giro=GIRO_FRENTE - 70)
+    mueble("mid_century_lounge_chair", 3.4, 0.2, giro=GIRO_FRENTE - 35)   # poltrona frente al núcleo de nogal
+    mueble("side_table_01", 4.4, -0.2, giro=15)
+    mueble("potted_plant_04", 4.4, -0.2, z=PISO + 0.55, giro=40, escala=1.2)
+    mueble("side_table_01", -7.45, 3.55)
+    mueble("potted_plant_04", -7.45, 3.55, z=PISO + 0.55, escala=1.3)
+    for x in (-4.3, -2.1):                                               # colgantes sobre la isla de cuarzo
+        mueble("modern_ceiling_lamp_01", x, 0.9, z=TECHO - 1.17)
+    mueble("potted_plant_02", -7.6, -1.55, escala=1.35)                  # plantas en las esquinas, junto al vidrio
+    mueble("potted_plant_02", 6.5, -1.5, giro=140, escala=1.5)
+else:
+    print("[casa] sin muebles: falta", MUEBLES_DIR)
 
 # cerros oscuros al fondo: el horizonte deja de ser una línea recta
 bpy.ops.mesh.primitive_grid_add(x_subdivisions=900, y_subdivisions=2, size=1, location=(0, 95, 0)); cerro = bpy.context.object
@@ -264,7 +309,13 @@ wl.new(suma.outputs[0], fondo.inputs["Color"]); fondo.inputs["Strength"].default
 ANCLAS = {"proyectos": (1.0, -2.98, Z2 + 1.55), "recorrido": (-6.0, -2.2, Z1 + 1.6), "formulario": (-3.2, 0.9, Z1 + 0.95),
           "aviso": (-0.5, -1.6, Z2 - 0.05), "respaldo": (9.5, -2.55, 0.3)}
 
-esc.render.resolution_x = ANCHO; esc.render.resolution_y = round(ANCHO * 9 / 16)
+VERTICAL = os.environ.get("V5_VERTICAL") == "1"
+if VERTICAL:
+    # 21-oct (hero en celular): mismo ancho de mirada que en escritorio (sensor horizontal) y el alto se abre a cielo y agua
+    cam.data.sensor_fit = "HORIZONTAL"
+    esc.render.resolution_x = ANCHO; esc.render.resolution_y = round(ANCHO * 16 / 9)
+else:
+    esc.render.resolution_x = ANCHO; esc.render.resolution_y = round(ANCHO * 9 / 16)
 datos = {}
 for f in range(1, N + 1):
     esc.frame_set(f); fila = {}
