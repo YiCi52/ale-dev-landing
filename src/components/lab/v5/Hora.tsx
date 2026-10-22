@@ -17,7 +17,7 @@ export function Hora({ idioma = "es" }: { idioma?: Idioma }) {
       const t = TEXTOS[idioma].hora;
       const hora = ahora.toLocaleTimeString(t.locale, { hour: "2-digit", minute: "2-digit", timeZone: "America/Bogota" });
       const f = faseLunar(ahora);
-      setTexto(`${t.ciudad} ${hora} · ${t.fases[f.indice]} ${Math.round(f.iluminada * 100)} %`);
+      setTexto(`${t.ciudad} ${hora} · ${t.fases[f.indice]} ${Math.round(f.iluminada * 100)}\u00a0%`);
     };
     poner();
     const id = window.setInterval(poner, 30000);

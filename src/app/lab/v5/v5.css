@@ -194,6 +194,7 @@ html:has(.v5-raiz) {
 .v5-marca {
   min-height: 44px;
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 10px;
   color: var(--luna);
@@ -266,6 +267,12 @@ html:has(.v5-raiz) {
 @media (orientation: portrait) {
   .v5-hero-poster {
     object-position: 34% 50%;
+  }
+}
+/* celular de pie: el póster ya es el render vertical, va centrado */
+@media (max-aspect-ratio: 4/5) {
+  .v5-hero-poster {
+    object-position: 50% 50%;
   }
 }
 .v5-hero-lienzo,
