@@ -20,7 +20,7 @@ const OBRAS = [
   { id: "mh", nombre: "MH Interior", href: "/trabajo/mh-interior",
     piezas: [{ img: "/lab/v5/proyectos/mh-hidroterapia.webp", grande: true }, { img: "/lab/v5/proyectos/mh-sauna.webp", grande: false }] },
   { id: "villa", nombre: "Villa Savoye", href: "/lab/villa-savoye",
-    piezas: [{ img: "/lab/v5/proyectos/villa-fachada.webp", grande: true }, { img: "/lab/v5/proyectos/villa-rampa.webp", grande: false }] },
+    piezas: [{ img: "/lab/v5/proyectos/villa-fachada.webp", grande: true }, { img: "/lab/v5/proyectos/villa-solarium.webp", grande: false }] },
 ];
 const calcoDe = (img: string) => img.replace(".webp", "-calco.webp");
 

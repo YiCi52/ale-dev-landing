@@ -29,7 +29,7 @@ export const TEXTOS = {
       rotulo: "Trabajo", titulo: "Obras", tituloLuz: "encendidas", pista: "Pasa el cursor por las fotos: debajo de cada obra está su dibujo.", pistaTactil: "Dos obras: un sitio de cliente y un recorrido hecho desde los planos.", cuenta: "obras",
       obras: [
         { tipo: "Sitio de cliente · 2026", detalle: "Portafolio de interiorismo con formulario, aviso y resumen semanal.", accion: "Ver el caso", piezas: ["Hidroterapia", "Sauna"] },
-        { tipo: "Lab · casas icónicas Nº 1", detalle: "La casa de Le Corbusier reconstruida desde sus planos para recorrerla.", accion: "Ver el recorrido", piezas: ["Fachada", "Rampa"] },
+        { tipo: "Lab · casas icónicas Nº 1", detalle: "La casa de Le Corbusier reconstruida desde sus planos para recorrerla.", accion: "Ver el recorrido", piezas: ["Fachada", "Solárium"] },
       ],
     },
     testimonio: {
@@ -112,7 +112,7 @@ export const TEXTOS = {
       rotulo: "Work", titulo: "Lit", tituloLuz: "projects", pista: "Move your cursor over the photos: under every project lies its drawing.", pistaTactil: "Two projects: a client website and a walkthrough built from the drawings.", cuenta: "projects",
       obras: [
         { tipo: "Client website · 2026", detalle: "Interior design portfolio with an inquiry form, instant alerts and a weekly summary.", accion: "See the case", piezas: ["Hydrotherapy", "Sauna"] },
-        { tipo: "Lab · iconic houses No. 1", detalle: "Le Corbusier’s house rebuilt from its drawings so you can walk through it.", accion: "See the walkthrough", piezas: ["Façade", "Ramp"] },
+        { tipo: "Lab · iconic houses No. 1", detalle: "Le Corbusier’s house rebuilt from its drawings so you can walk through it.", accion: "See the walkthrough", piezas: ["Façade", "Solarium"] },
       ],
     },
     testimonio: {

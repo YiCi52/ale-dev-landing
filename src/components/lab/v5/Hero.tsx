@@ -21,6 +21,13 @@ const FIN_PELICULA = 0.86;            // el último 14 % del recorrido se queda 
 const ENCIENDE = 100 / TOTAL;         // desde este cuadro la casa ya está encendida
 
 const LUNAS = "/lab/v5/casa/luna.json";
+// 21-oct: en celular de pie va un render vertical propio (mismo ancho de mirada; arriba cielo, abajo agua) en vez de
+// recortar la película horizontal. Su luna y su orilla son las mismas, pasadas al alto 9:16 (luna-vertical.json).
+const VERTICAL = "(max-aspect-ratio: 4/5)";
+const LUNAS_VERTICAL = "/lab/v5/casa/luna-vertical.json";
+type Juego = 1440 | 960 | "v";
+/** Dónde empieza el agua (0–1 del alto de la imagen); baja un poco a medida que la cámara se acerca. */
+const orilla = (vertical: boolean, avance: number) => (vertical ? 0.5744 + 0.0158 * avance : 0.735 + 0.05 * avance);
 const MEDIO_MES = 29.530588853 / 2;
 // lluvia: empieza al azar unos segundos después de entrar, dura un rato y vuelve cada tanto
 const azar = (min: number, max: number) => min + Math.random() * (max - min);
@@ -28,7 +35,7 @@ const LLUVIA_PRIMERA: [number, number] = [5000, 16000];
 const LLUVIA_DURA: [number, number] = [16000, 28000];
 const LLUVIA_PAUSA: [number, number] = [45000, 100000];
 
-function ruta(ancho: number, i: number, dia = false): string {
+function ruta(ancho: Juego, i: number, dia = false): string {
   return `/lab/v5/${dia ? "casa-dia" : "casa-sinluna"}/${ancho}/c-${String(i + 1).padStart(3, "0")}.webp`;
 }
 
@@ -58,7 +65,8 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
   useEffect(() => {
     const el = seccion.current, canvas = lienzo.current;
     if (!el || !canvas) return;
-    const ancho = window.matchMedia("(max-width: 820px)").matches ? 960 : 1440;
+    const vertical = window.matchMedia(VERTICAL).matches;
+    const ancho: Juego = vertical ? "v" : window.matchMedia("(max-width: 820px)").matches ? 960 : 1440;
     const angosta = () => canvas.clientWidth / Math.max(1, canvas.clientHeight) < 1;
     const raiz = el.closest<HTMLElement>(".v5-raiz");
     const esDia = () => raiz?.getAttribute("data-tema") === "claro";
@@ -67,6 +75,9 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
     let actual = 0;
     let lunas: LunaCuadro[] | null = null;
     const fase = faseLunar(new Date());
+    const fotoLuna = new Image();               // la luna real (la misma foto de la carga) para la fase de hoy
+    fotoLuna.decoding = "async";
+    fotoLuna.src = "/lab/v5/luna-llena.webp";
     const lluvia = { valor: 0, meta: 0 };
 
     const cercano = (i: number): HTMLImageElement | null => {
@@ -82,15 +93,15 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
       const img = cercano(actual);
       if (!img) return;
       const avance = actual / (TOTAL - 1);
-      const foco = angosta() ? 0.34 + 0.18 * avance : 0.5;
+      const foco = !vertical && angosta() ? 0.34 + 0.18 * avance : 0.5;
       const ctx = dimensionar(canvas);
       if (!ctx) return;
       // el agua empieza en la orilla del espejo, que baja un poco a medida que la cámara se acerca
       const e = encuadre(canvas.width, canvas.height, img, foco);
-      pintarNoche(ctx, img, e, 0.735 + 0.05 * avance, t, cursor, dia ? 0 : 1);
+      pintarNoche(ctx, img, e, orilla(vertical, avance), t, cursor, dia ? 0 : 1);
       const luna = lunas?.[actual];
-      if (luna) pintarLuna(ctx, e, luna, fase.iluminada, fase.edad < MEDIO_MES, dia);
-      pintarLluvia(ctx, e, 0.735 + 0.05 * avance, t, lluvia.valor, dia);
+      if (luna) pintarLuna(ctx, e, luna, fase.iluminada, fase.edad < MEDIO_MES, dia, fotoLuna);
+      pintarLluvia(ctx, e, orilla(vertical, avance), t, lluvia.valor, dia);
       poster.current?.setAttribute("hidden", "");
     };
 
@@ -115,7 +126,10 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
         return img;
       });
     };
-    if (dia && poster.current) poster.current.src = ruta(1440, 0, true);
+    if (dia && poster.current) {
+      poster.current.src = ruta(1440, 0, true);
+      poster.current.parentElement?.querySelector("source")?.setAttribute("srcset", ruta("v", 0, true));
+    }
     cargar();
     // el botón de tema cambia la película (noche ↔ día) sin recargar la página
     const vigia = new MutationObserver(() => {
@@ -125,14 +139,16 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
     });
     if (raiz) vigia.observe(raiz, { attributes: true, attributeFilter: ["data-tema"] });
     const pedido = new AbortController();
-    fetch(LUNAS, { signal: pedido.signal })
+    fetch(vertical ? LUNAS_VERTICAL : LUNAS, { signal: pedido.signal })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`luna.json ${r.status}`))))
       .then((d: LunaCuadro[]) => { lunas = d; dibujar(); })
       .catch((err: unknown) => { if (!pedido.signal.aborted) console.warn("v5: sin datos de la luna", err); });
+    fotoLuna.onload = () => { if (vivo) dibujar(); };
     const alRedimensionar = () => dibujar();
     window.addEventListener("resize", alRedimensionar);
     const soltar = () => {
       vivo = false;
+      fotoLuna.onload = null;
       pedido.abort();
       vigia.disconnect();
       window.removeEventListener("resize", alRedimensionar);
@@ -182,8 +198,11 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
   return (
     <section ref={seccion} className="v5-hero" aria-labelledby="v5-titulo">
       <div className="v5-hero-fija">
-        {/* eslint-disable-next-line @next/next/no-img-element -- primer cuadro, visible antes de que cargue la secuencia */}
-        <img ref={poster} src={ruta(1440, 0)} alt="" className="v5-hero-poster" fetchPriority="high" width={1440} height={810} />
+        <picture>
+          <source media={VERTICAL} srcSet={ruta("v", 0)} width={720} height={1280} />
+          {/* primer cuadro, visible antes de que cargue la secuencia */}
+          <img ref={poster} src={ruta(1440, 0)} alt="" className="v5-hero-poster" fetchPriority="high" width={1440} height={810} />
+        </picture>
         <canvas ref={lienzo} className="v5-hero-lienzo" aria-hidden />
         <div className="v5-hero-velo" />
         <aside ref={consulta} className="v5-consulta" aria-label={t.consultaAria}>
