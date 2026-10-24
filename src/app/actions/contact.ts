@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { contactSchema, type ContactInput } from "@/lib/contact-schema";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { supabase } from "@/lib/supabase";
+import { supabaseServidor } from "@/lib/supabase-server";
 
 type ActionResult =
   | { ok: true }
@@ -34,14 +34,15 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
   }
 
   const consentimientoAt = new Date().toISOString();
+  const source = origenDe(h.get("referer"));
 
-  const { error } = await supabase.from("leads").insert({
+  const { error } = await supabaseServidor().from("leads").insert({
     nombre: parsed.data.nombre,
     email: parsed.data.email,
     whatsapp: parsed.data.whatsapp ?? null,
     tipo_proyecto: parsed.data.tipoProyecto,
     mensaje: parsed.data.mensaje,
-    source: "landing",
+    source,
     user_agent: userAgent,
     consentimiento_at: consentimientoAt,
   });
@@ -58,10 +59,24 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
     whatsapp: parsed.data.whatsapp ?? null,
     tipo_proyecto: parsed.data.tipoProyecto,
     mensaje: parsed.data.mensaje,
-    source: "landing",
+    source,
   });
 
   return { ok: true };
+}
+
+/* De qué página vino el lead (CN-010): las pruebas desde los labs no se mezclan con los leads de la home. */
+function origenDe(referer: string | null): string {
+  if (!referer) return "landing";
+  try {
+    const ruta = new URL(referer).pathname;
+    if (ruta.startsWith("/lab/v5")) return "lab-v5";
+    if (ruta.startsWith("/lab/v4")) return "lab-v4";
+    if (ruta.startsWith("/lab")) return "lab";
+  } catch {
+    return "landing";
+  }
+  return "landing";
 }
 
 type WebhookPayload = {

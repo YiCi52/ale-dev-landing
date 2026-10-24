@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
 
@@ -58,7 +59,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (request.headers.get("authorization") !== `Bearer ${secreto}`) {
+  // comparación en tiempo constante (CN-009)
+  const recibido = Buffer.from(request.headers.get("authorization") ?? "");
+  const esperado = Buffer.from(`Bearer ${secreto}`);
+  if (recibido.length !== esperado.length || !timingSafeEqual(recibido, esperado)) {
     return new NextResponse(null, { status: 401 });
   }
 

@@ -4,8 +4,8 @@ import { __resetRateLimitForTests } from "@/lib/rate-limit";
 const insertMock = vi.fn();
 const fromMock = vi.fn(() => ({ insert: insertMock }));
 
-vi.mock("@/lib/supabase", () => ({
-  supabase: { from: fromMock },
+vi.mock("@/lib/supabase-server", () => ({
+  supabaseServidor: () => ({ from: fromMock }),
 }));
 
 vi.mock("next/headers", () => ({
@@ -70,14 +70,22 @@ describe("submitContact", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("bloquea bots: honeypot lleno es rechazado por el schema sin tocar Supabase", async () => {
+  it("engaña a los bots: honeypot lleno responde éxito falso sin tocar Supabase", async () => {
     const { submitContact } = await import("./contact");
     const result = await submitContact({
       ...validInput,
       honeypot: "bot-tocó-este-campo",
     });
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBe(true);
     expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it("marca el origen del lead según la página (los labs no se mezclan con la home)", async () => {
+    insertMock.mockResolvedValueOnce({ error: null });
+    const { submitContact } = await import("./contact");
+    await submitContact(validInput);
+    // sin referer en la prueba: cuenta como la home
+    expect(insertMock.mock.calls[0][0].source).toBe("landing");
   });
 
   it("dispara webhook a Make si MAKE_WEBHOOK_URL está configurada", async () => {

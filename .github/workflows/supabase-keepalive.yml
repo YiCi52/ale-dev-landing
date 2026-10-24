@@ -28,6 +28,8 @@ on:
     - cron: "23 */6 * * *" # 00:23, 06:23, 12:23 y 18:23 UTC
   workflow_dispatch: {} # para poder dispararlo a mano y comprobar que sirve
 
+permissions: {}   # solo lee Supabase con sus secrets; no necesita permisos sobre el repo (CN-009)
+
 jobs:
   latido:
     runs-on: ubuntu-latest

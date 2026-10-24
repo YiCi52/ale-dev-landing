@@ -18,11 +18,13 @@ export const contactSchema = z.object({
   nombre: z
     .string()
     .trim()
-    .min(2, "Tu nombre, aunque sea solo el primero."),
-  email: z.string().trim().email("Email inválido."),
+    .min(2, "Tu nombre, aunque sea solo el primero.")
+    .max(120, "Ese nombre es demasiado largo."),
+  email: z.string().trim().max(254, "Email demasiado largo.").email("Email inválido."),
   whatsapp: z
     .string()
     .trim()
+    .max(30, "Número demasiado largo.")
     .optional()
     .refine(
       (v) => !v || /^[+]?[\d\s()-]{7,}$/.test(v),
@@ -39,7 +41,8 @@ export const contactSchema = z.object({
   consentimiento: z.literal(true, {
     message: "Necesitamos tu consentimiento para procesar tu consulta.",
   }),
-  honeypot: z.string().max(0).optional(),
+  // sin .max(0): si un bot lo llena, la acción le responde un éxito falso en vez de "datos inválidos" (CN-007)
+  honeypot: z.string().max(200).optional(),
 });
 
 export type ContactInput = z.infer<typeof contactSchema>;

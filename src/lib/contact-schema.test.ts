@@ -190,11 +190,16 @@ describe("contactSchema", () => {
       expect(result.success).toBe(true);
     });
 
-    it("rechaza honeypot con contenido (señal de bot)", () => {
+    it("deja pasar el honeypot con contenido: la acción decide el éxito falso (CN-007)", () => {
       const result = contactSchema.safeParse({
         ...validInput,
         honeypot: "soy-un-bot",
       });
+      expect(result.success).toBe(true);
+    });
+
+    it("pone tope de largo al nombre", () => {
+      const result = contactSchema.safeParse({ ...validInput, nombre: "a".repeat(121) });
       expect(result.success).toBe(false);
     });
   });
