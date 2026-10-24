@@ -111,7 +111,9 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
     const cargar = () => {
       cancelar();
       const propios: (HTMLImageElement | null)[] = Array(TOTAL).fill(null);
-      pedidas = ordenDeCarga().map((i, k) => {
+      // con movimiento reducido se muestra la casa encendida: basta el último cuadro (auditoría 23-oct)
+      const orden = sinMovimiento() ? [TOTAL - 1] : ordenDeCarga();
+      pedidas = orden.map((i, k) => {
         const img = new Image();
         img.decoding = "async";
         if (k >= TOTAL / 8) img.fetchPriority = "low";   // la primera pasada (1 de cada 8) va normal; el relleno, después

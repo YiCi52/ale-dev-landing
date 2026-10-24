@@ -992,7 +992,7 @@ html:has(.v5-raiz) {
   --noche-800: #dcd7cd;
   --luna: #15171c;
   --luna-300: #3e434d;
-  --apagado: #646a75;
+  --apagado: #5a606b;   /* 4,5:1 sobre --noche-900 (auditoría 23-oct) */
   --cuarzo: #23252b;
   --calido: #a3561c;
   --oro: #85652d;
@@ -1101,4 +1101,72 @@ body:has(.v5-raiz[data-tema="claro"]) {
 .v5-portal-calco {
   opacity: 0;
   mix-blend-mode: screen;
+}
+
+
+/* ---------- correcciones de la auditoría de calidad (23-oct) ---------- */
+/* la marca lleva su píldora de vidrio también de noche: el contenido ya no pasa debajo del nombre */
+.v5-raiz:not([data-tema="claro"]) .v5-marca {
+  padding: 0 16px 0 12px;
+  border-radius: 999px;
+  background: rgba(11, 13, 19, 0.55);
+  border: 1px solid var(--linea);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+/* celular angosto: la marca queda en la C y el menú se compacta para que "Hablemos" no se salga */
+@media (max-width: 420px) {
+  .v5-marca-texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .v5-raiz .v5-marca {
+    padding: 0 12px;
+  }
+  .v5-nav {
+    gap: 2px;
+    padding: 4px;
+  }
+  .v5-nav a {
+    padding: 0 12px;
+  }
+  .v5-tema {
+    width: 40px;
+  }
+}
+/* la pista vertical del hero se montaba sobre el título en celular */
+@media (max-width: 760px) {
+  .v5-hero-pista {
+    display: none;
+  }
+  /* de día el texto oscuro necesita un velo claro detrás, sobre el reflejo del agua */
+  .v5-raiz[data-tema="claro"] .v5-hero-texto {
+    padding-top: 48px;
+    background: linear-gradient(180deg, rgba(242, 239, 233, 0) 0%, rgba(242, 239, 233, 0.84) 26%, rgba(242, 239, 233, 0.92) 100%);
+  }
+}
+/* el formulario en tema claro: papel claro, texto oscuro */
+.v5-raiz[data-tema="claro"] .v5-formulario {
+  --color-border: rgba(21, 23, 28, 0.22);
+  --color-surface: rgba(250, 248, 243, 0.85);
+  background: rgba(250, 248, 243, 0.85);
+}
+.v5-raiz[data-tema="claro"] .v5-formulario input,
+.v5-raiz[data-tema="claro"] .v5-formulario select,
+.v5-raiz[data-tema="claro"] .v5-formulario textarea {
+  background: rgba(21, 23, 28, 0.03);
+  color: var(--luna);
+  border-color: rgba(21, 23, 28, 0.42);
+}
+/* las letras del manifiesto sueltan la capa de composición cuando la frase ya está armada */
+.v5-manifiesto-fija[data-armada] .v5-letra {
+  will-change: auto;
+}
+/* los enlaces del formulario (política de privacidad) usaban el color global del sitio: casi blanco sobre papel claro */
+.v5-formulario a {
+  color: var(--luna);
 }

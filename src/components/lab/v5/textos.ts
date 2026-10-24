@@ -8,7 +8,7 @@ export const RAIZ: Record<Idioma, string> = { es: "/lab/v5", en: "/lab/v5/en" };
 
 export const TEXTOS = {
   es: {
-    nav: { trabajo: "Trabajo", servicios: "Servicios", sobre: "Sobre mí", preguntas: "Preguntas", hablemos: "Hablemos", inicio: "Castillo Studio, inicio", otro: "EN", otroNombre: "English version" },
+    nav: { trabajo: "Trabajo", servicios: "Servicios", sobre: "Sobre mí", preguntas: "Preguntas", hablemos: "Hablemos", inicio: "Castillo Studio, inicio", otro: "EN", otroNombre: "EN, English version", secciones: "Secciones", tema: "Tema claro" },
     hero: {
       rotulo: "Estudio web para arquitectura e interiorismo",
       titulo: "Tu obra,", tituloLuz: "a la luz.",
@@ -91,7 +91,7 @@ export const TEXTOS = {
     },
   },
   en: {
-    nav: { trabajo: "Work", servicios: "Services", sobre: "About", preguntas: "FAQ", hablemos: "Let’s talk", inicio: "Castillo Studio, home", otro: "ES", otroNombre: "Versión en español" },
+    nav: { trabajo: "Work", servicios: "Services", sobre: "About", preguntas: "FAQ", hablemos: "Let’s talk", inicio: "Castillo Studio, home", otro: "ES", otroNombre: "ES, versión en español", secciones: "Sections", tema: "Light theme" },
     hero: {
       rotulo: "Web studio for architecture and interior design",
       titulo: "Your work,", tituloLuz: "in the light.",

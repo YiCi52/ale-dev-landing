@@ -111,7 +111,7 @@ export function ContactForm() {
           className={inputClasses(!!errors.tipoProyecto)}
         >
           <option value="" disabled>
-            Elegí una opción
+            Elige una opción
           </option>
           {tiposProyecto.map((t) => (
             <option key={t.value} value={t.value}>
@@ -133,7 +133,7 @@ export function ContactForm() {
           rows={5}
           {...register("mensaje")}
           className={cn(inputClasses(!!errors.mensaje), "resize-y min-h-32")}
-          placeholder="Quiero una landing para mi marca de joyas dentales…"
+          placeholder="Quiero un sitio para mi estudio, con los proyectos y un formulario…"
         />
       </Field>
 
@@ -188,8 +188,7 @@ export function ContactForm() {
           {status === "submitting" ? "Enviando…" : "Enviar consulta"}
         </Button>
         <Text size="sm" tone="subtle" className="max-w-sm">
-          Te respondo en 24h hábiles. Sin filtros de agencia, sin formularios
-          que no leés.
+          Te respondo el mismo día hábil. Sin filtros de agencia: lo leo yo.
         </Text>
       </div>
 
@@ -270,7 +269,7 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
         Recibido. Gracias.
       </p>
       <Text size="lg" tone="muted" className="mt-4 max-w-md">
-        Te respondo en menos de 24h hábiles por correo. Si es urgente,
+        Te respondo el mismo día hábil por correo. Si es urgente,
         escríbeme por{" "}
         <a
           href={WHATSAPP_URL}

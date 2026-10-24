@@ -10,6 +10,7 @@ export const metadata: Metadata = { title: "Trabajo · Castillo Studio", robots:
 export default function TrabajoPage() {
   return (
     <div className="pt-16">
+      <h1 className="sr-only">Trabajo · Castillo Studio</h1>
       <Trabajo />
       <Testimonio />
       <Cierre />

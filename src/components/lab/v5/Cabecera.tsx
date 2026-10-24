@@ -19,18 +19,18 @@ export function Cabecera() {
   const t = TEXTOS[idioma].nav, raiz = RAIZ[idioma];
   const hablemos = idioma === "es" ? HABLEMOS : `${raiz}/hablemos`;
   return (
-    <header className="v5-cabecera v5-gutter">
+    <header className="v5-cabecera v5-gutter" lang={idioma}>
       <Link href={raiz} className="v5-marca" aria-label={t.inicio} onClick={pedirIntro}>
         <svg viewBox="-110 -110 220 220" aria-hidden>
           <path d={C_LOGO} fill="currentColor" />
         </svg>
-        Castillo Studio
+        <span className="v5-marca-texto">Castillo Studio</span>
       </Link>
-      <nav aria-label="Secciones" className="v5-nav">
+      <nav aria-label={t.secciones} className="v5-nav">
         <Link href={`${raiz}/trabajo`}>{t.trabajo}</Link>
         <Link href={`${raiz}/servicios`}>{t.servicios}</Link>
         <Link href={`${raiz}/sobre-mi`}>{t.sobre}</Link>
-        <Tema />
+        <Tema etiqueta={t.tema} />
         <Link href={rutaEnOtro(ruta)} className="v5-idioma" aria-label={t.otroNombre} hrefLang={idioma === "es" ? "en" : "es"}>{t.otro}</Link>
         <Link href={hablemos} className="v5-nav-hablemos">{t.hablemos}</Link>
       </nav>

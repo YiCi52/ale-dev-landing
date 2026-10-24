@@ -28,7 +28,7 @@ function aplicar(t: Tema) {
   document.querySelector<HTMLElement>(".v5-raiz")?.setAttribute("data-tema", t);
 }
 
-export function Tema() {
+export function Tema({ etiqueta }: { etiqueta: string }) {
   const [tema, setTema] = useState<Tema | null>(null);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export function Tema() {
 
   const claro = tema === "claro";
   return (
-    <button type="button" className="v5-tema" onClick={cambiar} aria-label={claro ? "Cambiar a tema oscuro" : "Cambiar a tema claro"} aria-pressed={claro}>
+    <button type="button" className="v5-tema" onClick={cambiar} aria-label={etiqueta} aria-pressed={claro}>
       <svg viewBox="0 0 24 24" aria-hidden width="18" height="18">
         {claro ? (
           <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="currentColor" />

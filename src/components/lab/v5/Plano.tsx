@@ -28,6 +28,7 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
     const fija = el?.querySelector<HTMLElement>(".v5-plano-fija");
     if (!el || !canvas || !fija) return;
     const render = el.querySelector<HTMLImageElement>(".v5-plano-render");
+    const lista = el.querySelector<HTMLElement>(".v5-planta-lista");
     const raiz = el.closest<HTMLElement>(".v5-raiz");
     const ponerRender = () => {
       if (render) render.src = `/lab/v5/${raiz?.getAttribute("data-tema") === "claro" ? "casa-dia" : "casa-sinluna"}/1440/c-120.webp`;
@@ -52,7 +53,10 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(img, (w - img.naturalWidth * escala) / 2, (h - img.naturalHeight * escala) / 2, img.naturalWidth * escala, img.naturalHeight * escala);
     };
-    const pedidas = Array.from({ length: CUADROS }, (_, i) => {
+    // con movimiento reducido se muestra la planta terminada: basta el último cuadro
+    const reducido = sinMovimiento();
+    const pedidas = Array.from({ length: reducido ? 1 : CUADROS }, (_, k) => {
+      const i = reducido ? CUADROS - 1 : k;
       const img = new Image();
       img.decoding = "async";
       img.onload = () => { if (!vivo) return; cuadros[i] = img; if (Math.abs(i - actual) < 6) dibujar(); };
@@ -86,6 +90,8 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
       fija.style.setProperty("--relleno", String(tramo(p, 0.66, 0.78)));
       fija.style.setProperty("--asienta", String(tramo(p, 0.76, 0.86))); // el plano se corre a la izquierda
       fija.style.setProperty("--llamadas", String(tramo(p, 0.82, 0.95)));
+      // mientras la lista no se ve, el teclado no entra en ella (WCAG 2.4.7)
+      lista?.toggleAttribute("inert", tramo(p, 0.82, 0.95) < 0.05);
     };
     const quitar = sinMovimiento() ? (actual = CUADROS - 1, aplicar(1), () => {}) : observarProgreso(el, aplicar);
     return () => {

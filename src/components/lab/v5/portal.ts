@@ -7,7 +7,11 @@
 const DURA = 820;
 const EASE = "cubic-bezier(0.77, 0, 0.175, 1)";
 
+let enCurso = false;
+
 export function abrirPortal(foto: HTMLImageElement, rutaCalco: string, ir: () => void): void {
+  if (enCurso) return;   // un doble clic no dispara dos animaciones ni dos navegaciones
+  enCurso = true;
   const r = foto.getBoundingClientRect();
   const vw = window.innerWidth, vh = window.innerHeight;
   const capa = document.createElement("div");
@@ -34,7 +38,7 @@ export function abrirPortal(foto: HTMLImageElement, rutaCalco: string, ir: () =>
     // la página nueva entra con su fundido; el velo se retira encima de ella
     window.setTimeout(() => {
       const salida = capa.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, easing: "ease-out", fill: "forwards" });
-      salida.onfinish = () => capa.remove();
+      salida.onfinish = () => { capa.remove(); enCurso = false; };
     }, 380);
   }, DURA - 60);
 }

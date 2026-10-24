@@ -190,14 +190,14 @@
 @media (max-width: 860px) {
   .v5-planta-escena {
     inset: auto 0 auto 0;
-    top: calc(150px + env(safe-area-inset-top, 0px));
+    top: calc(172px + env(safe-area-inset-top, 0px));   /* la cota 22,00 ya no pisa el título */
     aspect-ratio: 16 / 9;
     transform: none;
   }
   .v5-planta-titulo { top: calc(80px + env(safe-area-inset-top, 0px)); opacity: 1; }
   .v5-planta-titulo h2 { font-size: clamp(22px, 6.4vw, 32px); }
   .v5-planta-lista {
-    top: calc(162px + 56.25vw + env(safe-area-inset-top, 0px));
+    top: calc(184px + 56.25vw + env(safe-area-inset-top, 0px));
     left: 16px;
     right: 16px;
     width: auto;

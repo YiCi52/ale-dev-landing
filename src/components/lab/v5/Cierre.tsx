@@ -26,6 +26,7 @@ export function Cierre({ idioma = "es" }: { idioma?: Idioma }) {
           <span className="v5-mono">{t.sitio}</span>
           <Link className="v5-pie-grande" href={`${raiz}/trabajo`}>{TEXTOS[idioma].nav.trabajo}</Link>
           <Link className="v5-pie-grande" href={`${raiz}/servicios`}>{TEXTOS[idioma].nav.servicios}</Link>
+          <Link className="v5-pie-grande" href={`${raiz}/sobre-mi`}>{TEXTOS[idioma].nav.sobre}</Link>
         </div>
         <div className="grid gap-3">
           <span className="v5-mono">{t.contacto}</span>

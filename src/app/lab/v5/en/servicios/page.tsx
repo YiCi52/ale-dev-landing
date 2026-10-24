@@ -10,6 +10,7 @@ export const metadata: Metadata = { title: "Services · Castillo Studio", robots
 export default function ServicesEn() {
   return (
     <div lang="en">
+      <h1 className="sr-only">Services · Castillo Studio</h1>
       <Plano idioma="en" />
       <Servicios idioma="en" />
       <Preguntas idioma="en" />

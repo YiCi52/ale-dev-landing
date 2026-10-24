@@ -45,8 +45,10 @@ export function Manifiesto({ idioma = "es" }: { idioma?: Idioma }) {
     };
     const alRedimensionar = () => { medidas = medirLetras(fija, letras); aplicar(ultimo); };
     window.addEventListener("resize", alRedimensionar);
+    let vivo = true;
+    document.fonts?.ready.then(() => { if (vivo) alRedimensionar(); });
     const quitar = observarProgreso(el, aplicar);
-    return () => { quitar(); window.removeEventListener("resize", alRedimensionar); el.removeAttribute("data-vivo"); };
+    return () => { vivo = false; quitar(); window.removeEventListener("resize", alRedimensionar); el.removeAttribute("data-vivo"); };
   }, []);
 
   return (

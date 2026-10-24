@@ -96,7 +96,8 @@ export function Trabajo({ idioma = "es" }: { idioma?: Idioma }) {
           <h2 id="v5-trabajo-t" className="v5-display text-[clamp(40px,6vw,96px)]">{tx.titulo} <span className="v5-luz">{tx.tituloLuz}</span></h2>
         </div>
         <p className="v5-texto max-w-[34ch]"><span className="v5-solo-cursor">{tx.pista}</span><span className="v5-solo-tactil">{tx.pistaTactil}</span></p>
-        <p className="v5-trabajo-cuenta" aria-label={`${OBRAS.length} ${tx.cuenta}`}>
+        <p className="v5-trabajo-cuenta">
+          <span className="sr-only">{`${OBRAS.length} ${tx.cuenta}`}</span>
           <span className="v5-display" aria-hidden>{String(OBRAS.length).padStart(2, "0")}</span>
           <span className="v5-mono" aria-hidden>{tx.cuenta}</span>
         </p>

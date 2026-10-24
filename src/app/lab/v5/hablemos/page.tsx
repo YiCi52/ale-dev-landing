@@ -17,7 +17,7 @@ export default function HablemosPage() {
           <p className="v5-mono" style={{ color: "var(--calido)" }}>Hablemos</p>
           <h1 className="v5-display mt-5 text-[clamp(44px,6vw,92px)] leading-[0.98]">Empecemos por quince minutos.</h1>
           <p className="mt-7 max-w-[42ch] text-lg leading-relaxed" style={{ color: "var(--luna-300)" }}>
-            Cuéntame de tu estudio y de la obra que quieres mostrar. Si encaja, te mando la propuesta en dos o tres días.
+            Cuéntame de tu estudio y de la obra que quieres mostrar. Si encaja, te mando la propuesta en 48 horas.
           </p>
           <dl className="mt-12 grid gap-5 border-t pt-8" style={{ borderColor: "var(--linea)" }}>
             <div>

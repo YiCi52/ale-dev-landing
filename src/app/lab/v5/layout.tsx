@@ -19,9 +19,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+const TEMA_ANTES = `(function(){try{var t=localStorage.getItem("v5-tema");if(t!=="claro"&&t!=="oscuro"){var h=Number(new Date().toLocaleString("en-US",{hour:"numeric",hour12:false,timeZone:"America/Bogota"}));t=h>=6&&h<18?"claro":"oscuro";}document.currentScript.parentElement.setAttribute("data-tema",t);}catch(e){}})();`;
+
 export default function V5Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`v5-raiz ${archivo.variable} ${newsreader.variable}`}>
+    <div className={`v5-raiz ${archivo.variable} ${newsreader.variable}`} suppressHydrationWarning>
+      {/* misma regla que Tema.tsx (elección guardada o la hora de Bogotá), aplicada antes de pintar */}
+      <script dangerouslySetInnerHTML={{ __html: TEMA_ANTES }} />
       <Cabecera />
       <Imanes />
       {children}
