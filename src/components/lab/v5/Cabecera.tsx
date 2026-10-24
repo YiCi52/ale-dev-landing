@@ -32,7 +32,7 @@ export function Cabecera() {
         <Link href={`${raiz}/sobre-mi`}>{t.sobre}</Link>
         <Tema etiqueta={t.tema} />
         <Link href={rutaEnOtro(ruta)} className="v5-idioma" aria-label={t.otroNombre} hrefLang={idioma === "es" ? "en" : "es"}>{t.otro}</Link>
-        <Link href={hablemos} className="v5-nav-hablemos">{t.hablemos}</Link>
+        <Link href={hablemos} className="v5-nav-hablemos" prefetch={false}>{t.hablemos}</Link>
       </nav>
     </header>
   );

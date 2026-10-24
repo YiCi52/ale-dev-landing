@@ -55,14 +55,20 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
     };
     // con movimiento reducido se muestra la planta terminada: basta el último cuadro
     const reducido = sinMovimiento();
-    const pedidas = Array.from({ length: reducido ? 1 : CUADROS }, (_, k) => {
-      const i = reducido ? CUADROS - 1 : k;
-      const img = new Image();
-      img.decoding = "async";
-      img.onload = () => { if (!vivo) return; cuadros[i] = img; if (Math.abs(i - actual) < 6) dibujar(); };
-      img.src = ruta(i);
-      return img;
-    });
+    let pedidas: HTMLImageElement[] = [];
+    const pedirTodos = () => {
+      pedidas = Array.from({ length: reducido ? 1 : CUADROS }, (_, k) => {
+        const i = reducido ? CUADROS - 1 : k;
+        const img = new Image();
+        img.decoding = "async";
+        img.onload = () => { if (!vivo) return; cuadros[i] = img; if (Math.abs(i - actual) < 6) dibujar(); };
+        img.src = ruta(i);
+        return img;
+      });
+    };
+    // los 72 cuadros se piden cuando la sección está a una pantalla de distancia, no al abrir la página (auditoría 23-oct)
+    const cerca = new IntersectionObserver(([e]) => { if (e.isIntersecting) { cerca.disconnect(); pedirTodos(); } }, { rootMargin: "100% 0px" });
+    cerca.observe(el);
     window.addEventListener("resize", dibujar);
 
     // ---- el recinto y su renglón de la lista se encienden juntos ----
@@ -95,7 +101,7 @@ export function Plano({ idioma = "es" }: { idioma?: Idioma }) {
     };
     const quitar = sinMovimiento() ? (actual = CUADROS - 1, aplicar(1), () => {}) : observarProgreso(el, aplicar);
     return () => {
-      vivo = false; quitar(); vigia.disconnect(); window.removeEventListener("resize", dibujar);
+      vivo = false; quitar(); vigia.disconnect(); cerca.disconnect(); window.removeEventListener("resize", dibujar);
       fija.removeEventListener("pointerover", alEntrar); fija.removeEventListener("focusin", alEntrar);
       fija.removeEventListener("pointerleave", alSalir); fija.removeEventListener("focusout", alSalir);
       for (const img of pedidas) { img.onload = null; img.src = ""; }

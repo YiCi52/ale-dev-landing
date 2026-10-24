@@ -113,7 +113,11 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
       const propios: (HTMLImageElement | null)[] = Array(TOTAL).fill(null);
       // con movimiento reducido se muestra la casa encendida: basta el último cuadro (auditoría 23-oct)
       const orden = sinMovimiento() ? [TOTAL - 1] : ordenDeCarga();
-      pedidas = orden.map((i, k) => {
+      const primera = orden.slice(0, Math.ceil(TOTAL / 8));
+      const ahorro = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData
+        || window.matchMedia("(max-width: 820px)").matches;
+      const resto = orden.slice(primera.length).filter((i) => !ahorro || i % 2 === 0);
+      const pedir = (i: number, k: number) => {
         const img = new Image();
         img.decoding = "async";
         if (k >= TOTAL / 8) img.fetchPriority = "low";   // la primera pasada (1 de cada 8) va normal; el relleno, después
@@ -126,7 +130,13 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
         };
         img.src = ruta(ancho, i, dia);
         return img;
-      });
+      };
+      pedidas = primera.map(pedir);
+      // el relleno no compite con el JS y las fuentes de la primera carga (auditoría de rendimiento 23-oct)
+      const rellenar = () => { if (vivo) pedidas = pedidas.concat(resto.map((i, k) => pedir(i, k + primera.length))); };
+      const enReposo = (f: () => void) => (typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(f, { timeout: 2500 }) : setTimeout(f, 600));
+      if (document.readyState === "complete") enReposo(rellenar);
+      else window.addEventListener("load", () => enReposo(rellenar), { once: true });
     };
     if (dia && poster.current) {
       poster.current.src = ruta(1440, 0, true);
@@ -226,8 +236,8 @@ export function Hero({ idioma = "es" }: { idioma?: Idioma }) {
           <div className="v5-hero-sub">
             <p className="v5-texto">{t.sub}</p>
             <div className="flex flex-wrap gap-3">
-              <Link href={idioma === "es" ? HABLEMOS : `${RAIZ.en}/hablemos`} className="v5-boton v5-boton-luz">{t.cta}</Link>
-              <Link href={`${RAIZ[idioma]}/trabajo`} className="v5-boton v5-boton-linea">{t.ver}</Link>
+              <Link href={idioma === "es" ? HABLEMOS : `${RAIZ.en}/hablemos`} className="v5-boton v5-boton-luz" prefetch={false}>{t.cta}</Link>
+              <Link href={`${RAIZ[idioma]}/trabajo`} className="v5-boton v5-boton-linea" prefetch={false}>{t.ver}</Link>
             </div>
           </div>
         </div>

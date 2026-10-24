@@ -79,6 +79,10 @@ const nextConfig: NextConfig = {
         los mismos nombres, a la hora ya se ve el nuevo.
       */
       {
+        source: "/lab/v5/:ruta*/:archivo(.+\\.webp)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600, immutable" }],
+      },
+      {
         source: "/hero/escena/:carpeta/:archivo(.+\\.webp)",
         headers: [{ key: "Cache-Control", value: "public, max-age=3600, immutable" }],
       },

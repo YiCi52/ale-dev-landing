@@ -1170,3 +1170,17 @@ body:has(.v5-raiz[data-tema="claro"]) {
 .v5-formulario a {
   color: var(--luna);
 }
+
+/* rendimiento (auditoría 23-oct): con la carga en pantalla, la página no entra con fundido y el texto del hero solo
+   sube, sin opacidad: así el póster y el título cuentan como el contenido principal (LCP) desde el primer pintado */
+.v5-raiz:has(.v5-intro) .v5-entra {
+  animation: none;
+}
+.v5-raiz:has(.v5-intro) .v5-hero-texto {
+  animation-name: v5-sube;
+}
+@keyframes v5-sube {
+  from {
+    transform: translateY(14px);
+  }
+}

@@ -12,7 +12,7 @@ import "./v5.css";
   layout raíz) para lo técnico. Vive en /lab para no tocar la home ni indexarse.
 */
 const archivo = Archivo({ variable: "--font-archivo", subsets: ["latin"], axes: ["wdth"], display: "swap" });
-const newsreader = Newsreader({ variable: "--font-newsreader", subsets: ["latin"], style: ["italic"], weight: ["300", "400"], display: "swap" });
+const newsreader = Newsreader({ variable: "--font-newsreader", subsets: ["latin"], style: ["italic"], weight: ["300", "400"], display: "swap", preload: false });
 
 export const metadata: Metadata = {
   title: "Castillo Studio · v5",

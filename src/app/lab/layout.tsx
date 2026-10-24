@@ -6,6 +6,7 @@ const grotesk = Space_Grotesk({
   variable: "--font-grotesk",
   subsets: ["latin"],
   display: "swap",
+  preload: false,   // la v5 no la usa: no se precarga en todas las páginas de /lab (auditoría 23-oct)
   weight: ["400", "500", "600", "700"],
 });
 
