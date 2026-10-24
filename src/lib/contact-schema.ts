@@ -31,13 +31,13 @@ export const contactSchema = z.object({
       "Solo números, espacios, paréntesis y +.",
     ),
   tipoProyecto: z.enum(tipoProyectoValues, {
-    message: "Elegí una opción.",
+    message: "Elige una opción.",
   }),
   mensaje: z
     .string()
     .trim()
-    .min(20, "Contame al menos 20 caracteres para no improvisar.")
-    .max(2000, "Demasiado largo. Resumí en lo esencial."),
+    .min(20, "Cuéntame al menos 20 caracteres para no improvisar.")
+    .max(2000, "Demasiado largo. Resume lo esencial."),
   consentimiento: z.literal(true, {
     message: "Necesitamos tu consentimiento para procesar tu consulta.",
   }),

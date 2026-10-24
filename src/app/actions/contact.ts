@@ -29,7 +29,7 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
   if (!rate.ok) {
     return {
       ok: false,
-      error: "Demasiados intentos desde tu red. Probá de nuevo en una hora.",
+      error: "Demasiados intentos desde tu red. Prueba de nuevo en una hora.",
     };
   }
 
@@ -49,7 +49,7 @@ export async function submitContact(input: ContactInput): Promise<ActionResult> 
 
   if (error) {
     console.error("[submitContact] Supabase insert failed:", error.message);
-    return { ok: false, error: "No pudimos guardar tu mensaje. Probá de nuevo." };
+    return { ok: false, error: "No pudimos guardar tu mensaje. Prueba de nuevo." };
   }
 
   await notifyMakeWebhook({

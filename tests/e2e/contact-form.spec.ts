@@ -2,8 +2,9 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Contact form — validación client-side", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    await page.locator("#contacto").scrollIntoViewIfNeeded();
+    // 24-oct: el formulario vive en /hablemos (la v5 es el sitio)
+    await page.goto("/hablemos");
+    await page.locator("form").first().scrollIntoViewIfNeeded();
   });
 
   test("submit vacío muestra los errores de campos requeridos", async ({
@@ -15,9 +16,9 @@ test.describe("Contact form — validación client-side", () => {
       page.getByText("Tu nombre, aunque sea solo el primero."),
     ).toBeVisible();
     await expect(page.getByText("Email inválido.")).toBeVisible();
-    await expect(page.getByText("Elegí una opción.")).toBeVisible();
+    await expect(page.getByText("Elige una opción.")).toBeVisible();
     await expect(
-      page.getByText("Contame al menos 20 caracteres para no improvisar."),
+      page.getByText("Cuéntame al menos 20 caracteres para no improvisar."),
     ).toBeVisible();
     await expect(
       page.getByText("Necesitamos tu consentimiento para procesar tu consulta."),
@@ -68,7 +69,7 @@ test.describe("Contact form — validación client-side", () => {
     await page.getByRole("button", { name: /enviar consulta/i }).click();
 
     await expect(
-      page.getByText("Contame al menos 20 caracteres para no improvisar."),
+      page.getByText("Cuéntame al menos 20 caracteres para no improvisar."),
     ).toBeVisible();
   });
 
