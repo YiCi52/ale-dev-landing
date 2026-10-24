@@ -18,7 +18,11 @@ describe("sección Labs", () => {
 
   it("cada lab enlaza a una página que existe", () => {
     for (const lab of todos) {
-      expect(existsSync(path.join(RAIZ, "src/app/lab", lab.slug, "page.tsx")), lab.slug).toBe(true);
+      // 24-oct: la Villa pasó a ser trabajo publicado (/trabajo/villa-savoye, grupo (v5)); el resto sigue en /lab
+      const pagina = lab.slug === "villa-savoye"
+        ? path.join(RAIZ, "src/app/(v5)/trabajo/villa-savoye/page.tsx")
+        : path.join(RAIZ, "src/app/lab", lab.slug, "page.tsx");
+      expect(existsSync(pagina), lab.slug).toBe(true);
     }
   });
 

@@ -64,6 +64,19 @@ const nextConfig: NextConfig = {
   experimental: {
     inlineCss: true,
   },
+  /*
+    24-oct-2026: la v5 pasa a ser el sitio. Las rutas de prueba viejas llevan a las nuevas (308, permanente) y las
+    réplicas de marcas reales de los labs dejan de ser públicas (auditoría de seguridad: riesgo de marca y legal);
+    siguen en el repo para estudiarlas en local.
+  */
+  async redirects() {
+    return [
+      { source: "/lab/v5", destination: "/", permanent: true },
+      { source: "/lab/v5/:ruta*", destination: "/:ruta*", permanent: true },
+      { source: "/lab/villa-savoye", destination: "/trabajo/villa-savoye", permanent: true },
+      ...["taurus", "setby", "alche", "gatekeep"].map((lab) => ({ source: `/lab/${lab}/:ruta*`, destination: "/", permanent: false })),
+    ];
+  },
   async headers() {
     return [
       {

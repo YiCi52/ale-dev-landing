@@ -1,0 +1,106 @@
+/* ---------- caso MH Interior con la piel de la v5 (24-oct) ---------- */
+.v5-caso {
+  display: grid;
+  gap: clamp(72px, 9vw, 140px);
+  padding-top: clamp(110px, 12vw, 160px);
+  padding-bottom: clamp(80px, 10vw, 140px);
+}
+.v5-caso-volver {
+  color: var(--luna-300);
+  transition: color 200ms ease;
+}
+.v5-caso-volver:hover {
+  color: var(--calido);
+}
+.v5-caso-cabeza {
+  display: grid;
+  gap: 18px;
+  max-width: 980px;
+}
+.v5-caso-cabeza h1 {
+  font-size: clamp(44px, 7vw, 112px);
+}
+.v5-caso-meta {
+  color: var(--luna-300);
+}
+.v5-caso-intro {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+.v5-caso-dos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(40px, 6vw, 110px);
+  align-items: start;
+}
+.v5-caso-grande {
+  margin: 18px 0 20px;
+  font-size: clamp(24px, 2.4vw, 36px);
+  line-height: 1.2;
+  color: var(--luna);
+  max-width: 22ch;
+}
+.v5-caso-decisiones {
+  display: grid;
+  gap: 32px;
+  margin-top: 22px;
+  list-style: none;
+}
+.v5-caso-decisiones li {
+  display: grid;
+  gap: 8px;
+  padding-top: 18px;
+  border-top: 1px solid var(--linea);
+}
+.v5-caso-decisiones h2 {
+  font-size: clamp(19px, 1.6vw, 23px);
+  font-weight: 450;
+  color: var(--luna);
+}
+.v5-caso-capturas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(20px, 3vw, 48px);
+  margin-top: 26px;
+}
+.v5-caso-captura {
+  aspect-ratio: 16 / 10;
+  cursor: default;
+}
+.v5-caso-cita blockquote {
+  display: grid;
+  gap: 26px;
+  margin-top: 24px;
+  max-width: 980px;
+}
+.v5-caso-cita blockquote p {
+  font-size: clamp(22px, 2.4vw, 34px);
+  line-height: 1.35;
+  color: var(--luna);
+}
+.v5-caso-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  list-style: none;
+}
+.v5-caso-stack li {
+  padding: 6px 12px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: 999px;
+  font-size: 14px;
+  color: var(--luna);
+}
+.v5-caso-vivo {
+  display: grid;
+  gap: 18px;
+  justify-items: start;
+}
+@media (max-width: 860px) {
+  .v5-caso-dos,
+  .v5-caso-capturas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

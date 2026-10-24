@@ -25,18 +25,24 @@ type Entry = {
   priority: number;
 };
 
+/* 24-oct-2026: la v5 es el sitio. Español en la raíz y su par en inglés bajo /en (hreflang en cada página). */
+const HOY = "2026-10-24";
 const ROUTES: readonly Entry[] = [
-  { path: "", lastModified: "2026-08-03", changeFrequency: "monthly", priority: 1 },
+  { path: "", lastModified: HOY, changeFrequency: "monthly", priority: 1 },
+  { path: "/en", lastModified: HOY, changeFrequency: "monthly", priority: 0.9 },
   // Los casos llevan la prueba de trabajo: prioridad alta, después de la home.
-  { path: "/trabajo/mh-interior", lastModified: "2026-08-02", changeFrequency: "monthly", priority: 0.9 },
-  { path: "/sobre-mi", lastModified: "2026-08-02", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/trabajo", lastModified: HOY, changeFrequency: "monthly", priority: 0.9 },
+  { path: "/en/trabajo", lastModified: HOY, changeFrequency: "monthly", priority: 0.8 },
+  { path: "/trabajo/mh-interior", lastModified: HOY, changeFrequency: "monthly", priority: 0.9 },
+  { path: "/trabajo/villa-savoye", lastModified: HOY, changeFrequency: "monthly", priority: 0.8 },
+  { path: "/servicios", lastModified: HOY, changeFrequency: "monthly", priority: 0.8 },
+  { path: "/en/servicios", lastModified: HOY, changeFrequency: "monthly", priority: 0.7 },
+  { path: "/sobre-mi", lastModified: HOY, changeFrequency: "monthly", priority: 0.7 },
+  { path: "/en/sobre-mi", lastModified: HOY, changeFrequency: "monthly", priority: 0.6 },
+  { path: "/hablemos", lastModified: HOY, changeFrequency: "yearly", priority: 0.6 },
+  { path: "/en/hablemos", lastModified: HOY, changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacidad", lastModified: "2026-06-19", changeFrequency: "yearly", priority: 0.3 },
-  /*
-    `/lab` y sus tres réplicas quedan FUERA a propósito: publicarlo es una
-    decisión abierta (pendientes-maestro). OJO: robots.ts hoy SÍ permite
-    rastrearlo, así que dejarlo fuera del sitemap no lo esconde. Cuando se
-    decida: o entra acá, o se agrega a `disallow` en robots.ts.
-  */
+  // /lab queda fuera: son pruebas internas (noindex) y las réplicas de marcas redirigen a la home.
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

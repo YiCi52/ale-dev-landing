@@ -17,7 +17,7 @@ export function Cierre({ idioma = "es" }: { idioma?: Idioma }) {
         <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="v5-boton v5-boton-luz">{t.whatsapp}{nueva}</a>
         <Link href={HABLEMOS} className="v5-boton v5-boton-linea" hrefLang="es">{t.formulario}</Link>
       </div>
-      <footer className="v5-pie" role="contentinfo">
+      <footer className="v5-pie">
         <div className="grid gap-3">
           <span className="v5-mono">Castillo Studio</span>
           <span style={{ color: "var(--luna-300)" }}>{t.lema}</span>

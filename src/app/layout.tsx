@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Header } from "@/components/nav/Header";
-import { Footer } from "@/components/footer/Footer";
-import { SmoothScroll } from "@/components/ui/SmoothScroll";
-import { Grain } from "@/components/ui/Grain";
-import { FluidCursor } from "@/components/ui/FluidCursor";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 
 /*
-  Castillo v2: Geist único (display+body) + Geist Mono (labels/índices).
+  Castillo v5 (24-oct): Geist Mono (rótulos técnicos) vive aquí; Archivo y Newsreader en el layout de la v5.
+  Geist se mantiene para las páginas internas (/lab, /styleguide).
   Contrato: design-system/castillo-v2/MASTER.md. Variable font — los pesos
   400/500/600/700 salen del mismo archivo.
 */
@@ -70,26 +66,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className="min-h-screen flex flex-col isolate">
         <StructuredData />
         {/*
-          Gate del sello del hero. Marca la sesión ANTES del primer pintado
-          para que la coreografía luna→gato→C corra una sola vez y no en cada
-          navegación del cliente. Va inline y no en un efecto de React porque
-          un efecto llega después de la hidratación: el nombre alcanzaría a
-          verse y luego se escondería.
-          El HTML inyectado es una constante del código, sin ninguna entrada
-          de usuario. Si sessionStorage está bloqueado, no pasa nada: sin el
-          atributo el sello se queda en su estado final, que es el legible.
+          24-oct-2026: la v5 es el sitio. La cabecera, el pie, el scroll suave, el grano y el cursor del tema anterior
+          salieron del layout raíz: cada grupo de rutas trae los suyos (la v5, en app/(v5)/layout.tsx). Antes la v5 los
+          escondía con CSS y el celular igual bajaba gsap y framer (~330 KB) sin usarlos.
         */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{if(!sessionStorage.getItem("cs-sello")){sessionStorage.setItem("cs-sello","1");document.documentElement.dataset.sello="play"}}catch(e){}`,
-          }}
-        />
-        <SmoothScroll />
-        <Grain />
-        <FluidCursor />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {children}
         {/*
           Analítica. Iba faltando desde el día 1 y se notó el 23-ago: el
           formulario llevaba dos meses sin guardar un lead y no había forma

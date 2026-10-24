@@ -1,10 +1,13 @@
 /*
   Textos de la v5 en español e inglés (Alejo, 19-oct: "la página en inglés, como la de Mari"). El inglés lo redacta Claude
-  (regla: todo texto en inglés hacia clientes pasa por Claude). Las rutas en inglés viven en /lab/v5/en/...
+  (regla: todo texto en inglés hacia clientes pasa por Claude). Las rutas en inglés viven en /en/...
 */
 export type Idioma = "es" | "en";
 
-export const RAIZ: Record<Idioma, string> = { es: "/lab/v5", en: "/lab/v5/en" };
+// 24-oct: la v5 es el sitio. Español en la raíz, inglés en /en.
+export const RAIZ: Record<Idioma, string> = { es: "", en: "/en" };
+/** La página de inicio de cada idioma (RAIZ.es es "", que no sirve como href). */
+export const INICIO_DE: Record<Idioma, string> = { es: "/", en: "/en" };
 
 export const TEXTOS = {
   es: {

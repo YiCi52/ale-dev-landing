@@ -3,8 +3,16 @@ import { TEXTOS, type Idioma } from "./textos";
 /* Preguntas frecuentes (lo que le faltaba a la v4 según el análisis del 17-oct: precio, plazo, qué incluye). */
 export function Preguntas({ idioma = "es" }: { idioma?: Idioma }) {
   const t = TEXTOS[idioma].preguntas;
+  // FAQPage para Google y los motores de IA (capa 14, AEO): las mismas preguntas, texto fijo del código
+  const faq = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    inLanguage: idioma === "es" ? "es-CO" : "en",
+    mainEntity: t.lista.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+  }).replace(/</g, "\\u003c");
   return (
     <section id="v5-preguntas" className="v5-preguntas v5-gutter" aria-labelledby="v5-preguntas-t">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faq }} />
       <div className="v5-preguntas-grilla">
         <div>
           <p className="v5-mono mb-5">{t.rotulo}</p>

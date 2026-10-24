@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { type MouseEvent, useEffect, useRef } from "react";
 
 import { montarCalco } from "./calco";
+import { Registro } from "./Registro";
 import { abrirPortal } from "./portal";
 import { sinMovimiento } from "./scroll";
 import { TEXTOS, type Idioma } from "./textos";
@@ -19,23 +20,10 @@ type Pieza = { img: string; grande: boolean };
 const OBRAS = [
   { id: "mh", nombre: "MH Interior", href: "/trabajo/mh-interior",
     piezas: [{ img: "/lab/v5/proyectos/mh-hidroterapia.webp", grande: true }, { img: "/lab/v5/proyectos/mh-sauna.webp", grande: false }] },
-  { id: "villa", nombre: "Villa Savoye", href: "/lab/villa-savoye",
+  { id: "villa", nombre: "Villa Savoye", href: "/trabajo/villa-savoye",
     piezas: [{ img: "/lab/v5/proyectos/villa-fachada.webp", grande: true }, { img: "/lab/v5/proyectos/villa-solarium.webp", grande: false }] },
 ];
 const calcoDe = (img: string) => img.replace(".webp", "-calco.webp");
-
-/* las marcas de registro de un plano: dos ejes, cuatro esquinas en diagonal y cuatro vértices */
-function Registro() {
-  return (
-    <span className="v5-registro" aria-hidden>
-      <span className="v5-reg-eje v5-reg-n" /><span className="v5-reg-eje v5-reg-s" />
-      <span className="v5-reg-diag v5-reg-no" /><span className="v5-reg-diag v5-reg-ne" />
-      <span className="v5-reg-diag v5-reg-so" /><span className="v5-reg-diag v5-reg-se" />
-      <span className="v5-reg-punto v5-reg-pno" /><span className="v5-reg-punto v5-reg-pne" />
-      <span className="v5-reg-punto v5-reg-pso" /><span className="v5-reg-punto v5-reg-pse" />
-    </span>
-  );
-}
 
 function Foto({ pieza, href, rotulo }: { pieza: Pieza; href: string; rotulo: string }) {
   const marco = useRef<HTMLAnchorElement>(null);

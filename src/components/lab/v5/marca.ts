@@ -4,5 +4,5 @@ export const C_LOGO = (() => {
   return `M${x.toFixed(2)},${(-y).toFixed(2)} A${R},${R} 0 1 0 ${x.toFixed(2)},${y.toFixed(2)} A${r},${r} 0 ${x > dx ? 1 : 0} 1 ${x.toFixed(2)},${(-y).toFixed(2)}Z`;
 })();
 
-export const INICIO = "/lab/v5";
-export const HABLEMOS = "/lab/v5/hablemos";
+export const INICIO = "/";
+export const HABLEMOS = "/hablemos";

@@ -7,7 +7,7 @@ import { idiomaDe, rutaEnOtro } from "./idioma";
 import { pedirIntro } from "./Intro";
 import { C_LOGO, HABLEMOS } from "./marca";
 import { Tema } from "./Tema";
-import { RAIZ, TEXTOS } from "./textos";
+import { INICIO_DE, RAIZ, TEXTOS } from "./textos";
 
 /*
   Cabecera v5: la C y el nombre juntos son el botón de inicio; a la derecha, una píldora de vidrio con las páginas, el
@@ -20,7 +20,7 @@ export function Cabecera() {
   const hablemos = idioma === "es" ? HABLEMOS : `${raiz}/hablemos`;
   return (
     <header className="v5-cabecera v5-gutter" lang={idioma}>
-      <Link href={raiz} className="v5-marca" aria-label={t.inicio} onClick={pedirIntro}>
+      <Link href={INICIO_DE[idioma]} className="v5-marca" aria-label={t.inicio} onClick={pedirIntro}>
         <svg viewBox="-110 -110 220 220" aria-hidden>
           <path d={C_LOGO} fill="currentColor" />
         </svg>
