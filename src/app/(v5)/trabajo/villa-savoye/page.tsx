@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo, IBM_Plex_Mono, Inter } from "next/font/google";
+import { IBM_Plex_Mono, Inter } from "next/font/google";
 
 import { VsHero } from "@/components/lab/villa-savoye/VsHero";
 import { VsRecorrido } from "@/components/lab/villa-savoye/VsRecorrido";
@@ -22,13 +22,6 @@ import "./villa-savoye.css";
   Ficción declarada: homenaje de estudio, no afiliado a la Fondation Le
   Corbusier ni al Centre des monuments nationaux.
 */
-
-const display = Archivo({
-  variable: "--font-vs-display",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["500", "600", "700"],
-});
 
 const body = Inter({
   variable: "--font-vs-body",
@@ -54,7 +47,7 @@ export const metadata: Metadata = {
 
 export default function VillaSavoyePage() {
   return (
-    <div className={`vs ${display.variable} ${body.variable} ${mono.variable}`}>
+    <div className={`vs ${body.variable} ${mono.variable}`}>
       <VsHero />
       <VsRecorrido />
       <VsPuntos />

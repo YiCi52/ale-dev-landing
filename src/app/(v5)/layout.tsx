@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Archivo, Newsreader } from "next/font/google";
 
 import { Cabecera } from "@/components/lab/v5/Cabecera";
+import { archivo, newsreader } from "@/components/lab/v5/fuentes";
 import { Imanes } from "@/components/lab/v5/Imanes";
 
 import "./v5.css";
@@ -11,8 +11,6 @@ import "./v5.css";
   Archivo (con eje de ancho) manda en títulos y texto; Newsreader cursiva solo para las palabras de luz; Geist Mono (del
   layout raíz) para lo técnico. Desde el 24-oct es el sitio completo (grupo de rutas (v5)).
 */
-const archivo = Archivo({ variable: "--font-archivo", subsets: ["latin"], axes: ["wdth"], display: "swap" });
-const newsreader = Newsreader({ variable: "--font-newsreader", subsets: ["latin"], style: ["italic"], weight: ["300", "400"], display: "swap", preload: false });
 
 /* 24-oct: la v5 es el sitio (antes en /lab/v5, sin indexar). Cada página trae sus metadatos (components/lab/v5/meta.ts). */
 export const metadata: Metadata = {

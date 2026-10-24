@@ -1207,3 +1207,22 @@ body:has(.v5-raiz[data-tema="claro"]) {
   color: var(--luna);
   letter-spacing: -0.01em;
 }
+
+/* el vidrio de la cabecera más denso de noche: sobre páginas claras (la Villa) quedaba gris y el texto no pasaba AA */
+.v5-raiz:not([data-tema="claro"]) .v5-nav,
+.v5-raiz:not([data-tema="claro"]) .v5-marca {
+  background: rgba(11, 13, 19, 0.86);
+}
+
+/* ---------- 404 (24-oct) ---------- */
+.v5-404 {
+  display: grid;
+  align-content: center;
+  gap: 24px;
+  min-height: 100svh;
+  padding-block: 140px 80px;
+}
+.v5-404 h1 {
+  font-size: clamp(44px, 7vw, 110px);
+  max-width: 14ch;
+}

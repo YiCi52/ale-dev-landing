@@ -13,7 +13,7 @@
   --vs-dim: #6d6d66;
   --vs-verde: #3f5c48;
   --vs-linea: #dddbd2;
-  --vs-display: var(--font-vs-display), system-ui, sans-serif;
+  --vs-display: var(--font-archivo), system-ui, sans-serif;   /* la misma Archivo variable de la v5: una descarga menos (24-oct) */
   --vs-body: var(--font-vs-body), system-ui, sans-serif;
   --vs-mono: var(--font-vs-mono), ui-monospace, "SF Mono", Menlo, monospace;
   --vs-ease: cubic-bezier(0.16, 1, 0.3, 1);
