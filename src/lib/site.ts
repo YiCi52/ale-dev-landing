@@ -14,7 +14,8 @@
 */
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "https://ale-dev-landing.vercel.app";
+  // 25-oct-2026: la marca es Castillo Studio; ale-dev-landing.vercel.app queda como alias viejo.
+  "https://castillostudio.vercel.app";
 
 /**
  * WhatsApp de contacto. Vive acá y no escrito a mano en cada componente

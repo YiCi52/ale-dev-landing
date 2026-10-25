@@ -21,7 +21,7 @@ export default function LetsTalk() {
           <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="v5-boton v5-boton-luz">
             WhatsApp {WHATSAPP_DISPLAY}<span className="sr-only"> (opens in a new tab)</span>
           </a>
-          <Link href="/lab/v5/hablemos" hrefLang="es" className="v5-boton v5-boton-linea">Use the form (Spanish)</Link>
+          <Link href="/hablemos" hrefLang="es" className="v5-boton v5-boton-linea">Use the form (Spanish)</Link>
         </div>
       </div>
     </div>

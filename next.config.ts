@@ -71,8 +71,14 @@ const nextConfig: NextConfig = {
   */
   async redirects() {
     return [
+      /*
+        Solo las PÁGINAS que tuvo la v5 bajo /lab/v5, nunca un comodín: las imágenes del sitio viven en
+        public/lab/v5/ y las redirecciones corren antes que los archivos estáticos. Un /lab/v5/:ruta* mandó la luna,
+        los cuadros de la casa y las fotos de proyectos a la home (25-oct-2026, en producción).
+      */
       { source: "/lab/v5", destination: "/", permanent: true },
-      { source: "/lab/v5/:ruta*", destination: "/:ruta*", permanent: true },
+      ...["en", "hablemos", "servicios", "sobre-mi", "privacidad", "trabajo"].map((pagina) => ({
+        source: `/lab/v5/${pagina}/:ruta*`, destination: `/${pagina}/:ruta*`, permanent: true })),
       { source: "/lab/villa-savoye", destination: "/trabajo/villa-savoye", permanent: true },
       ...["taurus", "setby", "alche", "gatekeep"].map((lab) => ({ source: `/lab/${lab}/:ruta*`, destination: "/", permanent: false })),
     ];
