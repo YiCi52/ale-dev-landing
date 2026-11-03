@@ -15,7 +15,7 @@ export function metaDe(ruta: string, idioma: Idioma, titulo: string | { absolute
     title: titulo,
     description: descripcion,
     alternates: { canonical: propia, languages: { "es-CO": es, en, "x-default": es } },
-    openGraph: { title: typeof titulo === "string" ? `${titulo} · Castillo Studio` : titulo.absolute, description: descripcion, url: propia, locale: idioma === "es" ? "es_CO" : "en_US", siteName: "Castillo Studio", type: "website" },
+    openGraph: { images: ["/opengraph-image"], title: typeof titulo === "string" ? `${titulo} · Castillo Studio` : titulo.absolute, description: descripcion, url: propia, locale: idioma === "es" ? "es_CO" : "en_US", siteName: "Castillo Studio", type: "website" },
     robots: { index: true, follow: true },
   };
 }
