@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${demo.nombre}: cómo se vería`,
     description: `Una demostración preparada para ${demo.nombre}, con una persona ficticia.`,
-    // la vista previa del enlace en WhatsApp lleva la imagen de la marca
-    openGraph: { title: `${demo.nombre}: cómo se vería`, description: `Una demostración preparada para ${demo.nombre}.`, images: ["/opengraph-image"] },
+    // la imagen de la vista previa (WhatsApp) sale de ./opengraph-image.tsx, con el nombre de la empresa
+    openGraph: { title: `${demo.nombre}: cómo se vería`, description: `Una demostración preparada para ${demo.nombre}.` },
     robots: { index: false, follow: false },
   };
 }
