@@ -166,6 +166,20 @@ export const DEMOS: Demo[] = [
     },
   },
   {
+    slug: "dermanova",
+    nombre: "Dermanova",
+    tipo: "clinica",
+    titulo: { antes: "Cada consulta del anuncio ", luz: "queda registrada." },
+    hecho:
+      "Tiene un anuncio de depilación láser diodo activo desde el 9 de diciembre que lleva a WhatsApp, con la invitación a agendar la valoración. No encontré una web propia: su Facebook solo muestra el teléfono, el correo y el Instagram.",
+    consulta: {
+      mensaje: "Hola, quiero información de la depilación láser diodo para piernas completas. ¿Cuánto vale y cuántas sesiones necesito?",
+      asunto: "Depilación láser diodo",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Dermanova. Recibimos tu consulta y te confirmamos el valor, el número de sesiones y cómo agendar la valoración en cuanto una asesora la revise.",
+    },
+  },
+  {
     slug: "axi-group",
     nombre: "Axi Group",
     tipo: "estudio",
