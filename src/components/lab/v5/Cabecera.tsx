@@ -18,6 +18,23 @@ export function Cabecera() {
   const idioma = idiomaDe(ruta);
   const t = TEXTOS[idioma].nav, raiz = RAIZ[idioma];
   const hablemos = idioma === "es" ? HABLEMOS : `${raiz}/hablemos`;
+  // 6-nov-2026: la página de demostración de un prospecto es cerrada: sin enlace en el logo, sin páginas, sin idioma y sin
+  // "Hablemos" (quien la recibe no debe terminar en el sitio general). Solo queda el cambio de tema, que no saca de la página.
+  if (ruta?.startsWith("/demo/")) {
+    return (
+      <header className="v5-cabecera v5-gutter" lang={idioma}>
+        <span className="v5-marca" aria-label="Castillo Studio">
+          <svg viewBox="-110 -110 220 220" aria-hidden>
+            <path d={C_LOGO} fill="currentColor" />
+          </svg>
+          <span className="v5-marca-texto">Castillo Studio</span>
+        </span>
+        <nav aria-label={t.secciones} className="v5-nav">
+          <Tema etiqueta={t.tema} />
+        </nav>
+      </header>
+    );
+  }
   return (
     <header className="v5-cabecera v5-gutter" lang={idioma}>
       <Link href={INICIO_DE[idioma]} className="v5-marca" aria-label={t.inicio} onClick={pedirIntro}>
