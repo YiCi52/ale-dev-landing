@@ -179,6 +179,77 @@ export const DEMOS: Demo[] = [
         "Hola, gracias por escribir a Dermanova. Recibimos tu consulta y te confirmamos el valor, el número de sesiones y cómo agendar la valoración en cuanto una asesora la revise.",
     },
   },
+  // CL2 (toque 2, 9-nov-2026). Hechos tomados de Notion (gancho_verificado y el DM1 que salió), verificados del 1 al 4 de nov; por eso llevan la fecha.
+  {
+    slug: "dulce-vanidad",
+    nombre: "Dulce Vanidad",
+    tipo: "clinica",
+    titulo: { antes: "Quien busca su web antes de escribir ", luz: "se encuentra con relojes de imitación." },
+    hecho:
+      "Tienen anuncios activos desde el 3 de septiembre. El 1 de noviembre, dulcevanidadce.com mostraba en medio de la página un texto en inglés que vende relojes de imitación, con enlaces a otras tiendas: código ajeno dentro de la web. Tampoco tiene formulario.",
+    consulta: {
+      mensaje: "Hola, ¿cuánto vale la limpieza facial profunda y tienen cita este sábado?",
+      asunto: "Limpieza facial",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Dulce Vanidad. Recibimos tu consulta y te confirmamos el valor y el cupo del sábado en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "viarmoni",
+    nombre: "Viarmoni",
+    tipo: "clinica",
+    titulo: { antes: "Tres ciudades, un solo número. ", luz: "¿De qué sede es cada consulta?" },
+    hecho:
+      "Atienden en Pereira, Cali y Popayán con un solo WhatsApp, el 305 425 5782, y sus anuncios llevan a ese chat desde el 19 de agosto. Al 1 de noviembre no tenían web: los enlaces de su perfil son un linktr.ee y su página de Facebook.",
+    consulta: {
+      mensaje: "Hola, estoy en Cali. ¿Cuánto cuesta la armonización facial y qué días atienden aquí?",
+      asunto: "Armonización facial · Cali",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos tu consulta para la sede de Cali y te confirmamos el valor y los días de atención en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "el-cielo-pereira",
+    nombre: "El Cielo",
+    tipo: "clinica",
+    titulo: { antes: "22 anuncios llevan gente al chat. ", luz: "No hay dónde conocer los tratamientos." },
+    hecho:
+      "Al 4 de noviembre tenían 22 anuncios activos hacia WhatsApp, y el enlace de su perfil de Instagram lleva directo al chat. No encontramos una web de la clínica: quien quiere conocer los tratamientos antes de escribir no tiene dónde.",
+    consulta: {
+      mensaje: "Buenas noches, quiero información del tratamiento antienvejecimiento. ¿Cómo es la valoración?",
+      asunto: "Tratamiento antienvejecimiento",
+      respuestaSugerida:
+        "Hola, gracias por escribir a El Cielo. Recibimos tu consulta y te confirmamos cómo es la valoración y cómo agendarla en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "koa-depil",
+    nombre: "KOA Depil & Esthetic",
+    tipo: "clinica",
+    titulo: { antes: "AgendaPro reserva. ", luz: "Las preguntas de antes se quedan en el chat." },
+    hecho:
+      "Su web no tiene formulario: toda consulta entra por el botón de WhatsApp, y las reservas van por AgendaPro. Lo que alguien pregunta antes de reservar (precio, zona, si le sirve el láser) queda en el chat. Esto no reemplaza AgendaPro: atiende lo que llega antes.",
+    consulta: {
+      mensaje: "Hola, ¿la depilación láser sirve para vello claro? ¿Cuánto cuesta axilas y bikini?",
+      asunto: "Depilación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos tu consulta y te confirmamos si el láser te sirve y el valor de las zonas en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "revital-spa",
+    nombre: "Revital Spa",
+    tipo: "clinica",
+    titulo: { antes: "El número del anuncio ", luz: "no entra desde un celular." },
+    hecho:
+      "El 2 de noviembre su anuncio de la promo corporal mostraba el fijo 345 5855 sin el 606 que hoy hay que marcar, y su página de Facebook no tenía web. Quien no escribe al chat no tiene otra forma de llegar.",
+    consulta: {
+      mensaje: "Hola, vi la promo corporal de $89.000. ¿Sigue vigente y qué incluye?",
+      asunto: "Promo corporal",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Revital Spa. Recibimos tu consulta y te confirmamos si la promo sigue vigente y qué incluye en cuanto el equipo la revise.",
+    },
+  },
   {
     slug: "axi-group",
     nombre: "Axi Group",
