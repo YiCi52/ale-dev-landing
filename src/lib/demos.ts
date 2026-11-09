@@ -333,7 +333,8 @@ export function preguntasDe(tipo: TipoDemo): Pregunta[] {
 
 export function ofertaTexto(tipo: TipoDemo): string {
   return tipo === "clinica"
-    ? "Desde $2.500.000 de montaje y $500.000 al mes, listo en 3 semanas."
+    ? // (9-nov) igual a la propuesta de Dermanova y al DM1 de CL4; antes decía $2.500.000 + $500.000
+      "Desde $1.800.000 de montaje y $400.000 al mes, listo en 3 semanas."
     : "Desde $3.600.000, listo en 5 semanas.";
 }
 

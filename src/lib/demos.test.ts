@@ -43,8 +43,8 @@ describe("demos de prospectos", () => {
 
   it("la oferta de clínicas y de estudios dice precio y plazo", () => {
     const c = ofertaTexto("clinica");
-    expect(c).toContain("$2.500.000");
-    expect(c).toContain("$500.000 al mes");
+    expect(c).toContain("$1.800.000");
+    expect(c).toContain("$400.000 al mes");
     expect(c).toContain("3 semanas");
     const e = ofertaTexto("estudio");
     expect(e).toContain("$3.600.000");
