@@ -250,6 +250,63 @@ export const DEMOS: Demo[] = [
         "Hola, gracias por escribir a Revital Spa. Recibimos tu consulta y te confirmamos si la promo sigue vigente y qué incluye en cuanto el equipo la revise.",
     },
   },
+  // C10 (toque 2, 10-nov-2026). Hechos de Notion (gancho_verificado y el DM1 que salió), verificados el 3 de noviembre.
+  {
+    slug: "a-giraldo-constructores",
+    nombre: "A Giraldo Constructores",
+    tipo: "estudio",
+    titulo: { antes: "Dos celulares en el anuncio. ", luz: "Ningún registro de quién pidió qué." },
+    hecho:
+      "Su anuncio hacia WhatsApp, activo desde el 27 de octubre, da dos celulares distintos (313 444 3342 y 313 458 1804). Al 3 de noviembre no tenían web, solo Facebook: las consultas quedan repartidas entre dos chats.",
+    consulta: {
+      mensaje: "Hola, tengo un lote en Chía y quiero construir una casa de dos pisos. ¿Cómo cotizan?",
+      asunto: "Construcción de casa · Chía",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos los datos de tu lote y te confirmamos cómo hacemos la cotización en cuanto el equipo los revise.",
+    },
+  },
+  {
+    slug: "hi-home-design",
+    nombre: "Hi Home Design",
+    tipo: "estudio",
+    titulo: { antes: "El anuncio manda al perfil, ", luz: "y el perfil no lleva a ninguna web." },
+    hecho:
+      "Su anuncio de obra gris a terminado, del 31 de octubre, manda al perfil para que les escriban por mensaje, y al 3 de noviembre el perfil no tenía una web enlazada. Cada persona tiene que preguntar todo por chat.",
+    consulta: {
+      mensaje: "Hola, me entregan un apartamento en obra gris de 65 m² en diciembre. ¿Cuánto tiempo tardan en dejarlo terminado?",
+      asunto: "Obra gris a terminado · 65 m²",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos los datos de tu apartamento y te confirmamos los tiempos y cómo es el proceso en cuanto el equipo los revise.",
+    },
+  },
+  {
+    slug: "arq-360",
+    nombre: "ARQ 360",
+    tipo: "estudio",
+    titulo: { antes: "El botón dice «cotizar». ", luz: "No hay obras para ver antes." },
+    hecho:
+      "Su anuncio de remodelación de obra gris y mantenimiento de conjuntos, activo desde octubre, tiene botón de cotizar, y al 3 de noviembre el enlace de su Instagram llevaba directo a WhatsApp, sin una web con obras terminadas.",
+    consulta: {
+      mensaje: "Buenas, administro un conjunto de 120 apartamentos y necesitamos cotizar mantenimiento de fachadas.",
+      asunto: "Mantenimiento de conjunto",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos la información del conjunto y te confirmamos cómo hacemos la visita y la cotización en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "essencial-arquitectura",
+    nombre: "Essencial Arquitectura",
+    tipo: "estudio",
+    titulo: { antes: "Un Linktree no muestra proyectos. ", luz: "Una web sí." },
+    hecho:
+      "Tienen un anuncio hacia WhatsApp activo desde septiembre, y al 3 de noviembre el enlace de su Instagram era un Linktree con WhatsApp y redes, sin una web de Essencial donde conocer sus proyectos antes de escribir.",
+    consulta: {
+      mensaje: "Hola, queremos diseñar la remodelación de una casa en Usaquén. ¿Hacen el diseño y la obra?",
+      asunto: "Remodelación de casa · Usaquén",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos tu consulta y te confirmamos cómo trabajamos el diseño y la obra en cuanto el equipo la revise.",
+    },
+  },
   {
     slug: "axi-group",
     nombre: "Axi Group",
