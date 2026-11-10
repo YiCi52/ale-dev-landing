@@ -283,7 +283,7 @@ export const DEMOS: Demo[] = [
     slug: "arq-360",
     nombre: "ARQ 360",
     tipo: "estudio",
-    titulo: { antes: "El botón dice «cotizar». ", luz: "No hay obras para ver antes." },
+    titulo: { antes: "El botón dice «cotizar». ", luz: "Ninguna web con obras para ver antes." },
     hecho:
       "Su anuncio de remodelación de obra gris y mantenimiento de conjuntos, activo desde octubre, tiene botón de cotizar, y al 3 de noviembre el enlace de su Instagram llevaba directo a WhatsApp, sin una web con obras terminadas.",
     consulta: {
