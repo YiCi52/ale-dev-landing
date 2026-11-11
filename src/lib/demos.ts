@@ -179,6 +179,63 @@ export const DEMOS: Demo[] = [
         "Hola, gracias por escribir a Dermanova. Recibimos tu consulta y te confirmamos el valor, el número de sesiones y cómo agendar la valoración en cuanto una asesora la revise.",
     },
   },
+  // CL3 (toque 2, 11-nov-2026). Hechos de Notion (gancho_verificado y el DM1 que salió), verificados el 4 de noviembre.
+  {
+    slug: "sahar-spa",
+    nombre: "Sahar Spa y Estética",
+    tipo: "clinica",
+    titulo: { antes: "Quien busca Sahar en internet ", luz: "llega a un spa en Japón." },
+    hecho:
+      "Tienen un anuncio de lipo sin cirugía activo desde el 16 de julio que lleva a WhatsApp. Al 4 de noviembre no tenían web: su Facebook solo muestra un correo de Gmail, y saharspa.com es un spa en Japón.",
+    consulta: {
+      mensaje: "Hola, vi el anuncio de lipo sin cirugía. ¿Cuánto cuesta y cuántas sesiones son?",
+      asunto: "Lipo sin cirugía",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Sahar. Recibimos tu consulta y te confirmamos el valor y el número de sesiones en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "dr-gilberto-ortiz",
+    nombre: "Dr. Gilberto Ortiz",
+    tipo: "clinica",
+    titulo: { antes: "La web dice «Envíanos un mensaje», ", luz: "pero no hay dónde escribirlo." },
+    hecho:
+      "Su anuncio de valoración gratuita, activo desde el 21 de mayo, da dos números: el 318 206 2895 y el 316 715 5516. Al 4 de noviembre, la página de contacto de drgilbertoortiz.com decía «Envíanos un mensaje», pero no tenía formulario: solo el botón de WhatsApp.",
+    consulta: {
+      mensaje: "Buenas noches, quiero la valoración gratuita. ¿Qué días tienen disponibles?",
+      asunto: "Valoración gratuita",
+      respuestaSugerida:
+        "Hola, gracias por escribir al consultorio del Dr. Gilberto Ortiz. Recibimos tu solicitud de valoración y te confirmamos los días disponibles en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "cantik",
+    nombre: "Cantik",
+    tipo: "clinica",
+    titulo: { antes: "Seis sedes, un solo WhatsApp. ", luz: "¿De cuál es cada consulta?" },
+    hecho:
+      "Sus anuncios de consulta gratuita están activos desde agosto. Al 4 de noviembre, cantik.clinic listaba seis sedes (Bogotá Salitre, Cedritos y Centro Mayor, Cajicá, Tunja y Cali), todas con el mismo WhatsApp, el 324 448 4848, y la web no tenía formulario: cada «Agenda ya» abre ese chat.",
+    consulta: {
+      mensaje: "Hola, estoy en Cajicá. ¿La consulta gratuita la hacen en esa sede y qué días?",
+      asunto: "Consulta gratuita · Cajicá",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Cantik. Recibimos tu consulta para la sede de Cajicá y te confirmamos los días de atención en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "studio-glows",
+    nombre: "Studio Glows",
+    tipo: "clinica",
+    titulo: { antes: "Ocho anuncios mandan a reservar por chat. ", luz: "Lo que llega de noche espera." },
+    hecho:
+      "Al 4 de noviembre tenían 8 anuncios de depilación láser activos hacia WhatsApp, el primero desde el 22 de abril. Su página de Facebook no tenía web, solo el teléfono y un correo: toda reserva y toda pregunta de precio pasa por el chat.",
+    consulta: {
+      mensaje: "Hola, ¿cuánto vale la depilación láser de axilas y piernas? ¿Tienen cita esta semana?",
+      asunto: "Depilación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Studio Glows. Recibimos tu consulta y te confirmamos el valor y los cupos de esta semana en cuanto el equipo la revise.",
+    },
+  },
   // CL2 (toque 2, 9-nov-2026). Hechos tomados de Notion (gancho_verificado y el DM1 que salió), verificados del 1 al 4 de nov; por eso llevan la fecha.
   {
     slug: "dulce-vanidad",
