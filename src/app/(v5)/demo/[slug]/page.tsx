@@ -86,7 +86,7 @@ export default async function DemoPage({ params }: Props) {
         <p className="v5-texto dm-oferta">
           Ustedes no tocan nada técnico: yo me encargo de todo y ustedes aprueban en una reunión.{" "}
           <strong>{ofertaTexto(demo.tipo)}</strong>
-          {demo.tipo === "clinica" ? " El siguiente paso son los recordatorios de cita, para que no se pierdan valoraciones." : ""}
+          {demo.tipo === "clinica" ? " Los recordatorios de cita y otros módulos se cotizan aparte, con su precio, en la llamada." : ""}
         </p>
       </section>
 

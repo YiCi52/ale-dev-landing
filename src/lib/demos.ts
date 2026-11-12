@@ -420,6 +420,77 @@ export const DEMOS: Demo[] = [
         "Hola, gracias por escribirnos. Recibimos tu consulta y te confirmamos qué incluye el diseño y cómo es el proceso en cuanto el equipo la revise.",
     },
   },
+  // CL4 (12-nov-2026): cinco clínicas odontológicas. Hechos verificados el 6-nov (y Odent re-verificada el 9-nov).
+  {
+    slug: "natural-design",
+    nombre: "Natural Design Odontología",
+    tipo: "clinica",
+    titulo: { antes: "Cuatro anuncios hacia WhatsApp desde julio, ", luz: "y ninguna web donde mirar." },
+    hecho:
+      "Tiene 4 anuncios activos hacia WhatsApp desde el 1 de julio de 2026. No encontramos una web propia: en su Facebook solo aparecen la dirección y el número.",
+    consulta: {
+      mensaje: "Hola, quiero una valoración dental. ¿Qué disponibilidad tienen esta semana?",
+      asunto: "Valoración dental",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos tu solicitud y te confirmamos la disponibilidad para la valoración en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "clinica-odontologica-ok",
+    nombre: "Clínica Odontológica OK",
+    tipo: "clinica",
+    titulo: { antes: "Un anuncio activo desde junio, ", luz: "y el chat como único lugar a donde ir." },
+    hecho:
+      "Tiene un anuncio activo hacia WhatsApp desde el 2 de junio de 2026. No encontramos una web propia, así que quien llega desde el anuncio solo tiene el chat.",
+    consulta: {
+      mensaje: "Buenas tardes, ¿cuánto cuesta una limpieza dental y tienen cita para esta semana?",
+      asunto: "Limpieza dental",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos tu consulta y te confirmamos el valor y la disponibilidad en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "odontologia-omnisalud",
+    nombre: "Odontología Omnisalud",
+    tipo: "clinica",
+    titulo: { antes: "Anuncian desde diciembre, ", luz: "pero no hay una web a donde mandar." },
+    hecho:
+      "Tiene 4 anuncios activos hacia WhatsApp desde el 20 de diciembre de 2025. No encontramos una web propia: el dominio odontologiaomnisalud.com no abre.",
+    consulta: {
+      mensaje: "Hola, me gustaría información sobre un tratamiento de ortodoncia. ¿Cómo es el proceso?",
+      asunto: "Ortodoncia",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos tu consulta y te confirmamos cómo es el proceso y los pasos para la valoración en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "cedent",
+    nombre: "Cedent Soluciones Odontológicas",
+    tipo: "clinica",
+    titulo: { antes: "Quien busca su nombre en internet ", luz: "no encuentra su web." },
+    hecho:
+      "Tiene 4 anuncios activos hacia WhatsApp desde el 10 de marzo de 2026. No encontramos una web propia; el dominio cedent.com.co que aparece al buscar el nombre es de otra clínica.",
+    consulta: {
+      mensaje: "Hola, vi el anuncio y quiero agendar una cita de valoración. ¿Cómo hago?",
+      asunto: "Cita de valoración",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos tu solicitud y te confirmamos los pasos para agendar la valoración en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "odent",
+    nombre: "Odent",
+    tipo: "clinica",
+    titulo: { antes: "Anuncian implantes, ", luz: "y el enlace de su web no abre." },
+    hecho:
+      "Tiene 2 anuncios activos hacia WhatsApp desde el 5 de agosto de 2026. El enlace de su Instagram a «Qué vale un implante dental» da error 404, y el de su Facebook responde 402 «Tienda no disponible» (verificado el 9 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Buenas noches, quiero información sobre implantes dentales. ¿Cómo es la valoración?",
+      asunto: "Implantes dentales",
+      respuestaSugerida:
+        "Hola, gracias por escribirnos. Recibimos tu consulta y te confirmamos cómo es la valoración y los pasos a seguir en cuanto el equipo la revise.",
+    },
+  },
 ];
 
 export function demoPorSlug(slug: string): Demo | undefined {
