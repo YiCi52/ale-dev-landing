@@ -491,6 +491,77 @@ export const DEMOS: Demo[] = [
         "Hola, gracias por escribirnos. Recibimos tu consulta y te confirmamos cómo es la valoración y los pasos a seguir en cuanto el equipo la revise.",
     },
   },
+  // CL6 (16-nov-2026): cinco centros de láser y estética con anuncio hacia WhatsApp y sin web. Hechos verificados el 12-nov.
+  {
+    slug: "belca-spa",
+    nombre: "Belca Spa",
+    tipo: "clinica",
+    titulo: { antes: "Un anuncio de depilación láser desde agosto, ", luz: "y ninguna web a donde mandar." },
+    hecho:
+      "Tiene un anuncio de depilación láser activo hacia WhatsApp desde el 14 de agosto de 2026. No encontramos una web propia: su Facebook solo muestra la dirección en Caobos, un correo y el número (verificado el 12 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, ¿cuánto cuesta la depilación láser de axilas y piernas? ¿Tienen cita esta semana?",
+      asunto: "Depilación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Belca. Recibimos tu consulta y te confirmamos el valor por zona y la disponibilidad en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "dermatologa-yolima-mercado",
+    nombre: "Dermatóloga Yolima Mercado",
+    tipo: "clinica",
+    titulo: { antes: "Pauta depilación láser desde agosto, ", luz: "y el chat es la única puerta." },
+    hecho:
+      "Tiene un anuncio de depilación láser activo hacia WhatsApp desde el 31 de agosto de 2026. No encontramos una web propia del consultorio: su Facebook solo muestra la dirección, un correo y el número (verificado el 12 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Buenas noches, doctora. Quiero una valoración para depilación láser en el rostro. ¿Qué disponibilidad tiene?",
+      asunto: "Valoración de depilación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribir. Recibimos tu solicitud y te confirmamos la disponibilidad para la valoración en cuanto la doctora o su equipo la revisen.",
+    },
+  },
+  {
+    slug: "elora-spa",
+    nombre: "Elora Spa",
+    tipo: "clinica",
+    titulo: { antes: "El anuncio arrancó en noviembre. ", luz: "La web todavía no existe." },
+    hecho:
+      "Tiene un anuncio de depilación láser activo hacia WhatsApp desde el 2 de noviembre de 2026. No encontramos una web propia: su Facebook solo muestra un correo y el número (verificado el 12 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, vi el anuncio de depilación láser. ¿Cuántas sesiones se necesitan y cuánto vale?",
+      asunto: "Depilación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Elora Spa. Recibimos tu consulta y te confirmamos el número de sesiones y el valor en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "luvanna",
+    nombre: "Luvanna Medicina Estética",
+    tipo: "clinica",
+    titulo: { antes: "El enlace de su Facebook ", luz: "lleva a un portal de noticias." },
+    hecho:
+      "Tiene un anuncio activo hacia WhatsApp desde el 29 de octubre de 2026 con sus procedimientos, depilación láser incluida. No encontramos una web propia: los enlaces de su Facebook son un portal de noticias y el Instagram (verificado el 12 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, ¿qué precio tiene la depilación láser diodo por zona? ¿Tienen cita esta semana?",
+      asunto: "Depilación láser diodo",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Luvanna. Recibimos tu consulta y te confirmamos el valor por zona y la disponibilidad en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "marieta-aesthetic",
+    nombre: "Marieta Aesthetic Center",
+    tipo: "clinica",
+    titulo: { antes: "Pautan despigmentación desde agosto, ", luz: "y no hay una web donde mirar." },
+    hecho:
+      "Tiene un anuncio de despigmentación láser activo hacia WhatsApp desde el 31 de agosto de 2026. No encontramos una web propia: su Facebook solo enlaza al Instagram, y un reel de ese Instagram anuncia un número distinto al del botón de WhatsApp de su página (verificado el 12 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, quiero información sobre la despigmentación láser para unas manchas. ¿Cuánto cuesta?",
+      asunto: "Despigmentación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Marieta. Recibimos tu consulta y te confirmamos el valor y los pasos para la valoración en cuanto el equipo la revise.",
+    },
+  },
 ];
 
 export function demoPorSlug(slug: string): Demo | undefined {
