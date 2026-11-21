@@ -562,6 +562,105 @@ export const DEMOS: Demo[] = [
         "Hola, gracias por escribir a Marieta. Recibimos tu consulta y te confirmamos el valor y los pasos para la valoración en cuanto el equipo la revise.",
     },
   },
+  // CL5 (DM1 11-nov) y CL7 (DM1 13-nov): toque 2 del 20-nov
+  {
+    slug: "ser-centro-de-bienestar",
+    nombre: "Ser - Centro de Bienestar",
+    tipo: "clinica",
+    titulo: { antes: "Anuncios hacia WhatsApp desde enero, ", luz: "y ninguna web a donde mandar." },
+    hecho:
+      "Tiene anuncios activos hacia WhatsApp desde el 9 de enero de 2026 (otros desde mayo y septiembre). No encontramos una web propia: su Facebook solo muestra la dirección en Las Américas y el número (verificado el 11 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, vi su anuncio. ¿Cuánto vale la depilación láser de axilas y tienen cita el sábado?",
+      asunto: "Depilación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Ser. Recibimos tu consulta y te confirmamos el valor y la disponibilidad del sábado en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "gdoctors-medicina-estetica",
+    nombre: "Gdoctors Medicina Estética",
+    tipo: "clinica",
+    titulo: { antes: "Pautan hacia WhatsApp desde junio, ", luz: "y el chat es la única puerta." },
+    hecho:
+      "Tiene un anuncio activo hacia WhatsApp desde el 15 de junio de 2026. No encontramos una web propia: su Facebook solo muestra la dirección, un correo y el número (verificado el 11 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Buenas noches, quiero una valoración para depilación láser. ¿Qué disponibilidad tienen esta semana?",
+      asunto: "Valoración de depilación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Gdoctors. Recibimos tu solicitud y te confirmamos la disponibilidad para la valoración en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "esencia-axm",
+    nombre: "Esencia Axm",
+    tipo: "clinica",
+    titulo: { antes: "Depilación láser desde $40.000 en el anuncio, ", luz: "y ninguna web donde ver más." },
+    hecho:
+      "Tiene anuncios de depilación láser activos hacia WhatsApp desde el 1 de octubre de 2026. No encontramos una web propia: su Facebook solo enlaza al Instagram (verificado el 11 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, vi lo de depilación láser desde $40.000. ¿Esa zona cuál es y cuántas sesiones necesito?",
+      asunto: "Depilación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Esencia. Recibimos tu consulta y te confirmamos la zona de la promoción y el número de sesiones en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "estetica-bellafit",
+    nombre: "Estética Bellafit",
+    tipo: "clinica",
+    titulo: { antes: "Una promo de aniversario en el anuncio, ", luz: "y las consultas solo en el chat." },
+    hecho:
+      "Tiene un anuncio de aniversario de depilación láser activo hacia WhatsApp desde el 1 de noviembre de 2026. No encontramos una web propia: su Facebook solo muestra la dirección en La Triada, un correo y el número (verificado el 13 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, vi la promo de aniversario. ¿Hasta cuándo va y cuánto queda piernas completas?",
+      asunto: "Promoción de depilación láser",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Bellafit. Recibimos tu consulta y te confirmamos el valor de piernas completas y la vigencia de la promoción en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "skin-shape",
+    nombre: "Skin Shape",
+    tipo: "clinica",
+    titulo: { antes: "Valoración gratis en el anuncio desde agosto, ", luz: "y ninguna web a donde mandar." },
+    hecho:
+      "Tiene anuncios de depilación láser con valoración gratis activos hacia WhatsApp desde el 26 de agosto de 2026. No encontramos una web propia: su Facebook solo muestra la dirección en Usaquén, un correo y el número (verificado el 13 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, quiero la valoración gratis para depilación láser de bikini y axilas. ¿Qué día tienen?",
+      asunto: "Valoración gratis",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Skin Shape. Recibimos tu solicitud y te confirmamos el día disponible para la valoración en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "linda-figura",
+    nombre: "Linda Figura Estética",
+    tipo: "clinica",
+    titulo: { antes: "Dos zonas por $500.000 en el anuncio, ", luz: "y el chat es la única puerta." },
+    hecho:
+      "Tiene un anuncio de depilación láser de 2 zonas activo hacia WhatsApp desde el 8 de noviembre de 2026. No encontramos una web propia: su Facebook solo muestra la dirección, un correo y el número (verificado el 13 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, lo de las 2 zonas por $500.000, ¿puedo escoger axilas y bozo? ¿Cuántas sesiones son?",
+      asunto: "Depilación láser 2 zonas",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Linda Figura. Recibimos tu consulta y te confirmamos qué zonas entran en la promoción y cuántas sesiones incluye en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "unicas-depilacion-laser",
+    nombre: "Únicas Depilación Láser",
+    tipo: "clinica",
+    titulo: { antes: "Valoración gratis en el anuncio, ", luz: "y solo un Instagram donde mirar." },
+    hecho:
+      "Tiene un anuncio de depilación láser con valoración gratis activo hacia WhatsApp desde el 4 de noviembre de 2026. No encontramos una web propia: el único enlace de su Facebook es el Instagram (verificado el 13 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, vi lo de la valoración gratis. ¿Se puede pagar a cuotas la depilación de piernas?",
+      asunto: "Valoración y financiación",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Únicas. Recibimos tu consulta y te confirmamos las opciones de pago y la disponibilidad para la valoración en cuanto el equipo la revise.",
+    },
+  },
 ];
 
 export function demoPorSlug(slug: string): Demo | undefined {
