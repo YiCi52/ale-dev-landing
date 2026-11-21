@@ -609,14 +609,14 @@ export const DEMOS: Demo[] = [
     slug: "estetica-bellafit",
     nombre: "Estética Bellafit",
     tipo: "clinica",
-    titulo: { antes: "Una promo de aniversario en el anuncio, ", luz: "y las consultas solo en el chat." },
+    titulo: { antes: "Una promo de Black Friday en el anuncio, ", luz: "y las consultas solo en el chat." },
     hecho:
-      "Tiene un anuncio de aniversario de depilación láser activo hacia WhatsApp desde el 1 de noviembre de 2026. No encontramos una web propia: su Facebook solo muestra la dirección en La Triada, un correo y el número (verificado el 13 de noviembre de 2026).",
+      "Tiene un anuncio de Black Friday de depilación láser diodo activo hacia WhatsApp desde el 15 de noviembre de 2026. No encontramos una web propia: su Facebook solo muestra la dirección en La Triada, un correo y el número (verificado el 21 de noviembre de 2026).",
     consulta: {
-      mensaje: "Hola, vi la promo de aniversario. ¿Hasta cuándo va y cuánto queda piernas completas?",
-      asunto: "Promoción de depilación láser",
+      mensaje: "Hola, vi lo del Black Friday de $299 mil. ¿Hasta cuándo va y puedo agregar piernas?",
+      asunto: "Promoción Black Friday",
       respuestaSugerida:
-        "Hola, gracias por escribir a Bellafit. Recibimos tu consulta y te confirmamos el valor de piernas completas y la vigencia de la promoción en cuanto el equipo la revise.",
+        "Hola, gracias por escribir a Bellafit. Recibimos tu consulta y te confirmamos la vigencia de la promoción y el valor con piernas en cuanto el equipo la revise.",
     },
   },
   {
@@ -637,28 +637,28 @@ export const DEMOS: Demo[] = [
     slug: "linda-figura",
     nombre: "Linda Figura Estética",
     tipo: "clinica",
-    titulo: { antes: "Dos zonas por $500.000 en el anuncio, ", luz: "y el chat es la única puerta." },
+    titulo: { antes: "Lipo sin cirugía en el anuncio, ", luz: "y el chat es la única puerta." },
     hecho:
-      "Tiene un anuncio de depilación láser de 2 zonas activo hacia WhatsApp desde el 8 de noviembre de 2026. No encontramos una web propia: su Facebook solo muestra la dirección, un correo y el número (verificado el 13 de noviembre de 2026).",
+      "Tiene un anuncio de lipo sin cirugía activo hacia WhatsApp desde el 17 de noviembre de 2026. No encontramos una web propia: su Facebook solo muestra la dirección, un correo y el número (verificado el 21 de noviembre de 2026).",
     consulta: {
-      mensaje: "Hola, lo de las 2 zonas por $500.000, ¿puedo escoger axilas y bozo? ¿Cuántas sesiones son?",
-      asunto: "Depilación láser 2 zonas",
+      mensaje: "Hola, vi lo de la lipo sin cirugía. ¿Cuántas sesiones trae el paquete y cuánto vale?",
+      asunto: "Lipo sin cirugía",
       respuestaSugerida:
-        "Hola, gracias por escribir a Linda Figura. Recibimos tu consulta y te confirmamos qué zonas entran en la promoción y cuántas sesiones incluye en cuanto el equipo la revise.",
+        "Hola, gracias por escribir a Linda Figura. Recibimos tu consulta y te confirmamos qué incluye el paquete y su valor en cuanto el equipo la revise.",
     },
   },
   {
     slug: "unicas-depilacion-laser",
     nombre: "Únicas Depilación Láser",
     tipo: "clinica",
-    titulo: { antes: "Valoración gratis en el anuncio, ", luz: "y solo un Instagram donde mirar." },
+    titulo: { antes: "El anuncio lleva a Instagram, ", luz: "y no hay una web donde mirar." },
     hecho:
-      "Tiene un anuncio de depilación láser con valoración gratis activo hacia WhatsApp desde el 4 de noviembre de 2026. No encontramos una web propia: el único enlace de su Facebook es el Instagram (verificado el 13 de noviembre de 2026).",
+      "Tiene un anuncio activo desde el 20 de noviembre de 2026 que lleva a su Instagram. No encontramos una web propia: el único enlace de su Facebook es el Instagram (verificado el 21 de noviembre de 2026).",
     consulta: {
-      mensaje: "Hola, vi lo de la valoración gratis. ¿Se puede pagar a cuotas la depilación de piernas?",
-      asunto: "Valoración y financiación",
+      mensaje: "Hola, vi su anuncio. ¿Cuánto vale la depilación de piernas y se puede pagar a cuotas?",
+      asunto: "Depilación láser y formas de pago",
       respuestaSugerida:
-        "Hola, gracias por escribir a Únicas. Recibimos tu consulta y te confirmamos las opciones de pago y la disponibilidad para la valoración en cuanto el equipo la revise.",
+        "Hola, gracias por escribir a Únicas. Recibimos tu consulta y te confirmamos el valor y las opciones de pago en cuanto el equipo la revise.",
     },
   },
 ];
