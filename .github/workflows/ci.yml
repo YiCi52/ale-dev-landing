@@ -36,7 +36,7 @@ jobs:
 
   e2e:
     name: Playwright E2E
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # 22-nov: ubuntu-latest pasó a 26.04 y Playwright 1.60 no trae Chromium para esa versión
     timeout-minutes: 15
     needs: quality
     permissions:
