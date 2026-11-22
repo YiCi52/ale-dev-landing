@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Environment,
   Float,
@@ -77,14 +77,16 @@ type CrystalProps = {
 
 function Crystal({ reduce, pointerRef, encuadreRef, look }: CrystalProps) {
   const group = useRef<Group>(null);
-  const camera = useThree((s) => s.camera);
   // la textura solo se crea si el look la pide; produccion sigue con el color plano
   const entorno = useMemo(
     () => (look.entornoDegradado ? entornoLila() : CRYSTAL_BG),
     [look.entornoDegradado],
   );
 
-  useFrame((_, delta) => {
+  // La cámara se toma del estado de cada fotograma (no de useThree): mutar el valor
+  // de un hook rompe las reglas de React; el estado del frame es de three.js.
+  useFrame((estado, delta) => {
+    const camera = estado.camera;
     const g = group.current;
     if (!g) return;
 

@@ -52,7 +52,6 @@ export function GkCarousels() {
   const [soundOn, setSoundOn] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const soundOnRef = useRef(false);
-  soundOnRef.current = soundOn;
 
   // Anillo: giro infinito, el hover lo pausa y saca la carta del cilindro.
   useEffect(() => {
@@ -160,16 +159,14 @@ export function GkCarousels() {
   // Sonido: el AudioContext se crea/reanuda SOLO en el click del chip — un hover
   // no cuenta como gesto de usuario y el navegador lo dejaría suspendido (bug v1).
   const toggleSound = () => {
-    setSoundOn((s) => {
-      const next = !s;
-      if (next) {
-        const ctx = (audioRef.current ??= new AudioContext());
-        if (ctx.state === "suspended") void ctx.resume();
-        soundOnRef.current = true;
-        window.setTimeout(() => blip(2), 80); // blip de confirmación inmediata
-      }
-      return next;
-    });
+    const next = !soundOnRef.current;
+    soundOnRef.current = next;
+    setSoundOn(next);
+    if (next) {
+      const ctx = (audioRef.current ??= new AudioContext());
+      if (ctx.state === "suspended") void ctx.resume();
+      window.setTimeout(() => blip(2), 80); // blip de confirmación inmediata
+    }
   };
 
   // Blip corto por carta (pentatónica para que cualquier orden suene bien).

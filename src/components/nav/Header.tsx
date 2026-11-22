@@ -27,18 +27,23 @@ const ENLACES: ReadonlyArray<Enlace> = [
 
 export function Header() {
   const pathname = usePathname();
-  const [abierto, setAbierto] = useState(false);
-
   // El menú se cierra al navegar: sin esto queda abierto encima de la página
-  // nueva, porque la navegación de Next no desmonta el header.
-  useEffect(() => {
-    setAbierto(false);
-  }, [pathname]);
+  // nueva, porque la navegación de Next no desmonta el header. Se guarda la ruta
+  // donde se abrió; al cambiar de ruta deja de coincidir y el menú queda cerrado,
+  // sin un efecto que vuelva a renderizar.
+  const [abiertoEn, setAbiertoEn] = useState<string | null>(null);
+  const abierto = abiertoEn === pathname;
+  const setAbierto = (valor: boolean | ((v: boolean) => boolean)) =>
+    setAbiertoEn((en) => {
+      const actual = en === pathname;
+      const siguiente = typeof valor === "function" ? valor(actual) : valor;
+      return siguiente ? pathname : null;
+    });
 
   useEffect(() => {
     if (!abierto) return;
     const alPresionar = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setAbierto(false);
+      if (e.key === "Escape") setAbiertoEn(null);
     };
     window.addEventListener("keydown", alPresionar);
     return () => window.removeEventListener("keydown", alPresionar);

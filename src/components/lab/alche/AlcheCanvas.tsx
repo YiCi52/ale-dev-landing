@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { Canvas } from "@react-three/fiber";
 
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
@@ -14,11 +14,14 @@ import { alcheScroll } from "./scroll-store";
  * y cambia de material por sección, que es justamente el patrón del sitio de
  * referencia (un objeto, muchos estados) en vez de una escena por sección.
  */
+// El canvas solo existe en el cliente: en el servidor (y en la hidratación) no se pinta.
+const sinCambios = () => () => {};
+const enCliente = () => true;
+const enServidor = () => false;
+
 export function AlcheCanvas() {
   const isReducedMotion = useReducedMotion();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => setIsMounted(true), []);
+  const isMounted = useSyncExternalStore(sinCambios, enCliente, enServidor);
 
   useEffect(() => {
     const updateProgress = () => {

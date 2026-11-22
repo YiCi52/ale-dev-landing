@@ -354,15 +354,23 @@ export default function DecryptedText({
     };
   }, [animateOn, hasAnimated, triggerDecrypt]);
 
-  useEffect(() => {
-    if (animateOn === 'click') {
-      encryptInstantly();
-    } else {
-      setDisplayText(text);
-      setIsDecrypted(true);
-    }
+  // Si cambian el texto o el modo, se reinicia durante el render (patrón de "valor anterior"
+  // de React) en vez de en un efecto que vuelva a renderizar.
+  const [prevProps, setPrevProps] = useState({ animateOn, text });
+  if (prevProps.animateOn !== animateOn || prevProps.text !== text) {
+    setPrevProps({ animateOn, text });
+    setDisplayText(text);
+    setIsDecrypted(animateOn !== 'click');
     setRevealedIndices(new Set());
     setDirection('forward');
+  }
+
+  // En modo click el texto arranca cifrado. El cifrado usa Math.random, así que no puede
+  // ir en el render (no coincidiría con el HTML del servidor): se hace en el primer frame.
+  useEffect(() => {
+    if (animateOn !== 'click') return;
+    const id = requestAnimationFrame(encryptInstantly);
+    return () => cancelAnimationFrame(id);
   }, [animateOn, text, encryptInstantly]);
 
   const animateProps =

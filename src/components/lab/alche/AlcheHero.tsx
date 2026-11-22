@@ -17,10 +17,7 @@ function useScrambledWordmark(isEnabled: boolean) {
   const [text, setText] = useState(isEnabled ? "" : WORDMARK);
 
   useEffect(() => {
-    if (!isEnabled) {
-      setText(WORDMARK);
-      return;
-    }
+    if (!isEnabled) return;
 
     let frame = 0;
     const totalFrames = WORDMARK.length * SCRAMBLE_HOLD;
@@ -47,7 +44,7 @@ function useScrambledWordmark(isEnabled: boolean) {
     return () => window.clearInterval(id);
   }, [isEnabled]);
 
-  return text;
+  return isEnabled ? text : WORDMARK;
 }
 
 export function AlcheHero() {
