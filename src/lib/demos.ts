@@ -661,6 +661,63 @@ export const DEMOS: Demo[] = [
         "Hola, gracias por escribir a Únicas. Recibimos tu consulta y te confirmamos el valor y las opciones de pago en cuanto el equipo la revise.",
     },
   },
+  // CL8 (DM1 16-nov): toque 2 del 23-nov
+  {
+    slug: "dra-juanita-giraldo",
+    nombre: "Dra. Juanita Giraldo",
+    tipo: "clinica",
+    titulo: { antes: "Dos botones, dos WhatsApp distintos, ", luz: "y ninguna consulta en un solo lugar." },
+    hecho:
+      "En su web, el botón «Agenda tu cita» lleva a un número de WhatsApp y el botón de chat a otro distinto, y no hay formulario de contacto: cada consulta queda en el chat al que la persona haya escrito (verificado el 23 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, quiero una valoración con la doctora para toxina botulínica. ¿Tienen disponibilidad esta semana?",
+      asunto: "Valoración con la doctora",
+      respuestaSugerida:
+        "Hola, gracias por escribir a ILLUME by Dra. Juanita Giraldo. Recibimos tu solicitud y te confirmamos la disponibilidad para la valoración en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "gynmedical-clinic",
+    nombre: "GynMedical Clinic",
+    tipo: "clinica",
+    titulo: { antes: "El formulario de Contacto no guarda nada: ", luz: "solo abre WhatsApp." },
+    hecho:
+      "El formulario de su página de Contacto tiene el botón «Enviar por WhatsApp»: al enviarlo no queda registrada la consulta, solo se abre el chat con el mensaje (verificado el 23 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, quiero agendar una cita de ginecología regenerativa. ¿Qué días atiende la especialista?",
+      asunto: "Ginecología regenerativa",
+      respuestaSugerida:
+        "Hola, gracias por escribir a GynMedical Clinic. Recibimos tu solicitud y te confirmamos los días disponibles con la especialista en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "canora-medical",
+    nombre: "Canorá Medical",
+    tipo: "clinica",
+    titulo: { antes: "En Google ya son Canorá Medical; ", luz: "la web todavía dice Megastetic." },
+    hecho:
+      "Su perfil de Google aparece como Canorá Medical, en La Rebeca, pero enlaza a megastetic.com, que todavía muestra el nombre Megastetic y la dirección de Megacentro Pinares; la web no tiene formulario (verificado el 16 y el 23 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, los encontré en Google. ¿Siguen en Megacentro Pinares o ya están en otra dirección? Quiero una valoración.",
+      asunto: "Valoración y dirección",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Canorá Medical. Recibimos tu solicitud y te confirmamos la dirección y la disponibilidad para la valoración en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "odontologia-pereira-agb",
+    nombre: "Odontología Pereira AGB",
+    tipo: "clinica",
+    titulo: { antes: "Toda la web lleva al WhatsApp, ", luz: "y ninguna consulta queda registrada." },
+    hecho:
+      "Su web no tiene formulario de contacto en ninguna página: los botones de WhatsApp y de llamada van al mismo número, y cada consulta queda en el chat (verificado el 16 y el 23 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, me interesa la ortodoncia. ¿Cuánto vale la valoración y qué días tienen?",
+      asunto: "Valoración de ortodoncia",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Odontología Pereira AGB. Recibimos tu consulta y te confirmamos el valor de la valoración y los días disponibles en cuanto el equipo la revise.",
+    },
+  },
 ];
 
 export function demoPorSlug(slug: string): Demo | undefined {
