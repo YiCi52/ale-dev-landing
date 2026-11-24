@@ -718,8 +718,64 @@ export const DEMOS: Demo[] = [
         "Hola, gracias por escribir a Odontología Pereira AGB. Recibimos tu consulta y te confirmamos el valor de la valoración y los días disponibles en cuanto el equipo la revise.",
     },
   },
+  // CL9 (toque 2, 24-nov-2026)
+  {
+    slug: "aire-medicina-estetica",
+    nombre: "AIRĒ Medicina Estética",
+    tipo: "clinica",
+    titulo: { antes: "Hasta «Agenda tu valoración» abre el chat: ", luz: "la cita depende de que alguien conteste." },
+    hecho:
+      "En clinicairemed.com no hay formulario ni agenda en línea: todos los botones, incluido «Agenda tu valoración», abren WhatsApp (verificado el 24 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Buenas noches, quiero agendar una valoración. ¿Tienen espacio esta semana?",
+      asunto: "Valoración",
+      respuestaSugerida:
+        "Hola, gracias por escribir a AIRĒ. Recibimos tu solicitud de valoración y te confirmamos la disponibilidad en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "voda-spa-neiva",
+    nombre: "Voda Spa",
+    tipo: "clinica",
+    titulo: { antes: "Cada botón de reservar lleva al chat, ", luz: "y la reserva queda en la conversación." },
+    hecho:
+      "En vodaspaneiva.com no hay formulario ni agenda en línea: los botones de reservar y de agendar experiencia abren WhatsApp (verificado el 16 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, quiero reservar un día de spa para dos personas el sábado. ¿Qué planes tienen?",
+      asunto: "Reserva de día de spa",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Voda Spa. Recibimos tu solicitud para el sábado y te confirmamos los planes y la disponibilidad en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "rosa-spa-manizales",
+    nombre: "Rosa Spa",
+    tipo: "clinica",
+    titulo: { antes: "Una página de promociones y un solo enlace: ", luz: "todo pasa por el chat." },
+    hecho:
+      "rosaspamanizales.com es una sola página de promociones sin formulario; el único contacto es un enlace a WhatsApp, donde responde un menú automático (verificado el 24 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Buenas noches, vi la promoción en su página. ¿Sigue vigente y cuándo me pueden atender?",
+      asunto: "Promoción vigente",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Rosa Spa. Recibimos tu pregunta por la promoción y te confirmamos si sigue vigente y la disponibilidad en cuanto el equipo la revise.",
+    },
+  },
+  {
+    slug: "spa-alta-vita",
+    nombre: "Spa Alta Vita",
+    tipo: "clinica",
+    titulo: { antes: "El botón «Contacto» lleva a una página que no existe: ", luz: "quien lo toca se queda sin camino." },
+    hecho:
+      "En spaaltavita.com el enlace «Contacto» lleva a /contacto.html, que responde «Not Found» (error 404), y la web no muestra otro canal (verificado el 24 de noviembre de 2026).",
+    consulta: {
+      mensaje: "Hola, quiero regalar un masaje de cumpleaños. ¿Tienen bonos de regalo?",
+      asunto: "Bono de regalo",
+      respuestaSugerida:
+        "Hola, gracias por escribir a Spa Alta Vita. Recibimos tu pregunta por el bono de regalo y te confirmamos las opciones en cuanto el equipo la revise.",
+    },
+  },
 ];
-
 export function demoPorSlug(slug: string): Demo | undefined {
   return DEMOS.find((d) => d.slug === slug);
 }
